@@ -3,16 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-type RouteParams = {
-  params: {
-    projectId: string;
-    cardId: string;
-  };
-};
-
 export async function PATCH(
-  req: NextRequest,
-  context: RouteParams
+  request: NextRequest,
+  { params }: { params: { projectId: string; cardId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +18,7 @@ export async function PATCH(
       );
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const { content } = body;
 
     if (typeof content !== 'string') {
@@ -38,7 +31,7 @@ export async function PATCH(
     // Verify project exists and belongs to user
     const project = await prisma.project.findUnique({
       where: {
-        id: context.params.projectId,
+        id: params.projectId,
         userId: session.user.id,
       },
     });
@@ -53,8 +46,8 @@ export async function PATCH(
     // Update the card
     const updatedCard = await prisma.card.update({
       where: {
-        id: context.params.cardId,
-        projectId: context.params.projectId,
+        id: params.cardId,
+        projectId: params.projectId,
       },
       data: {
         content,
