@@ -1,14 +1,10 @@
-import { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-export const metadata: Metadata = {
-  title: "Editor - AI Story Studio",
-  description: "Create and edit your stories",
-};
 
 export default function EditorPage() {
   const { data: session } = useSession();
