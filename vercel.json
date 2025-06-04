@@ -5,7 +5,7 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NEXTAUTH_URL": "https://your-domain.com",
-    "NEXTAUTH_SECRET": "@nextauth_secret"
+    "NEXTAUTH_URL": "https://aistorystudio.com/",
+    "NEXTAUTH_SECRET": "Z4yI/RMhNh7Z6VandFOfbNcU5q9sgR0P6gNelPZlGg8="
   }
 } 
