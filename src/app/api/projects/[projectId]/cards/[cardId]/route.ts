@@ -3,10 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { projectId: string; cardId: string } }
-) {
+// Define the expected params type
+interface RouteParams {
+  params: {
+    projectId: string;
+    cardId: string;
+  };
+}
+
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
 
