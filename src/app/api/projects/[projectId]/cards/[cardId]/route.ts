@@ -45,23 +45,17 @@ export async function PATCH(
     }
 
     // Update the card
-    const card = await prisma.$queryRaw<Array<{
-      id: string;
-      type: string;
-      content: string;
-      order: number;
-      projectId: string;
-      createdAt: Date;
-      updatedAt: Date;
-    }>>`
-      UPDATE "Card"
-      SET content = ${content}
-      WHERE id = ${params.cardId}
-      AND "projectId" = ${params.projectId}
-      RETURNING *
-    `;
+    const updatedCard = await prisma.card.update({
+      where: {
+        id: params.cardId,
+        projectId: params.projectId,
+      },
+      data: {
+        content,
+      },
+    });
 
-    return NextResponse.json(card[0]);
+    return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("[CARD_UPDATE] Error updating card:", error);
     return new NextResponse(
