@@ -2,44 +2,50 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { nanoid } from "nanoid";
+import crypto from "crypto";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
+    // Get projectId from URL
+    const url = new URL(request.url);
+    const projectId = url.pathname.split('/')[3]; // /api/projects/[projectId]/share
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "You must be logged in to share projects" },
         { status: 401 }
       );
     }
 
-    const { projectId } = await params;
-    const { expiresIn } = await req.json();
+    // Verify project exists and belongs to user
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+        userId: session.user.id,
+      },
+    });
 
-    // Generate a unique share token
-    const shareToken = nanoid(16);
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
 
-    // Calculate expiration date
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + (expiresIn || 7)); // Default 7 days
+    // Generate a unique token
+    const shareToken = crypto.randomBytes(32).toString('hex');
 
     // Create share link
-    const shareLink = await prisma.shareLink.create({
+    const shareLink = await prisma.share.create({
       data: {
         token: shareToken,
         projectId,
-        createdById: session.user.id,
-        expiresAt,
       },
     });
 
     return NextResponse.json({
       shareUrl: `${process.env.NEXT_PUBLIC_APP_URL}/share/${shareToken}`,
-      expiresAt: shareLink.expiresAt,
     });
   } catch (error) {
     console.error("[SHARE_CREATE] Error:", error);
@@ -50,29 +56,39 @@ export async function POST(
   }
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
+    // Get projectId from URL
+    const url = new URL(request.url);
+    const projectId = url.pathname.split('/')[3]; // /api/projects/[projectId]/share
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "You must be logged in to view share links" },
         { status: 401 }
       );
     }
 
-    const { projectId } = await params;
+    // Verify project exists and belongs to user
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+        userId: session.user.id,
+      },
+    });
 
-    // Get all active share links for the project
-    const shareLinks = await prisma.shareLink.findMany({
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get all share links for the project
+    const shareLinks = await prisma.share.findMany({
       where: {
         projectId,
-        createdById: session.user.id,
-        expiresAt: {
-          gt: new Date(),
-        },
       },
       orderBy: {
         createdAt: "desc",

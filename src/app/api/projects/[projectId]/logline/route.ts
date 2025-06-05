@@ -3,26 +3,26 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { projectId: string } }
-) {
+export async function PATCH(request: NextRequest) {
   try {
+    // Get projectId from URL
+    const url = new URL(request.url);
+    const projectId = url.pathname.split('/')[3]; // /api/projects/[projectId]/logline
+
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "You must be logged in to update projects" },
+        { error: "You must be logged in to update logline" },
         { status: 401 }
       );
     }
 
-    const body = await req.json();
-    const { logline } = body;
+    const body = await request.json();
+    const { content } = body;
 
-    if (typeof logline !== 'string') {
+    if (typeof content !== 'string') {
       return NextResponse.json(
-        { error: "Logline is required" },
+        { error: "Content is required" },
         { status: 400 }
       );
     }
@@ -30,7 +30,7 @@ export async function PATCH(
     // Verify project exists and belongs to user
     const project = await prisma.project.findUnique({
       where: {
-        id: params.projectId,
+        id: projectId,
         userId: session.user.id,
       },
     });
@@ -45,10 +45,10 @@ export async function PATCH(
     // Update the logline
     const updatedProject = await prisma.project.update({
       where: {
-        id: params.projectId,
+        id: projectId,
       },
       data: {
-        logline,
+        logline: content,
       },
     });
 

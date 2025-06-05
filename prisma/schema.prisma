@@ -79,6 +79,7 @@ model Project {
   updatedAt   DateTime @updatedAt
   cards       Card[]
   tokenUsage  TokenUsage[]
+  shares      Share[]
 }
 
 model Story {
@@ -139,5 +140,16 @@ model TokenUsage {
   project   Project  @relation(fields: [projectId], references: [id])
 
   @@index([userId])
+  @@index([projectId])
+}
+
+model Share {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([projectId])
 }

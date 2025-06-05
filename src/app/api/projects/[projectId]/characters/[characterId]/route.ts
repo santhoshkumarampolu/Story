@@ -3,13 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { projectId: string; characterId: string } }
-) {
+export async function PATCH(request: NextRequest) {
   try {
+    // Get IDs from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const projectId = pathParts[3];
+    const characterId = pathParts[5];
+
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "You must be logged in to update characters" },
@@ -17,7 +19,7 @@ export async function PATCH(
       );
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const { name, description } = body;
 
     if (typeof name !== 'string' || typeof description !== 'string') {
@@ -30,7 +32,7 @@ export async function PATCH(
     // Verify project exists and belongs to user
     const project = await prisma.project.findUnique({
       where: {
-        id: params.projectId,
+        id: projectId,
         userId: session.user.id,
       },
     });
@@ -45,8 +47,8 @@ export async function PATCH(
     // Update the character
     const updatedCharacter = await prisma.character.update({
       where: {
-        id: params.characterId,
-        projectId: params.projectId,
+        id: characterId,
+        projectId: projectId,
       },
       data: {
         name,
@@ -64,17 +66,18 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { projectId: string; characterId: string } }
-) {
+export async function DELETE(request: NextRequest) {
   try {
+    // Get IDs from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const projectId = pathParts[3];
+    const characterId = pathParts[5];
+
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
-      console.error("[CHARACTER_DELETE] No session or user ID found", { session });
       return new NextResponse(
-        JSON.stringify({ error: "You must be logged in to delete characters" }), 
+        JSON.stringify({ error: "You must be logged in to delete characters" }),
         { status: 401 }
       );
     }
@@ -82,14 +85,14 @@ export async function DELETE(
     // Verify project exists and belongs to user
     const project = await prisma.project.findUnique({
       where: {
-        id: params.projectId,
+        id: projectId,
         userId: session.user.id,
       },
     });
 
     if (!project) {
       return new NextResponse(
-        JSON.stringify({ error: "Project not found" }), 
+        JSON.stringify({ error: "Project not found" }),
         { status: 404 }
       );
     }
@@ -97,8 +100,8 @@ export async function DELETE(
     // Delete the character
     await prisma.character.delete({
       where: {
-        id: params.characterId,
-        projectId: params.projectId,
+        id: characterId,
+        projectId: projectId,
       },
     });
 
@@ -106,9 +109,9 @@ export async function DELETE(
   } catch (error) {
     console.error("[CHARACTER_DELETE] Error deleting character:", error);
     return new NextResponse(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Failed to delete character" 
-      }), 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Failed to delete character",
+      }),
       { status: 500 }
     );
   }
