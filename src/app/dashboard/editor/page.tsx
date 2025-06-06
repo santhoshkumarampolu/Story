@@ -32,7 +32,7 @@ export default function EditorPage() {
     const res = await fetch("/api/projects/new", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, language }),
     });
     const data = await res.json();
     setSaving(false);

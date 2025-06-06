@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import OpenAI from "openai";
+import { openai, trackImageGeneration } from "@/lib/openai";
 import { uploadImage } from "@/lib/cloudinary";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(
   req: NextRequest,
@@ -71,6 +67,16 @@ export async function POST(
     if (!response.data?.[0]?.url) {
       throw new Error("Failed to generate image");
     }
+
+    // Track image generation cost
+    await trackImageGeneration({
+      userId: session.user.id,
+      projectId,
+      type: "storyboard",
+      model: "dall-e-3",
+      size: "1792x1024",
+      imageCount: 1,
+    });
 
     const imageUrl = response.data[0].url;
 

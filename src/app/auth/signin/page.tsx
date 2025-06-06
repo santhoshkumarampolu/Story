@@ -1,190 +1,180 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Icons } from "@/components/ui/icons";
-import { useToast } from "@/components/ui/use-toast";
-import Header from "@/components/Header";
-import { useSession } from "next-auth/react";
-
-const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type SignInFormData = z.infer<typeof signInSchema>;
+import { Header } from "@/components/layout/header";
+import { useState, useCallback, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
-  });
-
-  useEffect(() => {
+  const redirectToDashboard = useCallback(() => {
     if (status === "authenticated") {
       router.replace("/dashboard");
     }
   }, [status, router]);
 
-  const onSubmit = async (data: SignInFormData) => {
-    setIsLoading(true);
+  useEffect(() => {
+    redirectToDashboard();
+  }, [redirectToDashboard]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
+        email,
+        password,
         redirect: false,
       });
 
       if (result?.error) {
-        toast({
-          title: "Error",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-      } else {
-        router.replace("/dashboard");
+        throw new Error(result.error);
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+
+      router.replace("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signIn("google", {
-        redirect: false,
-        callbackUrl: "/dashboard"
-      });
-      if (result?.url) {
-        router.replace(result.url);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign in with Google",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-
+  // Show loading state while checking session
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Icons.spinner className="h-8 w-8 animate-spin" />
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
+        <div className="relative flex min-h-screen items-center justify-center">
+          <div className="text-white">Loading...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <Header showAuthButtons={true} />
-      <div className="container max-w-md mx-auto px-4 py-16">
-        <Card className="border-none shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-            <CardDescription className="text-center">
-              Sign in to your account to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  {...register("email")}
-                  className={errors.email ? "border-red-500" : ""}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
+    <div className="relative min-h-screen">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
+      
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-purple-500/20 blur-3xl" />
+        <div className="absolute top-1/2 left-1/4 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-pink-500/20 blur-3xl" />
+      </div>
+
+      <div className="relative">
+        <Header showAuthButtons={true} />
+
+        <main className="flex min-h-screen items-center justify-center px-4 pt-20">
+          <div className="w-full max-w-[400px]">
+            <div className="space-y-8">
+              <div className="space-y-2 text-center">
+                <Link href="/" className="inline-flex items-center text-sm text-white/70 hover:text-white transition-colors mb-8">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="mr-2 h-4 w-4"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                  Back to home
+                </Link>
+                <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold tracking-tight">
+                  Welcome back
+                </h1>
+                <p className="text-lg text-white/70">
+                  Sign in to continue with AI Story Studio
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  {...register("password")}
-                  className={errors.password ? "border-red-500" : ""}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password.message}</p>
-                )}
+
+              <div className="space-y-6">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 border-white/20 bg-white/5 text-white hover:bg-white/10 font-medium"
+                  onClick={() => signIn("google", { 
+                    redirect: true,
+                    callbackUrl: "/dashboard"
+                  })}
+                  type="button"
+                  disabled={loading}
+                >
+                  <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                    <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                  </svg>
+                  Continue with Google
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-black px-2 text-white/50">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                  <div>
+                    <input
+                      id="email"
+                      placeholder="name@example.com"
+                      type="email"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect="off"
+                      className="flex h-12 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/50 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <input
+                      id="password"
+                      placeholder="Password"
+                      type="password"
+                      autoCapitalize="none"
+                      autoComplete="current-password"
+                      autoCorrect="off"
+                      className="flex h-12 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/50 focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/20"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button className="w-full h-12 bg-white text-black hover:bg-white/90" type="submit" disabled={loading}>
+                    {loading ? "Signing In..." : "Sign In with Email"}
+                  </Button>
+                  {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
+                </form>
               </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading && (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Sign In
-              </Button>
-            </form>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
+
+              <p className="text-center text-sm text-white/70">
+                <Link href="/auth/signup" className="hover:text-white underline underline-offset-4">
+                  Don't have an account? Sign Up
+                </Link>
+              </p>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Icons.google className="mr-2 h-4 w-4" />
-              )}
-              Google
-            </Button>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-center text-gray-600">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="text-blue-600 hover:text-blue-500 font-medium"
-              >
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
+          </div>
+        </main>
       </div>
     </div>
   );

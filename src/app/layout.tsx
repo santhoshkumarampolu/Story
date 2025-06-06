@@ -1,23 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import { Providers } from "./providers";
-import { Toaster } from "@/components/ui/toaster";
+import { SessionProvider } from "@/components/providers/session-provider";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "AI Story Studio",
-  description: "Create compelling stories with AI assistance",
+  description: "Create amazing stories with AI",
 };
 
 export default function RootLayout({
@@ -26,10 +16,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(spaceGrotesk.variable, inter.variable)} suppressHydrationWarning>
-      <body className="min-h-screen bg-black text-white antialiased">
-        <Providers>{children}</Providers>
-        <Toaster />
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-background antialiased dark`}>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

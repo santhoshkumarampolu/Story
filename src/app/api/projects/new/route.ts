@@ -6,32 +6,44 @@ import { Prisma } from "@prisma/client";
 
 type ProjectType = 'shortfilm' | 'story' | 'screenplay';
 
-const getInitialContent = (type: ProjectType) => {
+export function getInitialContent(type: string) {
   switch (type) {
     case 'shortfilm':
       return {
-        cards: {
-          create: [
-            {
-              type: "shortfilm",
-              content: "",
-              order: 0
-            }
-          ]
-        },
+        version: 1,
+        structureType: 'three-act',
+        idea: '',
+        logline: '',
+        treatment: '',
         characters: {
           create: [
             {
-              name: "Character 1",
-              description: "Main character description"
+              name: 'Character 1',
+              description: 'Main character description',
+              motivation: '',
+              backstory: '',
+              arc: '',
+              relationships: ''
             }
           ]
         },
         scenes: {
           create: [
             {
-              title: "Scene 1",
-              summary: "Opening scene",
+              title: 'Scene 1',
+              summary: 'Opening scene',
+              order: 0,
+              act: 'act1',
+              notes: '',
+              version: 1
+            }
+          ]
+        },
+        cards: {
+          create: [
+            {
+              type: 'shortfilm',
+              content: '',
               order: 0
             }
           ]
@@ -39,11 +51,39 @@ const getInitialContent = (type: ProjectType) => {
       };
     case 'story':
       return {
+        version: 1,
+        idea: '',
+        logline: '',
+        treatment: '',
+        characters: {
+          create: [
+            {
+              name: 'Character 1',
+              description: 'Main character description',
+              motivation: '',
+              backstory: '',
+              arc: '',
+              relationships: ''
+            }
+          ]
+        },
+        scenes: {
+          create: [
+            {
+              title: 'Scene 1',
+              summary: 'Opening scene',
+              order: 0,
+              act: 'act1',
+              notes: '',
+              version: 1
+            }
+          ]
+        },
         cards: {
           create: [
             {
-              type: "story",
-              content: "",
+              type: 'story',
+              content: '',
               order: 0
             }
           ]
@@ -51,11 +91,39 @@ const getInitialContent = (type: ProjectType) => {
       };
     case 'screenplay':
       return {
+        version: 1,
+        idea: '',
+        logline: '',
+        treatment: '',
+        characters: {
+          create: [
+            {
+              name: 'Character 1',
+              description: 'Main character description',
+              motivation: '',
+              backstory: '',
+              arc: '',
+              relationships: ''
+            }
+          ]
+        },
+        scenes: {
+          create: [
+            {
+              title: 'Scene 1',
+              summary: 'Opening scene',
+              order: 0,
+              act: 'act1',
+              notes: '',
+              version: 1
+            }
+          ]
+        },
         cards: {
           create: [
             {
-              type: "screenplay",
-              content: "",
+              type: 'screenplay',
+              content: '',
               order: 0
             }
           ]
@@ -63,18 +131,46 @@ const getInitialContent = (type: ProjectType) => {
       };
     default:
       return {
+        version: 1,
+        idea: '',
+        logline: '',
+        treatment: '',
+        characters: {
+          create: [
+            {
+              name: 'Character 1',
+              description: 'Main character description',
+              motivation: '',
+              backstory: '',
+              arc: '',
+              relationships: ''
+            }
+          ]
+        },
+        scenes: {
+          create: [
+            {
+              title: 'Scene 1',
+              summary: 'Opening scene',
+              order: 0,
+              act: 'act1',
+              notes: '',
+              version: 1
+            }
+          ]
+        },
         cards: {
           create: [
             {
-              type: "story",
-              content: "",
+              type: 'story',
+              content: '',
               order: 0
             }
           ]
         }
       };
   }
-};
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,6 +181,19 @@ export async function POST(req: NextRequest) {
       return new NextResponse(
         JSON.stringify({ error: "You must be logged in to create a project" }), 
         { status: 401 }
+      );
+    }
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    });
+
+    if (!user) {
+      console.error("[PROJECT_CREATE] User not found", { userId: session.user.id });
+      return new NextResponse(
+        JSON.stringify({ error: "User not found" }), 
+        { status: 404 }
       );
     }
 
@@ -114,12 +223,12 @@ export async function POST(req: NextRequest) {
         type: language,
         userId: session.user.id,
         ...initialContent
-      } as unknown as Prisma.ProjectUncheckedCreateInput,
+      },
       include: {
         cards: true,
         characters: true,
         scenes: true
-      } as unknown as Prisma.ProjectInclude
+      }
     });
 
     console.log("[PROJECT_CREATE] Project created successfully", { projectId: project.id });

@@ -341,7 +341,7 @@ export default function Home() {
                 </motion.p>
               </motion.div>
               <motion.div 
-                className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
+                className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 px-4"
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
@@ -350,14 +350,14 @@ export default function Home() {
                 {valueProps.map((prop) => (
                   <motion.div
                     key={prop.title}
-                    className="group relative rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all hover:bg-white/10"
+                    className="group relative rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-sm transition-all hover:bg-white/10 h-[340px] min-w-[270px] max-w-[340px] flex flex-col items-center mx-auto"
                     variants={scaleIn}
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="space-y-4">
-                      <prop.icon className="h-12 w-12 text-purple-400" />
-                      <h3 className="font-space-grotesk text-xl font-bold">{prop.title}</h3>
-                      <p className="text-white/70">
+                    <div className="space-y-8 flex flex-col items-center">
+                      <prop.icon className="h-16 w-16 text-purple-400 mb-2" />
+                      <h3 className="font-space-grotesk text-3xl font-bold text-center">{prop.title}</h3>
+                      <p className="text-xl text-white/70 text-center">
                         {prop.description}
                       </p>
                     </div>
@@ -368,7 +368,7 @@ export default function Home() {
           </section>
 
           {/* How It Works Section */}
-          <section className="relative py-32 px-4 bg-white/5">
+          <section className="relative py-32 px-4">
             <div className="container mx-auto max-w-6xl">
               <motion.div 
                 className="text-center space-y-4 mb-16"
@@ -385,7 +385,7 @@ export default function Home() {
                 </motion.h2>
               </motion.div>
               <motion.div 
-                className="grid gap-8 md:grid-cols-2 lg:grid-cols-4"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
@@ -394,35 +394,14 @@ export default function Home() {
                 {workflowSteps.map((step, index) => (
                   <motion.div
                     key={step.title}
-                    className="relative"
-                    variants={scaleIn}
-                    whileHover={{ scale: 1.05 }}
+                    className="bg-white/5 backdrop-blur-lg rounded-2xl p-10 border border-white/10 h-[320px] flex flex-col"
+                    variants={fadeInUp}
                   >
-                    <motion.div 
-                      className="absolute -top-4 -left-4 flex h-8 w-8 items-center justify-center rounded-full bg-purple-500 text-sm font-bold z-10"
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.2 }}
-                    >
-                      {index + 1}
-                    </motion.div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-                      <div className="space-y-4">
-                        <motion.div
-                          initial={{ rotate: -180, opacity: 0 }}
-                          whileInView={{ rotate: 0, opacity: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: index * 0.2 }}
-                        >
-                          <step.icon className="h-12 w-12 text-purple-400" />
-                        </motion.div>
-                        <h3 className="font-space-grotesk text-xl font-bold">{step.title}</h3>
-                        <p className="text-white/70">
-                          {step.description}
-                        </p>
-                      </div>
+                    <div className="mb-8">
+                      <step.icon className="h-12 w-12 text-purple-400" />
                     </div>
+                    <h3 className="text-3xl font-bold mb-6">{step.title}</h3>
+                    <p className="text-xl text-white/70 flex-grow">{step.description}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -456,20 +435,20 @@ export default function Home() {
                 {features.map((feature) => (
                   <motion.div
                     key={feature.title}
-                    className="group relative rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all hover:bg-white/10"
+                    className="group relative rounded-2xl border border-white/10 bg-white/5 p-10 backdrop-blur-sm transition-all hover:bg-white/10 h-[320px] flex flex-col"
                     variants={scaleIn}
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <motion.div
                         initial={{ rotate: -180, opacity: 0 }}
                         whileInView={{ rotate: 0, opacity: 1 }}
                         viewport={{ once: true }}
                       >
-                        <feature.icon className="h-12 w-12 text-purple-400" />
+                        <feature.icon className="h-14 w-14 text-purple-400" />
                       </motion.div>
-                      <h3 className="font-space-grotesk text-xl font-bold">{feature.title}</h3>
-                      <p className="text-white/70">
+                      <h3 className="font-space-grotesk text-3xl font-bold">{feature.title}</h3>
+                      <p className="text-xl text-white/70">
                         {feature.description}
                       </p>
                     </div>

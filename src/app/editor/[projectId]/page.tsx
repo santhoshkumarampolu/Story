@@ -27,6 +27,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StoryboardSection } from '@/components/StoryboardSection';
+import { TokenAnimationDisplay } from '@/components/TokenAnimationDisplay';
+import { AIOperationProgress } from '@/components/AIOperationProgress';
+import { OperationNotification } from '@/components/OperationNotification';
 
 // Define types based on Prisma schema
 type ProjectType = "shortfilm" | "story" | "screenplay";
@@ -69,6 +72,9 @@ interface Project {
   language: string | null;
   type: string;
   logline: string | null;
+  idea: string | null;
+  treatment: string | null;
+  structureType: string | null;
   userId: string;
   cards: ProjectCard[];
   stories: { id: string; title: string; content: string; createdAt: string; updatedAt: string }[];
@@ -93,6 +99,8 @@ interface TokenUpdate {
   tokens: number;
   cost: number;
   timestamp: number;
+  type: "script" | "storyboard" | "treatment" | "idea";
+  operation: string;
 }
 
 interface ShareLink {
@@ -145,9 +153,12 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [progress, setProgress] = useState(0);
   const [logline, setLogline] = useState<string>("");
+  const [idea, setIdea] = useState<string>("");
+  const [treatment, setTreatment] = useState<string>("");
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [savingLogline, setSavingLogline] = useState(false);
+  const [savingIdea, setSavingIdea] = useState(false);
   const [savingCharacter, setSavingCharacter] = useState<string | null>(null);
   const [savingScene, setSavingScene] = useState<string | null>(null);
   const [generatingScript, setGeneratingScript] = useState<string | null>(null);
@@ -166,6 +177,8 @@ export default function EditorPage() {
   const [shareExpiresIn, setShareExpiresIn] = useState(7);
   const [exportFormat, setExportFormat] = useState<"markdown" | "json" | "pdf">("markdown");
   const [exporting, setExporting] = useState(false);
+  const [generatingTreatment, setGeneratingTreatment] = useState(false);
+  const [savingTreatment, setSavingTreatment] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -188,6 +201,8 @@ export default function EditorPage() {
         setProgress((completedCards / totalCards) * 100);
         if (data.type === "shortfilm") {
           setLogline(data.logline || "");
+          setIdea(data.idea || "");
+          setTreatment(data.treatment || "");
           setCharacters(data.characters || []);
           setScenes(data.scenes || []);
         }
@@ -329,6 +344,33 @@ export default function EditorPage() {
     }
   };
 
+  const saveIdea = async () => {
+    if (!project) return;
+    setSavingIdea(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/ideas`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: idea }),
+      });
+      if (!res.ok) throw new Error("Failed to save idea");
+      setProject((prev) => prev ? { ...prev, idea } : prev);
+      toast({
+        title: "Success",
+        description: "Idea saved successfully",
+      });
+    } catch (error) {
+      console.error("[EditorPage] Error saving idea:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save idea",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingIdea(false);
+    }
+  };
+
   const saveCharacter = async (characterId: string, name: string, description: string) => {
     if (!project) return;
     setSavingCharacter(characterId);
@@ -376,6 +418,26 @@ export default function EditorPage() {
       });
     } finally {
       setSavingScene(null);
+    }
+  };
+
+  const saveTreatment = async (newTreatment: string) => {
+    if (!project) return;
+    setSavingTreatment(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/treatment`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newTreatment }),
+      });
+      if (!res.ok) throw new Error("Failed to save treatment");
+      setProject((prev) => prev ? { ...prev, treatment: newTreatment } : prev);
+      toast({ title: "Success", description: "Treatment saved successfully" });
+    } catch (error) {
+      console.error("[EditorPage] Error saving treatment:", error);
+      toast({ title: "Error", description: "Failed to save treatment", variant: "destructive" });
+    } finally {
+      setSavingTreatment(false);
     }
   };
 
@@ -484,26 +546,34 @@ export default function EditorPage() {
     }
   };
 
-  const updateTokenUsage = async () => {
+  const updateTokenUsage = async (operationType?: "script" | "storyboard" | "treatment" | "idea", operationName?: string) => {
     if (!projectId) return;
     try {
       const response = await fetch(`/api/projects/${projectId}/usage`);
       if (!response.ok) throw new Error("Failed to fetch usage data");
       const data = await response.json();
       
-      // Add update animation
+      // Add update animation with enhanced information
       if (tokenUsage && (data.totalTokens !== tokenUsage.totalTokens || data.totalCost !== tokenUsage.totalCost)) {
-        setTokenUpdates(prev => [...prev, {
-          id: Date.now().toString(),
-          tokens: data.totalTokens - (tokenUsage?.totalTokens || 0),
-          cost: data.totalCost - (tokenUsage?.totalCost || 0),
-          timestamp: Date.now()
-        }]);
+        const tokensUsed = data.totalTokens - (tokenUsage?.totalTokens || 0);
+        const costIncurred = data.totalCost - (tokenUsage?.totalCost || 0);
+        
+        // Only add animation if there are actual changes
+        if (tokensUsed > 0 || costIncurred > 0) {
+          setTokenUpdates(prev => [...prev, {
+            id: Date.now().toString(),
+            tokens: tokensUsed,
+            cost: costIncurred,
+            timestamp: Date.now(),
+            type: operationType || "script",
+            operation: operationName || "AI Generation"
+          }]);
 
-        // Remove old updates after animation
-        setTimeout(() => {
-          setTokenUpdates(prev => prev.filter(update => Date.now() - update.timestamp < 2000));
-        }, 2000);
+          // Remove old updates after animation
+          setTimeout(() => {
+            setTokenUpdates(prev => prev.filter(update => Date.now() - update.timestamp < 4000));
+          }, 4000);
+        }
       }
       
       setTokenUsage(data);
@@ -522,7 +592,7 @@ export default function EditorPage() {
       if (!res.ok) throw new Error("Failed to generate script");
       const updatedScene = await res.json();
       setScenes(scenes.map(s => s.id === sceneId ? updatedScene : s));
-      await updateTokenUsage();
+      await updateTokenUsage("script", "Script Generation");
       toast({
         title: "Success",
         description: "Script generated successfully",
@@ -566,7 +636,7 @@ export default function EditorPage() {
       if (!res.ok) throw new Error("Failed to generate storyboard");
       const updatedScene = await res.json();
       setScenes(scenes.map(s => s.id === sceneId ? updatedScene : s));
-      await updateTokenUsage();
+      await updateTokenUsage("storyboard", "Storyboard Generation");
       toast({
         title: "Success",
         description: "Storyboard generated successfully",
@@ -579,6 +649,29 @@ export default function EditorPage() {
       });
     } finally {
       setGeneratingStoryboard(null);
+    }
+  };
+
+  const generateTreatment = async () => {
+    if (!project || !project.idea || !project.logline) return;
+    setGeneratingTreatment(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/treatment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea: project.idea, logline: project.logline }),
+      });
+      if (!res.ok) throw new Error("Failed to generate treatment");
+      const data = await res.json();
+      setProject((prev) => prev ? { ...prev, treatment: data.treatment } : prev);
+      setTreatment(data.treatment); // Update the local treatment state for the textarea
+      await updateTokenUsage("treatment", "Treatment Generation");
+      toast({ title: "Success", description: "Treatment generated successfully" });
+    } catch (error) {
+      console.error("[EditorPage] Error generating treatment:", error);
+      toast({ title: "Error", description: "Failed to generate treatment", variant: "destructive" });
+    } finally {
+      setGeneratingTreatment(false);
     }
   };
 
@@ -711,6 +804,20 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
+      {/* AI Operation Progress Indicator */}
+      <AIOperationProgress 
+        isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment}
+        operationType={
+          generatingScript ? "script" : 
+          generatingStoryboard ? "storyboard" : 
+          generatingTreatment ? "treatment" : "script"
+        }
+        operationName={
+          generatingScript ? "Script Generation" :
+          generatingStoryboard ? "Storyboard Generation" :
+          generatingTreatment ? "Treatment Generation" : "AI Generation"
+        }
+      />
       {/* Header */}
       <div className="bg-white/5 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -730,39 +837,17 @@ export default function EditorPage() {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              {tokenUsage && (
-                <div className="text-sm text-gray-400 relative">
-                  <span className="mr-4">
-                    Tokens: {tokenUsage.totalTokens.toLocaleString()}
-                  </span>
-                  <span>
-                    Cost: ${tokenUsage.totalCost.toFixed(2)}
-                  </span>
-                  
-                  {/* Token Update Animations */}
-                  <AnimatePresence>
-                    {tokenUpdates.map(update => (
-                      <motion.div
-                        key={update.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="absolute -top-8 right-0 bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full text-xs"
-                      >
-                        {update.tokens > 0 && `+${update.tokens} tokens`}
-                        {update.cost > 0 && ` +$${update.cost.toFixed(2)}`}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              )}
+              <TokenAnimationDisplay 
+                tokenUsage={tokenUsage} 
+                tokenUpdates={tokenUpdates} 
+              />
               {saving && (
                 <span className="text-sm text-gray-400 flex items-center">
                   <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
                   Saving...
                 </span>
               )}
-              <Button 
+              {/* <Button 
                 variant="default" 
                 size="sm" 
                 className="bg-purple-600 hover:bg-purple-700 text-white transition-colors"
@@ -779,24 +864,70 @@ export default function EditorPage() {
               >
                 <Icons.download className="h-4 w-4 mr-2" />
                 Export
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
+
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {project.type === "shortfilm" && (
-          <div className="space-y-8">
-            {/* Logline */}
+        <div className="space-y-8"></div>
+          {project.type === "shortfilm" && (
+            <div className="space-y-8">
+               {/* Idea */}
             <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300">Logline</h2>
+                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                    <Icons.lightbulb className="h-5 w-5 mr-2" />
+                    Idea
+                  </h2>
+                  <Button
+                    onClick={() => router.push(`/projects/${project?.id}/ideas`)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Icons.sparkles className="h-4 w-4 mr-2" />
+                    Generate Idea
+                  </Button>
                 </div>
                 <div className="flex space-x-2">
                   <Textarea
+                    value={idea}
+                    onChange={e => setIdea(e.target.value)}
+                    className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px]"
+                    placeholder="Edit your film's idea..."
+                  />
+                  <Button
+                    onClick={saveIdea}
+                    disabled={savingIdea}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {savingIdea ? (
+                      <>
+                        <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+              {/* Logline */}
+              <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                      <Icons.fileText className="h-5 w-5 mr-2" />
+                      Logline
+                    </h2>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Textarea
                     value={logline}
                     onChange={e => setLogline(e.target.value)}
                     className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px]"
@@ -820,11 +951,69 @@ export default function EditorPage() {
               </CardContent>
             </Card>
 
+           
+
+            {/* Treatment */}
+            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                    <Icons.scroll className="h-5 w-5 mr-2" />
+                    Treatment
+                  </h2>
+                  <Button
+                    onClick={generateTreatment}
+                    disabled={generatingTreatment || !project?.idea || !project?.logline}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {generatingTreatment ? (
+                      <>
+                        <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Icons.sparkles className="h-4 w-4 mr-2" />
+                        Generate Treatment
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <Textarea
+                    value={treatment}
+                    onChange={e => setTreatment(e.target.value)}
+                    className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[200px]"
+                    placeholder="Treatment will appear here after generation or you can write it manually..."
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={() => saveTreatment(treatment)}
+                      disabled={savingTreatment}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {savingTreatment ? (
+                        <>
+                          <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Treatment"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Characters */}
             <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300">Characters</h2>
+                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                    <Icons.users className="h-5 w-5 mr-2" />
+                    Characters
+                  </h2>
                   <Button
                     onClick={addCharacter}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -892,7 +1081,10 @@ export default function EditorPage() {
             <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300">Scenes</h2>
+                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                    <Icons.film className="h-5 w-5 mr-2" />
+                    Scenes
+                  </h2>
                   <Button
                     onClick={addScene}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -957,7 +1149,10 @@ export default function EditorPage() {
                       {/* Script Section */}
                       <div className="mt-4">
                         <div className="flex items-center justify-between mb-2">
-                          <div className="text-gray-400">Script</div>
+                          <div className="text-gray-400 flex items-center">
+                            <Icons.fileText className="h-4 w-4 mr-2" />
+                            Script
+                          </div>
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
@@ -972,7 +1167,7 @@ export default function EditorPage() {
                                 </>
                               ) : (
                                 <>
-                                  <Icons.plus className="h-4 w-4 mr-2" />
+                                  <Icons.sparkles className="h-4 w-4 mr-2" />
                                   Generate Script
                                 </>
                               )}
@@ -990,7 +1185,7 @@ export default function EditorPage() {
                                 </>
                               ) : (
                                 <>
-                                  <Icons.film className="h-4 w-4 mr-2" />
+                                  <Icons.sparkles className="h-4 w-4 mr-2" />
                                   Generate Storyboard
                                 </>
                               )}
@@ -1365,6 +1560,11 @@ export default function EditorPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Operation Success Notifications */}
+      <div className="fixed top-4 right-4 z-[60] space-y-4">
+        <OperationNotification tokenUpdates={tokenUpdates} />
+      </div>
     </div>
   );
 }

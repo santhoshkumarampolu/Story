@@ -122,16 +122,49 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account, profile }) {
       console.log("[NextAuth] jwt callback", { token, user, account, profile });
+      
       if (user) {
+        // When signing in, update the token with user data
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.picture = user.image;
+      } else if (token) {
+        // On subsequent requests, verify the user still exists
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string }
+        });
+        
+        if (!dbUser) {
+          // If user no longer exists, return a new token with null values
+          return {
+            ...token,
+            id: null,
+            email: null,
+            name: null,
+            picture: null
+          };
+        }
+        
+        // Update token with latest user data
+        token.email = dbUser.email;
+        token.name = dbUser.name;
+        token.picture = dbUser.image;
       }
+      
       return token;
     },
     async session({ session, token }) {
       console.log("[NextAuth] session callback", { session, token });
+      
       if (token) {
-        session.user.id = token.id;
+        // Update session with user data from token
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
       }
+      
       return session;
     },
     async redirect({ url, baseUrl }) {

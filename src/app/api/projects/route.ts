@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getInitialContent } from "@/app/api/projects/new/route";
 
 export async function GET(req: NextRequest) {
   try {
@@ -64,7 +65,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create project with initial data
+    console.log("[PROJECT_CREATE] Creating project", { 
+      userId: session.user.id,
+      title,
+      type,
+      language 
+    });
+
+    // Get the initial content structure based on project type
+    const initialContent = getInitialContent(type);
+    
+    // Create project with all the structured data
     const project = await prisma.project.create({
       data: {
         title,
@@ -72,67 +83,22 @@ export async function POST(req: NextRequest) {
         language,
         type,
         userId: session.user.id,
-        // For short films, we'll create initial scenes and characters later
-        ...(type === "shortfilm" && {
-          logline: idea, // Store the initial idea as logline
+        // For short films, store the initial idea as logline
+        ...(type === "shortfilm" && idea && {
+          logline: idea,
+          idea: idea
         }),
+        // Add all the predefined structure from initialContent
+        ...initialContent
       },
+      include: {
+        cards: true,
+        characters: true,
+        scenes: true
+      }
     });
 
-    // If it's a short film, generate initial structure
-    if (type === "shortfilm" && idea) {
-      // TODO: Call AI service to generate:
-      // 1. Expanded logline
-      // 2. Character descriptions
-      // 3. Scene breakdown
-      
-      // For now, create placeholder scenes
-      await prisma.scene.createMany({
-        data: [
-          {
-            title: "Opening Scene",
-            summary: "Establish the setting and introduce main characters",
-            order: 0,
-            projectId: project.id,
-          },
-          {
-            title: "Rising Action",
-            summary: "Develop the conflict and build tension",
-            order: 1,
-            projectId: project.id,
-          },
-          {
-            title: "Climax",
-            summary: "The main conflict reaches its peak",
-            order: 2,
-            projectId: project.id,
-          },
-          {
-            title: "Resolution",
-            summary: "Resolve the conflict and show the aftermath",
-            order: 3,
-            projectId: project.id,
-          },
-        ],
-      });
-
-      // Create placeholder characters
-      await prisma.character.createMany({
-        data: [
-          {
-            name: "Protagonist",
-            description: "The main character of the story",
-            projectId: project.id,
-          },
-          {
-            name: "Antagonist",
-            description: "The character who opposes the protagonist",
-            projectId: project.id,
-          },
-        ],
-      });
-    }
-
+    console.log("[PROJECT_CREATE] Project created successfully", { projectId: project.id });
     return NextResponse.json(project);
   } catch (error) {
     console.error("[PROJECT_CREATE] Error:", error);
