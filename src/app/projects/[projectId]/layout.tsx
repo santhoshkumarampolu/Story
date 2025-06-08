@@ -16,9 +16,9 @@ import {
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     projectId: string;
-  };
+  }>;
 }
 
 const navigation = [
@@ -55,6 +55,7 @@ const navigation = [
 ];
 
 export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
+  const { projectId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect("/login");
@@ -62,7 +63,7 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
 
   const project = await prisma.project.findUnique({
     where: {
-      id: params.projectId,
+      id: projectId,
       userId: session.user.id,
     },
   });
@@ -82,7 +83,7 @@ export default async function ProjectLayout({ children, params }: ProjectLayoutP
             {navigation.map((item) => (
               <Link
                 key={item.href}
-                href={`/projects/${params.projectId}/${item.href}`}
+                href={`/projects/${projectId}/${item.href}`}
                 className={cn(
                   "flex items-center text-sm font-medium transition-colors hover:text-primary",
                   "text-muted-foreground"

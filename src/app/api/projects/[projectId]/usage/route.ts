@@ -76,4 +76,76 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "You must be logged in to update token usage." },
+        { status: 401 }
+      );
+    }
+
+    const { projectId } = params;
+    if (!projectId || typeof projectId !== "string") {
+      return NextResponse.json(
+        { error: "Invalid project ID." },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+    const { tokens, type } = body;
+
+    if (typeof tokens !== "number" || tokens <= 0) {
+      return NextResponse.json(
+        { error: "Invalid token count. 'tokens' must be a positive number." },
+        { status: 400 }
+      );
+    }
+
+    const usageType = typeof type === "string" && type.trim() !== "" ? type : "translation";
+
+    // Verify the project exists and belongs to the user
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found or you do not have access." },
+        { status: 404 }
+      );
+    }
+
+    // Create new token usage record
+    const tokenUsage = await prisma.tokenUsage.create({
+      data: {
+        projectId: projectId,
+        userId: session.user.id, 
+        tokens: tokens,
+        type: usageType,
+        cost: 0, // Explicitly set cost, even if it defaults in schema
+      },
+    });
+
+    return NextResponse.json(tokenUsage, { status: 201 });
+  } catch (error) {
+    console.error("[TOKEN_USAGE_POST] Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return NextResponse.json(
+      { error: "Failed to update token usage." },
+      { status: 500 }
+    );
+  }
+}

@@ -129,3 +129,81 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      console.error("[PROJECT_PATCH] No session or user ID found", { session });
+      return NextResponse.json(
+        { error: "You must be logged in to update projects" },
+        { status: 401 }
+      );
+    }
+
+    // Resolve dynamic route params
+    const { projectId } = await params;
+    if (!projectId || typeof projectId !== "string") {
+      return NextResponse.json(
+        { error: "Invalid project ID" },
+        { status: 400 }
+      );
+    }
+
+    // Parse request body
+    const body = await req.json();
+    const { language } = body;
+
+    // Validate language field
+    if (language !== undefined && typeof language !== "string") {
+      return NextResponse.json(
+        { error: "Language must be a string" },
+        { status: 400 }
+      );
+    }
+
+    // Check if project exists and user has access
+    const existingProject = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!existingProject) {
+      return NextResponse.json(
+        { error: "Project not found or you don't have access" },
+        { status: 404 }
+      );
+    }
+
+    // Update the project
+    const updatedProject = await prisma.project.update({
+      where: {
+        id: projectId,
+      },
+      data: {
+        language,
+      },
+    });
+
+    return NextResponse.json({
+      id: updatedProject.id,
+      language: updatedProject.language,
+      updatedAt: updatedProject.updatedAt.toISOString(),
+    });
+  } catch (error) {
+    console.error("[PROJECT_PATCH] Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return NextResponse.json(
+      { error: "Failed to update project" },
+      { status: 500 }
+    );
+  }
+}

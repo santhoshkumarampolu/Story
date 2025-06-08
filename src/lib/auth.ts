@@ -136,20 +136,20 @@ export const authOptions: NextAuthOptions = {
         });
         
         if (!dbUser) {
-          // If user no longer exists, return a new token with null values
+          // If user no longer exists, create a minimal token
           return {
             ...token,
-            id: null,
+            id: "", // Set empty string for invalid users
             email: null,
             name: null,
             picture: null
           };
+        } else {
+          // Update token with latest user data
+          token.email = dbUser.email;
+          token.name = dbUser.name;
+          token.picture = dbUser.image;
         }
-        
-        // Update token with latest user data
-        token.email = dbUser.email;
-        token.name = dbUser.name;
-        token.picture = dbUser.image;
       }
       
       return token;

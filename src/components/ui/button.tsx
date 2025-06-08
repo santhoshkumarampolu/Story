@@ -11,6 +11,7 @@ const buttonVariants = cva(
         default: "bg-purple-600 hover:bg-purple-700 text-white",
         destructive: "bg-red-500 hover:bg-red-600 text-white",
         outline: "border border-white/20 bg-white/5 text-white hover:bg-white/10",
+        ai: "border-2 border-purple-400/50 bg-transparent text-purple-300 hover:bg-purple-500/10 hover:border-purple-400 hover:text-purple-200 transition-all duration-200",
         secondary: "bg-white/10 text-white hover:bg-white/20",
         ghost: "hover:bg-white/10 text-white",
         link: "text-white underline-offset-4 hover:underline",

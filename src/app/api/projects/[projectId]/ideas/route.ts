@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { openai, trackTokenUsage } from "@/lib/openai";
 import type { NextRequest as NextRequestType } from "next/server";
 
-export async function POST(req: NextRequestType, context: { params: { projectId: string } }) {
-  const { projectId } = context.params;
+export async function POST(req: NextRequestType, context: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -27,23 +27,37 @@ export async function POST(req: NextRequestType, context: { params: { projectId:
         id: projectId,
         userId: session.user.id,
       },
+      select: {
+        id: true,
+        userId: true,
+        language: true,
+      },
     });
 
     if (!project) {
       return new NextResponse("Project not found", { status: 404 });
     }
 
+    const targetLanguage = project.language || "English";
+    let languageSpecificPromptSegment = "";
+
+    if (targetLanguage === "Telugu") {
+      languageSpecificPromptSegment = `Please ensure the ideas are generated entirely in Telugu, using appropriate Telugu cultural nuances, names, and settings. For example, use Telugu names (like వేణు, లక్ష్మి, సూర్య, ప్రియ), locations in Andhra Pradesh or Telangana (like Hyderabad, Vijayawada, Warangal, Godavari districts, Rayalaseema villages), and cultural contexts relevant to Telugu-speaking audiences (festivals like Ugadi, Sankranti, local traditions, family values, or contemporary social themes in Telugu society).`;
+    } else {
+      languageSpecificPromptSegment = `Use Indian names (like Arjun, Priya, Kiran, Meera, Rajesh, Ananya, etc.), Indian locations (Mumbai streets, Delhi metro, Chennai beaches, Bangalore tech parks, Goa coastline, Kerala backwaters, Rajasthan palaces, Punjab fields, etc.), and Indian cultural contexts. Consider Indian festivals, family traditions, regional diversity, languages, food culture, or contemporary issues relevant to Indian society.`;
+    }
+
     // Generate ideas using OpenAI
     const prompt = generateRandom
-      ? "Generate 3 unique short film ideas. Each idea should include a concept, conflict, emotional hook, visual style, and unique element. Format as JSON array."
-      : `Generate 3 unique short film ideas based on this concept: "${idea}". Each idea should include a concept, conflict, emotional hook, visual style, and unique element. Format as JSON array.`;
+      ? `Generate 3 unique short film ideas. Each idea should include a concept, conflict, emotional hook, visual style, and unique element. ${languageSpecificPromptSegment} Format as JSON array.`
+      : `Generate 3 unique short film ideas based on this concept: "${idea}". Each idea should include a concept, conflict, emotional hook, visual style, and unique element. ${languageSpecificPromptSegment} Format as JSON array.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: "You are a creative writing assistant specializing in short film concepts.",
+          content: "You are a creative writing assistant specializing in short film concepts for Indian cinema. You understand Indian culture, traditions, regional diversity, contemporary social issues, and storytelling that resonates with Indian audiences. You're familiar with Indian names, locations, festivals, family dynamics, and cultural nuances across different regions of India.",
         },
         {
           role: "user",
@@ -92,8 +106,9 @@ export async function POST(req: NextRequestType, context: { params: { projectId:
 
 export async function GET(
   request: Request,
-  { params }: { params: { projectId: string } }
+  context: { params: Promise<{ projectId: string }> }
 ) {
+  const { projectId } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -103,7 +118,7 @@ export async function GET(
     // Only select fields that exist in the schema
     const project = await prisma.project.findUnique({
       where: {
-        id: params.projectId,
+        id: projectId,
         userId: session.user.id,
       },
     });
@@ -122,8 +137,8 @@ export async function GET(
   }
 }
 
-export async function PATCH(req: NextRequest, context: { params: { projectId: string } }) {
-  const { projectId } = context.params;
+export async function PATCH(req: NextRequest, context: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = await context.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -151,4 +166,4 @@ export async function PATCH(req: NextRequest, context: { params: { projectId: st
     console.error("[IDEA_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
-} 
+}

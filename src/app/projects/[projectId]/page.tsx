@@ -16,12 +16,13 @@ import {
 import Link from "next/link";
 
 interface ProjectPageProps {
-  params: {
+  params: Promise<{
     projectId: string;
-  };
+  }>;
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
+  const { projectId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect("/login");
@@ -29,7 +30,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const project = await prisma.project.findUnique({
     where: {
-      id: params.projectId,
+      id: projectId,
       userId: session.user.id,
     },
     include: {
@@ -103,7 +104,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   className="ml-4"
                   asChild
                 >
-                  <Link href={`/projects/${params.projectId}/${step.href}`}>
+                  <Link href={`/projects/${projectId}/${step.href}`}>
                     {step.completed ? "Continue" : "Start"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

@@ -36,6 +36,11 @@ import {
   FileText,
   Users,
   Scroll,
+  Globe,
+  FileEdit, // Added
+  Trash2, // Added
+  ImagePlay, // Added
+  Save, // Added Save Icon
   type LucideIcon,
 } from "lucide-react"
 
@@ -82,6 +87,11 @@ export const Icons = {
   fileText: FileText,
   users: Users,
   scroll: Scroll,
+  globe: Globe,
+  fileEdit: FileEdit, // Added
+  trash: Trash2, // Added (using Trash2 for the 'trash' icon)
+  imagePlay: ImagePlay, // Added
+  save: Save, // Added Save Icon
   google: ({ ...props }) => (
     <svg
       aria-hidden="true"
@@ -105,4 +115,4 @@ export const SparkleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 512 512" fill="none" {...props}>
     <path d="M256 32l48.97 146.91c3.13 9.39 11.77 15.73 21.7 15.73h154.45l-124.91 90.76c-8.01 5.83-11.36 16.23-8.23 25.62L400 480l-124.91-90.76c-8.01-5.83-19.01-5.83-27.02 0L123.16 480l51.02-168.98c3.13-9.39-.22-19.79-8.23-25.62L41.04 194.64h154.45c9.93 0 18.57-6.34 21.7-15.73L256 32z" fill="currentColor"/>
   </svg>
-); 
+);

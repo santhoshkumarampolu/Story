@@ -17,8 +17,6 @@ const TOKEN_COSTS = {
   },
 };
 
-
-
 // DALL-E pricing (as of 2024)
 const DALLE_COSTS = {
   "dall-e-3": {
@@ -36,7 +34,6 @@ const DALLE_COSTS = {
   },
 };
 
-
 export async function trackTokenUsage({
   userId,
   projectId,
@@ -47,7 +44,7 @@ export async function trackTokenUsage({
 }: {
   userId: string;
   projectId: string;
-  type: "script" | "storyboard" | "treatment" | "idea";
+  type: "script" | "storyboard" | "treatment" | "idea" | "character_generation"; // Added "character_generation"
   model: "gpt-4" | "gpt-3.5-turbo";
   inputTokens: number;
   outputTokens: number;
@@ -139,4 +136,4 @@ export async function getProjectTokenUsage(projectId: string) {
   };
 }
 
-export { openai }; 
+export { openai };

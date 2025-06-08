@@ -5,12 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 interface IdeasPageProps {
-  params: {
+  params: Promise<{
     projectId: string;
-  };
+  }>;
 }
 
 export default async function IdeasPage({ params }: IdeasPageProps) {
+  const { projectId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect("/login");
@@ -18,7 +19,7 @@ export default async function IdeasPage({ params }: IdeasPageProps) {
 
   const project = await prisma.project.findUnique({
     where: {
-      id: params.projectId,
+      id: projectId,
       userId: session.user.id,
     },
   });
@@ -37,7 +38,7 @@ export default async function IdeasPage({ params }: IdeasPageProps) {
           </p>
         </div>
 
-        <IdeaGenerator projectId={params.projectId} />
+        <IdeaGenerator projectId={projectId} />
       </div>
     </div>
   );

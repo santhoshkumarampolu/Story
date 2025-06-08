@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { AlertCircle as IAlertCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import {
@@ -30,6 +39,11 @@ import { StoryboardSection } from '@/components/StoryboardSection';
 import { TokenAnimationDisplay } from '@/components/TokenAnimationDisplay';
 import { AIOperationProgress } from '@/components/AIOperationProgress';
 import { OperationNotification } from '@/components/OperationNotification';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useTranslation } from '@/hooks/useTranslation';
+import { GoogleTransliterateTextarea } from '@/components/GoogleTransliterateTextarea';
+import { IdeaGenerator, IdeaGeneratorHandle } from '@/components/ideas/idea-generator'; // Added IdeaGeneratorHandle
+import { Save } from "lucide-react"; // Import Save icon if not already imported via Icons
 
 // Define types based on Prisma schema
 type ProjectType = "shortfilm" | "story" | "screenplay";
@@ -125,7 +139,7 @@ const getCardTypesForProject = (projectType: string | null): CardType[] => {
 
 const cardTypeLabels: Record<CardType, string> = {
   story: "Story",
-  scene: "Scene",
+  scene: "Scene", 
   act: "Act",
   dialogue: "Dialogue",
   shortfilm: "Short Film",
@@ -140,6 +154,16 @@ const cardTypeIcons: Record<CardType, React.ReactNode> = {
   shortfilm: <Icons.video className="h-5 w-5" />,
   advertisement: <Icons.megaphone className="h-5 w-5" />,
 };
+
+// Define the interface for a generated idea
+interface GeneratedIdea {
+  Title: string;
+  Concept: string;
+  Conflict?: string;
+  EmotionalHook?: string;
+  VisualStyle?: string;
+  UniqueElement?: string;
+}
 
 export default function EditorPage() {
   const params = useParams();
@@ -178,7 +202,98 @@ export default function EditorPage() {
   const [exportFormat, setExportFormat] = useState<"markdown" | "json" | "pdf">("markdown");
   const [exporting, setExporting] = useState(false);
   const [generatingTreatment, setGeneratingTreatment] = useState(false);
+  const [generatingIdea, setGeneratingIdea] = useState(false);
+  const [generatingLogline, setGeneratingLogline] = useState(false); // Added state for generating logline
   const [savingTreatment, setSavingTreatment] = useState(false);
+  const [isTransliterationEnabled, setIsTransliterationEnabled] = useState(false);
+
+  // States for the new Idea Selection Dialog
+  const [fetchedIdeas, setFetchedIdeas] = useState<GeneratedIdea[]>([]);
+  const [showIdeaSelectionDialog, setShowIdeaSelectionDialog] = useState(false);
+
+  const ideaGeneratorRef = useRef<IdeaGeneratorHandle>(null);
+
+  // Define supported languages (keys from your API's languageMap)
+  const supportedTranslationLanguages = [
+    "Telugu", "Hindi", "Tamil", "Kannada", "Malayalam", 
+    "Gujarati", "Marathi", "Bengali", "Punjabi", "Urdu", "English"
+  ];
+
+  const currentProjectLanguage = project?.language && supportedTranslationLanguages.includes(project.language) 
+    ? project.language 
+    : "English";
+
+  // Translation hook
+  const { translate, isTranslating, translateAsync, preloadTranslations } = useTranslation({
+    targetLanguage: currentProjectLanguage,
+    enabled: !!(currentProjectLanguage && currentProjectLanguage !== 'English')
+  });
+
+  // Preload common UI translations when language changes
+  useEffect(() => {
+    // Only preload if currentProjectLanguage is a valid, non-English supported language
+    if (currentProjectLanguage && currentProjectLanguage !== 'English' && supportedTranslationLanguages.includes(currentProjectLanguage)) {
+      const commonUILabels = [
+        'Idea', 'Generate Idea', 'Save', 'Saving...', 'Logline', 'Generate Logline', 'Treatment', 
+        'Generate Treatment', 'Save Treatment', 'Characters', 'Add Character',
+        'Scenes', 'Add Scene', 'Scene Summary', 'Script', 'Generate Script',
+        'Generate Storyboard', 'Generating...'
+      ];
+      preloadTranslations(commonUILabels);
+    }
+  }, [project?.language, preloadTranslations]);
+
+  // Language update handler
+  const handleLanguageChange = async (newLanguage: string) => {
+    if (!project) return;
+    
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ language: newLanguage }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update project language');
+      }
+
+      const updatedProjectData = await response.json(); // API returns { id, language, updatedAt }
+      
+      // Correctly update the project state by merging new language
+      setProject(prevProject => {
+        if (!prevProject) return null;
+        return {
+          ...prevProject,
+          language: updatedProjectData.language,
+        };
+      });
+      
+      toast({
+        title: "Success",
+        description: "Project language updated successfully. UI will now reflect the change.",
+      });
+
+    } catch (error) {
+      console.error("[EditorPage] Error updating language:", error);
+      toast({
+        title: "Error",
+        description: (error instanceof Error ? error.message : "Failed to update project language"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleIdeaSelectedFromGenerator = (selectedIdea: string) => {
+    setIdea(selectedIdea); // Update the main idea field in EditorPage
+    toast({
+      title: translate("Idea Applied"),
+      description: translate("The selected idea has been populated into the main idea field."),
+    });
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -195,16 +310,15 @@ export default function EditorPage() {
         }
         const data: Project = await response.json();
         setProject(data);
-        // Calculate progress safely
         const completedCards = data.cards.filter((card) => card.content.trim().length > 0).length;
-        const totalCards = data.cards.length || 1; // Avoid division by zero
+        const totalCards = data.cards.length || 1;
         setProgress((completedCards / totalCards) * 100);
         if (data.type === "shortfilm") {
           setLogline(data.logline || "");
           setIdea(data.idea || "");
           setTreatment(data.treatment || "");
           setCharacters(data.characters || []);
-          setScenes(data.scenes || []);
+          setScenes(data.scenes.map(s => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false })) || []);
         }
         // Fetch initial token usage
         await updateTokenUsage();
@@ -326,17 +440,23 @@ export default function EditorPage() {
       const res = await fetch(`/api/projects/${project.id}/logline`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logline }),
+        body: JSON.stringify({ content: logline }), // Changed from { logline } to { content: logline }
       });
-      if (!res.ok) throw new Error("Failed to save logline");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save logline");
+      }
+      setProject((prev) => prev ? { ...prev, logline } : prev); // Update project state
       toast({
         title: "Success",
         description: "Logline saved successfully",
       });
     } catch (error) {
+      console.error("[EditorPage] Error saving logline:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to save logline";
       toast({
         title: "Error",
-        description: "Failed to save logline",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -444,11 +564,15 @@ export default function EditorPage() {
   const addCharacter = async () => {
     if (!project) return;
     try {
+      // Pool of Indian names to cycle through
+      const indianNames = ['Arjun', 'Priya', 'Kiran', 'Meera', 'Rajesh', 'Ananya', 'Vikram', 'Kavya', 'Arun', 'Divya', 'Rohan', 'Shreya'];
+      const characterName = indianNames[characters.length % indianNames.length];
+      
       const res = await fetch(`/api/projects/${project.id}/characters`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: `Character ${characters.length + 1}`,
+          name: characterName,
           description: "New character description"
         }),
       });
@@ -652,6 +776,102 @@ export default function EditorPage() {
     }
   };
 
+  // Add the new generateIdea function here
+  const generateIdea = async () => {
+    if (!project) return;
+    setGeneratingIdea(true);
+    setFetchedIdeas([]); // Clear previous ideas
+    try {
+      const requestBody = idea && idea.trim().length > 0 
+        ? { idea: idea, generateRandom: false } 
+        : { generateRandom: true };
+        
+      const res = await fetch(`/api/projects/${project.id}/ideas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to generate ideas. Status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      let ideasToDisplay: GeneratedIdea[] = [];
+
+      if (data.generatedIdeas && Array.isArray(data.generatedIdeas) && data.generatedIdeas.length > 0) {
+        ideasToDisplay = data.generatedIdeas;
+      } else if (data.concepts && data.concepts.length > 0 && data.concepts[0].text) {
+        // Fallback for older single idea structure (if API still supports it)
+        ideasToDisplay = [{ Title: "Generated Idea", Concept: data.concepts[0].text }];
+      } else if (data.generatedIdeas && data.generatedIdeas.length > 0 && data.generatedIdeas[0].concept) {
+        // Fallback for another possible single idea structure (if API still supports it)
+        ideasToDisplay = [{ Title: "Generated Idea", Concept: data.generatedIdeas[0].concept }];
+      }
+
+      if (ideasToDisplay.length > 0) {
+        setFetchedIdeas(ideasToDisplay);
+        setShowIdeaSelectionDialog(true);
+        await updateTokenUsage("idea", "Idea Generation");
+        toast({ title: "Ideas Generated", description: "Please select an idea from the list." });
+      } else {
+        console.warn("[EditorPage] Generated idea data is not in expected format or is empty:", data);
+        toast({ title: "No Ideas Generated", description: "The AI didn't return any ideas, or the format was unexpected. You can try again.", variant: "default" });
+      }
+    } catch (error) {
+      console.error("[EditorPage] Error generating ideas:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate ideas";
+      toast({ title: "Error Generating Ideas", description: errorMessage, variant: "destructive" });
+    } finally {
+      setGeneratingIdea(false);
+    }
+  };
+
+  const handleSelectIdea = (selectedIdea: GeneratedIdea) => {
+    setIdea(selectedIdea.Concept); // Update the main idea text area
+    setProject((prev) => prev ? { ...prev, idea: selectedIdea.Concept } : prev); // Update the project state
+    setShowIdeaSelectionDialog(false); // Close the dialog
+    setFetchedIdeas([]); // Clear the fetched ideas from state
+    toast({ title: "Idea Selected", description: `"${selectedIdea.Title}" has been set as the current idea.` });
+    // Optionally, you might want to auto-save the idea here
+    // saveIdea(); // Make sure saveIdea uses the current `idea` state or pass selectedIdea.Concept
+  };
+
+  const generateLogline = async () => {
+    if (!project || !project.idea) {
+      toast({
+        title: translate("Missing Idea"),
+        description: translate("Please generate or write an idea first before generating a logline."),
+        variant: "destructive",
+      });
+      return;
+    }
+    setGeneratingLogline(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/generate-logline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // The API will fetch the idea and language from the project
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to generate logline. Status: ${res.status}`);
+      }
+      const data = await res.json();
+      setLogline(data.logline);
+      setProject((prev) => (prev ? { ...prev, logline: data.logline } : prev));
+      await updateTokenUsage("idea", "Logline Generation"); // Assuming logline generation is token-based like ideas
+      toast({ title: translate("Logline Generated"), description: translate("A new logline has been generated based on your idea.") });
+    } catch (error) {
+      console.error("[EditorPage] Error generating logline:", error);
+      const errorMessage = error instanceof Error ? error.message : translate("Failed to generate logline");
+      toast({ title: translate("Error Generating Logline"), description: errorMessage, variant: "destructive" });
+    } finally {
+      setGeneratingLogline(false);
+    }
+  };
+
   const generateTreatment = async () => {
     if (!project || !project.idea || !project.logline) return;
     setGeneratingTreatment(true);
@@ -788,783 +1008,929 @@ export default function EditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Icons.loader className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-        <p className="text-red-500">Project not found</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground">
+        <IAlertCircle className="h-12 w-12 text-destructive mb-4" />
+        <p className="text-xl">{translate('Project not found or access denied.')}</p>
+        <Button onClick={() => router.push('/dashboard')} className="mt-4">
+          {translate('Go to Dashboard')}
+        </Button>
       </div>
     );
   }
+  
+  const availableCardTypes = getCardTypesForProject(project.type);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
-      {/* AI Operation Progress Indicator */}
-      <AIOperationProgress 
-        isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment}
-        operationType={
-          generatingScript ? "script" : 
-          generatingStoryboard ? "storyboard" : 
-          generatingTreatment ? "treatment" : "script"
-        }
-        operationName={
-          generatingScript ? "Script Generation" :
-          generatingStoryboard ? "Storyboard Generation" :
-          generatingTreatment ? "Treatment Generation" : "AI Generation"
-        }
-      />
-      {/* Header */}
-      <div className="bg-white/5 backdrop-blur-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push("/dashboard")}
-                className="text-gray-400 hover:text-white hover:bg-white/5"
-              >
-                <Icons.arrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-semibold text-white">{project.title}</h1>
-              <span className="px-2 py-1 text-sm bg-purple-500/20 text-purple-300 rounded-full">
-                {project.language || "Unknown"}
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <TokenAnimationDisplay 
-                tokenUsage={tokenUsage} 
-                tokenUpdates={tokenUpdates} 
-              />
-              {saving && (
-                <span className="text-sm text-gray-400 flex items-center">
-                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                  Saving...
-                </span>
-              )}
-              {/* <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-                onClick={() => setShowShareDialog(true)}
-              >
-                <Icons.share className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-                onClick={() => setShowExportDialog(true)}
-              >
-                <Icons.download className="h-4 w-4 mr-2" />
-                Export
-              </Button> */}
+    <ScrollArea className="h-full bg-background text-foreground">
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+        {/* AI Operation Progress Indicator */}
+        <AIOperationProgress
+          isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment || generatingIdea || generatingLogline}
+          operationType={
+            generatingScript ? "script" : 
+            generatingStoryboard ? "storyboard" : 
+            generatingTreatment ? "treatment" : 
+            generatingIdea ? "idea" : 
+            generatingLogline ? "logline" : "script" // Added idea type
+          }
+          operationName={
+            generatingScript ? "Script Generation" :
+            generatingStoryboard ? "Storyboard Generation" :
+            generatingTreatment ? "Treatment Generation" :
+            generatingIdea ? "Idea Generation" : 
+            generatingLogline ? "Logline Generation" : "AI Generation" // Added idea name
+          }
+        />
+        {/* Header */}
+        <div className="bg-white/5 backdrop-blur-lg border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.push("/dashboard")}
+                  className="text-gray-400 hover:text-white hover:bg-white/5"
+                >
+                  <Icons.arrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-xl font-semibold text-white">{project.title}</h1>
+                <LanguageSelector
+                  value={project.language || 'English'}
+                  onChange={handleLanguageChange}
+                  variant="button"
+                  size="sm"
+                />
+                {currentProjectLanguage === "Telugu" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsTransliterationEnabled(!isTransliterationEnabled)}
+                    className={cn(
+                      "ml-2",
+                      isTransliterationEnabled ? "bg-purple-600 text-white hover:bg-purple-700" : "text-gray-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    {isTransliterationEnabled ? translate("Disable") : translate("Enable")} {translate("Tenglish")}
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center space-x-4">
+                <TokenAnimationDisplay 
+                  tokenUsage={tokenUsage} 
+                  tokenUpdates={tokenUpdates} 
+                />
+                {saving && (
+                  <span className="text-sm text-gray-400 flex items-center">
+                    <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                    Saving...
+                  </span>
+                )}
+                {/* <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                  onClick={() => setShowShareDialog(true)}
+                >
+                  <Icons.share className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                  onClick={() => setShowExportDialog(true)}
+                >
+                  <Icons.download className="h-4 w-4 mr-2" />
+                  Export
+                </Button> */}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
+        {/* Main Content */}
 
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8"></div>
-          {project.type === "shortfilm" && (
-            <div className="space-y-8">
-               {/* Idea */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.lightbulb className="h-5 w-5 mr-2" />
-                    Idea
-                  </h2>
-                  <Button
-                    onClick={() => router.push(`/projects/${project?.id}/ideas`)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <Icons.sparkles className="h-4 w-4 mr-2" />
-                    Generate Idea
-                  </Button>
-                </div>
-                <div className="flex space-x-2">
-                  <Textarea
-                    value={idea}
-                    onChange={e => setIdea(e.target.value)}
-                    className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px]"
-                    placeholder="Edit your film's idea..."
-                  />
-                  <Button
-                    onClick={saveIdea}
-                    disabled={savingIdea}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {savingIdea ? (
-                      <>
-                        <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save"
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-              {/* Logline */}
-              <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                      <Icons.fileText className="h-5 w-5 mr-2" />
-                      Logline
-                    </h2>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Textarea
-                    value={logline}
-                    onChange={e => setLogline(e.target.value)}
-                    className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px]"
-                    placeholder="Edit your film's logline..."
-                  />
-                  <Button
-                    onClick={saveLogline}
-                    disabled={savingLogline}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {savingLogline ? (
-                      <>
-                        <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save"
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-           
-
-            {/* Treatment */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.scroll className="h-5 w-5 mr-2" />
-                    Treatment
-                  </h2>
-                  <Button
-                    onClick={generateTreatment}
-                    disabled={generatingTreatment || !project?.idea || !project?.logline}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {generatingTreatment ? (
-                      <>
-                        <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Icons.sparkles className="h-4 w-4 mr-2" />
-                        Generate Treatment
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <Textarea
-                    value={treatment}
-                    onChange={e => setTreatment(e.target.value)}
-                    className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[200px]"
-                    placeholder="Treatment will appear here after generation or you can write it manually..."
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={() => saveTreatment(treatment)}
-                      disabled={savingTreatment}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      {savingTreatment ? (
-                        <>
-                          <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                          Saving...
-                        </>
-                      ) : (
-                        "Save Treatment"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Characters */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.users className="h-5 w-5 mr-2" />
-                    Characters
-                  </h2>
-                  <Button
-                    onClick={addCharacter}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <Icons.book className="h-4 w-4 mr-2" />
-                    Add Character
-                  </Button>
-                </div>
-                <div className="space-y-4">
-                  {characters.map((character, idx) => (
-                    <div key={character.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <div className="flex items-center justify-between mb-2">
-                        <Input
-                          value={character.name}
-                          onChange={e => {
-                            const updated = [...characters];
-                            updated[idx] = { ...updated[idx], name: e.target.value };
-                            setCharacters(updated);
-                          }}
-                          className="bg-white/10 text-white border-white/10 font-semibold"
-                          placeholder="Character name"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteCharacter(character.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                        >
-                          <Icons.close className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <Textarea
-                        value={character.description}
-                        onChange={e => {
-                          const updated = [...characters];
-                          updated[idx] = { ...updated[idx], description: e.target.value };
-                          setCharacters(updated);
-                        }}
-                        className="bg-white/10 text-white border-white/10 min-h-[40px]"
-                        placeholder="Character description"
-                      />
-                      <div className="flex justify-end mt-2">
-                        <Button
-                          onClick={() => saveCharacter(character.id, character.name, character.description)}
-                          disabled={savingCharacter === character.id}
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          {savingCharacter === character.id ? (
-                            <>
-                              <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                              Saving...
-                            </>
-                          ) : (
-                            "Save"
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Scenes */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.film className="h-5 w-5 mr-2" />
-                    Scenes
-                  </h2>
-                  <Button
-                    onClick={addScene}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <Icons.film className="h-4 w-4 mr-2" />
-                    Add Scene
-                  </Button>
-                </div>
-                <div className="space-y-6">
-                  {scenes.map((scene, idx) => (
-                    <div key={scene.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <div className="flex items-center justify-between mb-2">
-                        <Input
-                          value={scene.title}
-                          onChange={e => {
-                            const updated = [...scenes];
-                            updated[idx] = { ...updated[idx], title: e.target.value };
-                            setScenes(updated);
-                          }}
-                          className="bg-white/10 text-white border-white/10 font-semibold"
-                          placeholder="Scene title"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteScene(scene.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                        >
-                          <Icons.close className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Collapsible Summary Section */}
-                      <div className="mb-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full flex justify-between items-center text-gray-400 hover:text-white"
-                          onClick={() => {
-                            const updated = [...scenes];
-                            updated[idx] = { ...updated[idx], isSummaryExpanded: !updated[idx].isSummaryExpanded };
-                            setScenes(updated);
-                          }}
-                        >
-                          <span>Scene Summary</span>
-                          <Icons.chevronDown className={`h-4 w-4 transition-transform ${scene.isSummaryExpanded ? 'rotate-180' : ''}`} />
-                        </Button>
-                        {scene.isSummaryExpanded && (
-                          <Textarea
-                            value={scene.summary}
-                            onChange={e => {
-                              const updated = [...scenes];
-                              updated[idx] = { ...updated[idx], summary: e.target.value };
-                              setScenes(updated);
-                            }}
-                            className="mt-2 bg-white/10 text-white border-white/10 min-h-[40px]"
-                            placeholder="Scene summary"
-                          />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-8"></div>
+            {project.type === "shortfilm" && (
+              <div className="space-y-8">
+                 {/* Idea */}
+                <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                        <Icons.lightbulb className="h-5 w-5 mr-2" />
+                        {translate('Idea')}
+                      </h2>
+                       <Button
+                        onClick={generateIdea} // Use the new generateIdea function
+                        disabled={generatingIdea || !!generatingScript || !!generatingStoryboard || generatingTreatment}
+                        variant="ai"
+                      >
+                        {generatingIdea ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                        ) : (
+                          <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Idea')}</>
                         )}
-                      </div>
-
-                      {/* Script Section */}
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="text-gray-400 flex items-center">
-                            <Icons.fileText className="h-4 w-4 mr-2" />
-                            Script
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              className="bg-purple-600 hover:bg-purple-700 text-white"
-                              onClick={() => generateScript(scene.id)}
-                              disabled={generatingScript === scene.id}
-                            >
-                              {generatingScript === scene.id ? (
-                                <>
-                                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                                  Generating...
-                                </>
-                              ) : (
-                                <>
-                                  <Icons.sparkles className="h-4 w-4 mr-2" />
-                                  Generate Script
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="bg-purple-600 hover:bg-purple-700 text-white"
-                              onClick={() => generateStoryboard(scene.id)}
-                              disabled={generatingStoryboard === scene.id || !scene.script}
-                            >
-                              {generatingStoryboard === scene.id ? (
-                                <>
-                                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                                  Generating...
-                                </>
-                              ) : (
-                                <>
-                                  <Icons.sparkles className="h-4 w-4 mr-2" />
-                                  Generate Storyboard
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="relative">
-                          <Textarea
-                            value={scene.script || ""}
-                            onChange={e => {
-                              const updated = [...scenes];
-                              updated[idx] = { ...updated[idx], script: e.target.value };
-                              setScenes(updated);
-                            }}
-                            className="font-mono bg-white/10 text-white border-white/10 min-h-[400px] whitespace-pre-wrap"
-                            placeholder="Scene script..."
-                            style={{
-                              fontFamily: 'Courier New, monospace',
-                              lineHeight: '1.8',
-                              tabSize: 4,
-                              fontSize: '14px',
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Storyboard Section */}
-                      <StoryboardSection
-                        sceneId={scene.id}
-                        script={scene.script}
-                        storyboard={scene.storyboard}
-                        onStoryboardUpdate={async (storyboardUrl) => {
-                          const updated = [...scenes];
-                          updated[idx] = { ...updated[idx], storyboard: storyboardUrl };
-                          setScenes(updated);
-                          await saveScene(scene.id, scene.title, scene.summary, scene.script);
-                        }}
-                        onGenerateStoryboard={() => generateStoryboard(scene.id)}
-                        isGenerating={generatingStoryboard === scene.id}
-                        onViewFullSize={(storyboardUrl) => setSelectedStoryboard(storyboardUrl)}
+                      </Button>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <GoogleTransliterateTextarea
+                        id="idea-textarea"
+                        initialValue={idea}
+                        onValueChange={setIdea}
+                        className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px] w-full"
+                        placeholder={translate("Describe your film's idea... (e.g., A young software engineer in Bangalore discovers a family secret during Diwali celebrations, or A street food vendor in Mumbai forms an unlikely friendship with a corporate executive)")}
+                        transliterationEnabled={isTransliterationEnabled && currentProjectLanguage === "Telugu"}
+                        destinationLanguage={currentProjectLanguage}
                       />
+                      <Button
+                        onClick={saveIdea}
+                        disabled={savingIdea}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        {savingIdea ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                        ) : (
+                          translate('Save')
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                      <div className="flex justify-end mt-4">
+                {/* Logline */}
+                <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                        <Icons.fileText className="h-5 w-5 mr-2" />
+                        {translate('Logline')}
+                      </h2>
+                       <Button
+                        onClick={generateLogline} // Use the new generateLogline function
+                        disabled={generatingLogline || !!generatingScript || !!generatingStoryboard || generatingTreatment}
+                        variant="ai"
+                      >
+                        {generatingLogline ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                        ) : (
+                          <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Logline')}</>
+                        )}
+                      </Button>
+                    </div>
+                     <div className="flex space-x-2">
+                        <GoogleTransliterateTextarea
+                          id="logline"
+                          initialValue={logline}
+                          onValueChange={(newValue) => setLogline(newValue)}
+                          placeholder={translate("Enter your logline here...")}
+                          className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 min-h-[60px] w-full"
+                          destinationLanguage={currentProjectLanguage} // Changed from targetLanguage
+                          transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'} // Changed from enabled
+                        />
                         <Button
-                          onClick={() => saveScene(scene.id, scene.title, scene.summary, scene.script)}
-                          disabled={savingScene === scene.id}
+                        onClick={saveLogline}
+                        disabled={savingLogline}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        {savingLogline ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                        ) : (
+                          translate('Save')
+                        )}
+                      </Button>
+                      {/* <AIOperationProgress 
+                        isGenerating={generatingLogline} 
+                        operationType="logline" 
+                        operationName={translate("Logline Generation")} 
+                      /> */}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Treatment */}
+                <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                        <Icons.fileEdit className="h-5 w-5 mr-2" />
+                        {translate('Treatment')}
+                      </h2>
+                      <Button
+                        onClick={generateTreatment}
+                        disabled={generatingTreatment || !idea || !logline}
+                        variant="ai"
+                      >
+                        {generatingTreatment ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                        ) : (
+                          <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Treatment')}</>
+                        )}
+                      </Button>
+                    </div>
+                   <div className="flex space-x-2">
+            
+                      <GoogleTransliterateTextarea
+                        id="treatment"
+                        initialValue={treatment}
+                        onValueChange={(newValue) => setTreatment(newValue)}
+                        placeholder={translate("Enter your treatment here...")}
+                        className="min-h-[150px] pr-20" // Added padding for buttons
+                        destinationLanguage={currentProjectLanguage} // Changed from targetLanguage
+                        transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'} // Changed from enabled
+                      />
+                       <Button
+                          onClick={() => saveTreatment(treatment)}
+                          disabled={savingTreatment}
                           className="bg-purple-600 hover:bg-purple-700 text-white"
+                         >
+                        {savingTreatment ? (
+                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                        ) : (
+                          translate('Save')
+                        )}
+                      </Button>
+                      {/* <div className="absolute top-1 right-1 flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={generateTreatment}
+                          disabled={generatingTreatment || !project?.idea || !project?.logline}
+                          className="text-xs px-2 py-1"
                         >
-                          {savingScene === scene.id ? (
-                            <>
-                              <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                              Saving...
-                            </>
+                          {generatingTreatment ? (
+                            <Icons.spinner className="mr-1 h-3 w-3 animate-spin" />
                           ) : (
-                            "Save"
+                            <Icons.sparkles className="mr-1 h-3 w-3" />
                           )}
+                          {translate("Generate")}
                         </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
-
-      {/* Storyboard Modal */}
-      <Dialog open={!!selectedStoryboard} onOpenChange={() => {
-        setSelectedStoryboard(null);
-        setViewMode('single');
-        setZoomLevel(100);
-        setCompareStoryboard(null);
-      }}>
-        <DialogContent className="max-w-6xl w-full bg-black/95 border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">Storyboard Viewer</DialogTitle>
-          </DialogHeader>
-          
-          {selectedStoryboard && (
-            <div className="space-y-4">
-              {/* Controls */}
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "text-white border-white/20",
-                      viewMode === 'single' && "bg-purple-600"
-                    )}
-                    onClick={() => handleViewModeChange('single')}
-                  >
-                    <Icons.maximize className="h-4 w-4 mr-2" />
-                    Single View
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "text-white border-white/20",
-                      viewMode === 'slideshow' && "bg-purple-600"
-                    )}
-                    onClick={() => handleViewModeChange('slideshow')}
-                  >
-                    <Icons.film className="h-4 w-4 mr-2" />
-                    Slideshow
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "text-white border-white/20",
-                      viewMode === 'compare' && "bg-purple-600"
-                    )}
-                    onClick={() => handleViewModeChange('compare')}
-                  >
-                    <Icons.columns className="h-4 w-4 mr-2" />
-                    Compare
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2 w-48">
-                    <Icons.zoomOut className="h-4 w-4 text-white" />
-                    <Slider
-                      value={[zoomLevel]}
-                      onValueChange={handleZoom}
-                      min={50}
-                      max={200}
-                      step={10}
-                      className="w-full"
-                    />
-                    <Icons.zoomIn className="h-4 w-4 text-white" />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => saveTreatment(treatment)}
+                          disabled={savingTreatment}
+                          className="text-xs px-2 py-1"
+                        >
+                          {savingTreatment ? (
+                            <Icons.spinner className="mr-1 h-3 w-3 animate-spin" />
+                          ) : (
+                            <Icons.save className="mr-1 h-3 w-3" /> // Corrected to Icons.save
+                          )}
+                          {translate("Save")}
+                        </Button>
+    
+                    </div> */}
+                    {/* <AIOperationProgress 
+                      isGenerating={generatingTreatment} 
+                      operationType="treatment" 
+                      operationName={translate("Treatment Generation")} 
+                    /> */}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-white border-white/20"
-                    onClick={() => handleDownload(selectedStoryboard)}
-                  >
-                    <Icons.download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
+                  </CardContent>
+                </Card>
+
+                {/* Characters */}
+                <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                        <Icons.users className="h-5 w-5 mr-2" />
+                        {translate('Characters')}
+                      </h2>
+                      <Button onClick={addCharacter} variant="outline" className="text-purple-300 border-purple-300 hover:bg-purple-300/10 hover:text-purple-200">
+                        <Icons.plus className="h-4 w-4 mr-2" />
+                        {translate('Add Character')}
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {characters.map((character) => (
+                        <Card key={character.id} className="bg-white/10 border-white/20">
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <Input
+                                id={`character-name-${character.id}`}
+                                value={character.name}
+                                onChange={(e) => {
+                                  const newName = e.target.value;
+                                  setCharacters(characters.map(c => c.id === character.id ? { ...c, name: newName } : c));
+                                }}
+                                className="text-lg font-semibold bg-transparent border-none text-white focus:ring-0 focus:border-none p-0"
+                                placeholder={translate("Character Name")}
+                              />
+                              <Button variant="ghost" size="icon" onClick={() => deleteCharacter(character.id)} className="text-red-400 hover:text-red-300 hover:bg-red-400/10">
+                                <Icons.trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <GoogleTransliterateTextarea
+                              id={`character-description-${character.id}`}
+                              initialValue={character.description}
+                              onValueChange={(newDescription) => {
+                                setCharacters(characters.map(c => c.id === character.id ? { ...c, description: newDescription } : c));
+                              }}
+                              className="bg-white/5 text-white placeholder:text-gray-400 border-white/10 min-h-[80px] w-full"
+                              placeholder={translate("Character Description (e.g., A grizzled detective haunted by his past, or A naive young woman chasing her dreams in a big city)")}
+                              transliterationEnabled={isTransliterationEnabled && currentProjectLanguage === "Telugu"}
+                              destinationLanguage="te"
+                            />
+                            <div className="flex justify-end">
+                              <Button 
+                                onClick={() => saveCharacter(character.id, character.name, character.description)}
+                                disabled={savingCharacter === character.id}
+                                size="sm" 
+                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                              >
+                                {savingCharacter === character.id ? (
+                                  <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                                ) : (
+                                  translate('Save')
+                                )}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Scenes */}
+                <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                        <Icons.film className="h-5 w-5 mr-2" />
+                        {translate('Scenes')}
+                      </h2>
+                      <Button onClick={addScene} variant="outline" className="text-purple-300 border-purple-300 hover:bg-purple-300/10 hover:text-purple-200">
+                        <Icons.plus className="h-4 w-4 mr-2" />
+                        {translate('Add Scene')}
+                      </Button>
+                    </div>
+                    <div className="space-y-6">
+                      {scenes.map((scene, index) => (
+                        <Card key={scene.id} className="bg-white/10 border-white/20 overflow-hidden">
+                          <div className="p-4 bg-white/5 flex justify-between items-center">
+                            <Input
+                              id={`scene-title-${scene.id}`}
+                              value={scene.title}
+                              onChange={(e) => {
+                                const newTitle = e.target.value;
+                                setScenes(scenes.map(s => s.id === scene.id ? { ...s, title: newTitle } : s));
+                              }}
+                              className="text-lg font-semibold bg-transparent border-none text-white focus:ring-0 focus:border-none p-0"
+                              placeholder={translate("Scene Title")}
+                            />
+                            <div className="flex items-center space-x-2">
+                              <Button variant="ghost" size="icon" onClick={() => deleteScene(scene.id)} className="text-red-400 hover:text-red-300 hover:bg-red-400/10">
+                                <Icons.trash className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => setScenes(scenes.map(s => s.id === scene.id ? {...s, isSummaryExpanded: !s.isSummaryExpanded} : s))}
+                                className="text-gray-400 hover:text-white"
+                              >
+                                {scene.isSummaryExpanded ? <Icons.chevronUp className="h-5 w-5" /> : <Icons.chevronDown className="h-5 w-5" />}
+                              </Button>
+                            </div>
+                          </div>
+                          <AnimatePresence>
+                            {scene.isSummaryExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="px-4 pb-4 pt-2 space-y-3"
+                              >
+                                <GoogleTransliterateTextarea
+                                  id={`scene-summary-${scene.id}`}
+                                  initialValue={scene.summary}
+                                  onValueChange={(newSummary) => {
+                                    setScenes(scenes.map(s => s.id === scene.id ? { ...s, summary: newSummary } : s));
+                                  }}
+                                  className="bg-white/5 text-white placeholder:text-gray-400 border-white/10 min-h-[100px] w-full"
+                                  placeholder={translate("Scene Summary (e.g., John confronts his nemesis in a climactic showdown, or Sarah makes a daring escape from the villain's lair)")}
+                                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage === "Telugu"}
+                                  destinationLanguage="te"
+                                />
+                                <div className="flex justify-between items-center mt-2">
+                                  <Button 
+                                    onClick={() => saveScene(scene.id, scene.title, scene.summary, scene.script)}
+                                    disabled={savingScene === scene.id}
+                                    size="sm" 
+                                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                                  >
+                                    {savingScene === scene.id ? (
+                                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                                    ) : (
+                                      translate('Save Summary')
+                                    )}
+                                  </Button>
+                                  <div className="flex space-x-2">
+                                    <Button 
+                                      onClick={() => generateScript(scene.id)}
+                                      disabled={generatingScript === scene.id}
+                                      variant="ai" 
+                                      size="sm"
+                                    >
+                                      {generatingScript === scene.id ? (
+                                        <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                                      ) : (
+                                        <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Script')}</>
+                                      )}
+                                    </Button>
+                                    <Button 
+                                      onClick={() => generateStoryboard(scene.id)}
+                                      disabled={generatingStoryboard === scene.id || !scene.script}
+                                      variant="ai" 
+                                      size="sm"
+                                    >
+                                      {generatingStoryboard === scene.id ? (
+                                        <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                                      ) : (
+                                        <><Icons.imagePlay className="h-4 w-4 mr-2" />{translate('Generate Storyboard')}</>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                                {scene.script && (
+                                  <div className="mt-4 pt-4 border-t border-white/10">
+                                    <h4 className="text-sm font-semibold text-purple-300 mb-2">{translate('Script')}</h4>
+                                    <Textarea 
+                                      value={scene.script} 
+                                      readOnly 
+                                      className="bg-black/20 text-gray-300 min-h-[150px] font-mono text-sm border-white/10" 
+                                    />
+                                  </div>
+                                )}
+                                {scene.storyboard && (
+                                  <StoryboardSection 
+                                    sceneId={scene.id}
+                                    script={scene.script}
+                                    storyboard={scene.storyboard}
+                                    onStoryboardUpdate={async (storyboardUrl) => {
+                                      // This function might need to be implemented if users can upload/update storyboards directly from StoryboardSection
+                                      // For now, we'll just update the scene state
+                                      setScenes(scenes.map(s => s.id === scene.id ? { ...s, storyboard: storyboardUrl } : s));
+                                      // Optionally, save this change to the backend
+                                      // await saveScene(scene.id, scene.title, scene.summary, scene.script); 
+                                      toast({ title: "Storyboard Updated (Local)", description: "Storyboard URL updated in local state."});
+                                    }}
+                                    onGenerateStoryboard={() => generateStoryboard(scene.id)}
+                                    isGenerating={generatingStoryboard === scene.id}
+                                    onViewFullSize={setSelectedStoryboard} 
+                                  />
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+            )}
+          </div>
 
-              {/* Image Display */}
-              <div className="relative">
-                {viewMode === 'single' && (
-                  <div className="relative aspect-video w-full overflow-auto">
-                    <img 
-                      src={selectedStoryboard} 
-                      alt="Storyboard" 
-                      className="w-full h-full object-contain"
-                      style={{ transform: `scale(${zoomLevel / 100})` }}
-                    />
-                  </div>
-                )}
-
-                {viewMode === 'slideshow' && (
-                  <div className="relative aspect-video w-full">
-                    {scenes[currentSlideIndex]?.storyboard && (
-                      <img 
-                        src={scenes[currentSlideIndex].storyboard!} 
-                        alt="Storyboard" 
-                        className="w-full h-full object-contain"
-                        style={{ transform: `scale(${zoomLevel / 100})` }}
-                      />
-                    )}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+          {/* Storyboard Modal */}
+          <Dialog open={!!selectedStoryboard} onOpenChange={() => {
+            setSelectedStoryboard(null);
+            setViewMode('single');
+            setZoomLevel(100);
+            setCompareStoryboard(null);
+          }}>
+            <DialogContent className="max-w-6xl w-full bg-black/95 border-white/10">
+              <DialogHeader>
+                <DialogTitle className="text-white">Storyboard Viewer</DialogTitle>
+              </DialogHeader>
+              
+              {selectedStoryboard && (
+                <div className="space-y-4">
+                  {/* Controls */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "text-white border-white/20",
+                          viewMode === 'single' && "bg-purple-600"
+                        )}
+                        onClick={() => handleViewModeChange('single')}
+                      >
+                        <Icons.maximize className="h-4 w-4 mr-2" />
+                        Single View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "text-white border-white/20",
+                          viewMode === 'slideshow' && "bg-purple-600"
+                        )}
+                        onClick={() => handleViewModeChange('slideshow')}
+                      >
+                        <Icons.film className="h-4 w-4 mr-2" />
+                        Slideshow
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "text-white border-white/20",
+                          viewMode === 'compare' && "bg-purple-600"
+                        )}
+                        onClick={() => handleViewModeChange('compare')}
+                      >
+                        <Icons.columns className="h-4 w-4 mr-2" />
+                        Compare
+                      </Button>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2 w-48">
+                        <Icons.zoomOut className="h-4 w-4 text-white" />
+                        <Slider
+                          value={[zoomLevel]}
+                          onValueChange={handleZoom}
+                          min={50}
+                          max={200}
+                          step={10}
+                          className="w-full"
+                        />
+                        <Icons.zoomIn className="h-4 w-4 text-white" />
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
                         className="text-white border-white/20"
-                        onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
-                        disabled={currentSlideIndex === 0}
+                        onClick={() => handleDownload(selectedStoryboard)}
                       >
-                        <Icons.chevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="text-white px-2 py-1 bg-black/50 rounded">
-                        {currentSlideIndex + 1} / {scenes.filter(s => s.storyboard).length}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-white border-white/20"
-                        onClick={() => setCurrentSlideIndex(prev => Math.min(scenes.filter(s => s.storyboard).length - 1, prev + 1))}
-                        disabled={currentSlideIndex === scenes.filter(s => s.storyboard).length - 1}
-                      >
-                        <Icons.chevronRight className="h-4 w-4" />
+                        <Icons.download className="h-4 w-4 mr-2" />
+                        Download
                       </Button>
                     </div>
                   </div>
-                )}
 
-                {viewMode === 'compare' && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="relative aspect-video w-full overflow-auto">
-                      <img 
-                        src={selectedStoryboard} 
-                        alt="Storyboard" 
-                        className="w-full h-full object-contain"
-                        style={{ transform: `scale(${zoomLevel / 100})` }}
-                      />
-                    </div>
-                    <div className="relative aspect-video w-full overflow-auto">
-                      {compareStoryboard ? (
+                  {/* Image Display */}
+                  <div className="relative">
+                    {viewMode === 'single' && (
+                      <div className="relative aspect-video w-full overflow-auto">
                         <img 
-                          src={compareStoryboard} 
-                          alt="Compare Storyboard" 
+                          src={selectedStoryboard} 
+                          alt="Storyboard" 
                           className="w-full h-full object-contain"
                           style={{ transform: `scale(${zoomLevel / 100})` }}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center border border-dashed border-white/20 rounded-lg">
+                      </div>
+                    )}
+
+                    {viewMode === 'slideshow' && (
+                      <div className="relative aspect-video w-full">
+                        {scenes[currentSlideIndex]?.storyboard && (
+                          <img 
+                            src={scenes[currentSlideIndex].storyboard!} 
+                            alt="Storyboard" 
+                            className="w-full h-full object-contain"
+                            style={{ transform: `scale(${zoomLevel / 100})` }}
+                          />
+                        )}
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
                             className="text-white border-white/20"
-                            onClick={() => {
-                              const otherStoryboards = scenes
-                                .filter(s => s.storyboard && s.storyboard !== selectedStoryboard)
-                                .map(s => s.storyboard);
-                              if (otherStoryboards.length > 0) {
-                                setCompareStoryboard(otherStoryboards[0]);
-                              }
-                            }}
+                            onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
+                            disabled={currentSlideIndex === 0}
                           >
-                            <Icons.plus className="h-4 w-4 mr-2" />
-                            Add Storyboard
+                            <Icons.chevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-white px-2 py-1 bg-black/50 rounded">
+                            {currentSlideIndex + 1} / {scenes.filter(s => s.storyboard).length}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-white border-white/20"
+                            onClick={() => setCurrentSlideIndex(prev => Math.min(scenes.filter(s => s.storyboard).length - 1, prev + 1))}
+                            disabled={currentSlideIndex === scenes.filter(s => s.storyboard).length - 1}
+                          >
+                            <Icons.chevronRight className="h-4 w-4" />
                           </Button>
                         </div>
-                      )}
+                      </div>
+                    )}
+
+                    {viewMode === 'compare' && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="relative aspect-video w-full overflow-auto">
+                          <img 
+                            src={selectedStoryboard} 
+                            alt="Storyboard" 
+                            className="w-full h-full object-contain"
+                            style={{ transform: `scale(${zoomLevel / 100})` }}
+                          />
+                        </div>
+                        <div className="relative aspect-video w-full overflow-auto">
+                          {compareStoryboard ? (
+                            <img 
+                              src={compareStoryboard} 
+                              alt="Compare Storyboard" 
+                              className="w-full h-full object-contain"
+                              style={{ transform: `scale(${zoomLevel / 100})` }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center border border-dashed border-white/20 rounded-lg">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-white border-white/20"
+                                onClick={() => {
+                                  const otherStoryboards = scenes
+                                    .filter(s => s.storyboard && s.storyboard !== selectedStoryboard)
+                                    .map(s => s.storyboard);
+                                  if (otherStoryboards.length > 0) {
+                                    setCompareStoryboard(otherStoryboards[0]);
+                                  }
+                                }}
+                              >
+                                <Icons.plus className="h-4 w-4 mr-2" />
+                                Add Storyboard
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Idea Selection Dialog */}
+          <Dialog open={showIdeaSelectionDialog} onOpenChange={(isOpen) => {
+            setShowIdeaSelectionDialog(isOpen);
+            if (!isOpen) setFetchedIdeas([]); // Clear ideas if dialog is closed by clicking outside or pressing Esc
+          }}>
+            <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl bg-black/95 border-white/10 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-purple-300 text-2xl">Choose a Generated Idea</DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Select one of the ideas below to use as your project's main concept.
+                </DialogDescription>
+              </DialogHeader>
+              <ScrollArea className="max-h-[60vh] p-1 pr-3">
+                <div className="space-y-4 py-4">
+                  {fetchedIdeas.map((genIdea, index) => (
+                    <Card key={index} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                      <CardContent className="p-4">
+                        <h3 className="text-lg font-semibold text-purple-400 mb-1">{genIdea.Title || `Generated Idea ${index + 1}`}</h3>
+                        <p className="text-sm text-gray-300 mb-3 whitespace-pre-wrap">{genIdea.Concept}</p>
+                        {/* You can add more details from genIdea here if needed */}
+                        {/* e.g., genIdea.Conflict, genIdea.EmotionalHook */}
+                        <div className="flex justify-end mt-3">
+                          <Button
+                            onClick={() => handleSelectIdea(genIdea)}
+                            variant="default"
+                            size="sm"
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Icons.check className="h-4 w-4 mr-2" />
+                            Select this Idea
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {fetchedIdeas.length === 0 && !generatingIdea && (
+                     <p className="text-center text-gray-500 py-8">No ideas were generated, or the AI did not return any results. Please try again.</p>
+                  )}
+                </div>
+              </ScrollArea>
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => {
+                  setShowIdeaSelectionDialog(false);
+                  setFetchedIdeas([]); // Also clear ideas on explicit cancel
+                }} className="text-gray-300 border-gray-500 hover:bg-gray-700 hover:text-white">
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Share Dialog */}
+          <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+            <DialogContent className="sm:max-w-[425px] bg-black/95 border-white/10">
+              <DialogHeader>
+                <DialogTitle className="text-white">Share Project</DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Create a shareable link for your project
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label className="text-white">Expires in</Label>
+                  <Select
+                    value={shareExpiresIn.toString()}
+                    onValueChange={(value) => setShareExpiresIn(parseInt(value))}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10">
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 day</SelectItem>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="30">30 days</SelectItem>
+                      <SelectItem value="90">90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {shareLinks.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-white">Active Share Links</Label>
+                    <div className="space-y-2">
+                      {shareLinks.map((link) => (
+                        <div
+                          key={link.id}
+                          className="flex items-center justify-between p-2 bg-white/5 rounded-lg"
+                        >
+                          <div className="text-sm text-gray-400">
+                            Expires: {new Date(link.expiresAt).toLocaleDateString()}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-purple-400 hover:text-purple-300"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `${process.env.NEXT_PUBLIC_APP_URL}/share/${link.token}`
+                              );
+                              toast({
+                                title: "Success",
+                                description: "Share link copied to clipboard",
+                              });
+                            }}
+                          >
+                            <Icons.copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Share Dialog */}
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-black/95 border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">Share Project</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Create a shareable link for your project
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-white">Expires in</Label>
-              <Select
-                value={shareExpiresIn.toString()}
-                onValueChange={(value) => setShareExpiresIn(parseInt(value))}
-              >
-                <SelectTrigger className="bg-white/5 border-white/10">
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 day</SelectItem>
-                  <SelectItem value="7">7 days</SelectItem>
-                  <SelectItem value="30">30 days</SelectItem>
-                  <SelectItem value="90">90 days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {shareLinks.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-white">Active Share Links</Label>
-                <div className="space-y-2">
-                  {shareLinks.map((link) => (
-                    <div
-                      key={link.id}
-                      className="flex items-center justify-between p-2 bg-white/5 rounded-lg"
-                    >
-                      <div className="text-sm text-gray-400">
-                        Expires: {new Date(link.expiresAt).toLocaleDateString()}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-purple-400 hover:text-purple-300"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            `${process.env.NEXT_PUBLIC_APP_URL}/share/${link.token}`
-                          );
-                          toast({
-                            title: "Success",
-                            description: "Share link copied to clipboard",
-                          });
-                        }}
-                      >
-                        <Icons.copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                <Button
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={handleShare}
+                  disabled={creatingShare}
+                >
+                  {creatingShare ? (
+                    <>
+                      <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Icons.link className="h-4 w-4 mr-2" />
+                      Create Share Link
+                    </>
+                  )}
+                </Button>
               </div>
-            )}
+            </DialogContent>
+          </Dialog>
 
-            <Button
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-              onClick={handleShare}
-              disabled={creatingShare}
-            >
-              {creatingShare ? (
-                <>
-                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Icons.link className="h-4 w-4 mr-2" />
-                  Create Share Link
-                </>
-              )}
-            </Button>
+          {/* Export Dialog */}
+          <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+            <DialogContent className="sm:max-w-[425px] bg-black/95 border-white/10">
+              <DialogHeader>
+                <DialogTitle className="text-white">Export Project</DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Choose a format to export your project
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <RadioGroup
+                  value={exportFormat}
+                  onValueChange={(value) => setExportFormat(value as any)}
+                  className="space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="markdown" id="markdown" />
+                    <Label htmlFor="markdown" className="text-white">Markdown</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="json" id="json" />
+                    <Label htmlFor="json" className="text-white">JSON</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pdf" id="pdf" disabled />
+                    <Label htmlFor="pdf" className="text-white text-gray-500">PDF (Coming Soon)</Label>
+                  </div>
+                </RadioGroup>
+
+                <Button
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={handleExport}
+                  disabled={exporting}
+                >
+                  {exporting ? (
+                    <>
+                      <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Icons.download className="h-4 w-4 mr-2" />
+                      Export
+                    </>
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Operation Success Notifications */}
+          <div className="fixed top-4 right-4 z-[60] space-y-4">
+            <OperationNotification tokenUpdates={tokenUpdates} />
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Export Dialog */}
-      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-black/95 border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">Export Project</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Choose a format to export your project
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <RadioGroup
-              value={exportFormat}
-              onValueChange={(value) => setExportFormat(value as any)}
-              className="space-y-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="markdown" id="markdown" />
-                <Label htmlFor="markdown" className="text-white">Markdown</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="json" id="json" />
-                <Label htmlFor="json" className="text-white">JSON</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="pdf" id="pdf" disabled />
-                <Label htmlFor="pdf" className="text-white text-gray-500">PDF (Coming Soon)</Label>
-              </div>
-            </RadioGroup>
-
-            <Button
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-              onClick={handleExport}
-              disabled={exporting}
-            >
-              {exporting ? (
-                <>
-                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Icons.download className="h-4 w-4 mr-2" />
-                  Export
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Operation Success Notifications */}
-      <div className="fixed top-4 right-4 z-[60] space-y-4">
-        <OperationNotification tokenUpdates={tokenUpdates} />
       </div>
-    </div>
+    </ScrollArea>
   );
 }
+
+// Make sure to find the specific "Generate Idea" button related to the main "Idea" Textarea
+// and modify it like this:
+
+// Inside the JSX where the "Idea" section is rendered:
+// Find this part (or similar):
+/*
+<div className="space-y-2">
+  <Label htmlFor="idea">{translate('Idea')}</Label>
+  <GoogleTransliterateTextarea
+    id="idea"
+    // ... other props ...
+  />
+  <div className="flex gap-2">
+    <Button onClick={handleGenerateIdea} disabled={generatingIdea || savingIdea}> // THIS BUTTON
+      {generatingIdea ? (
+        // ... loading state ...
+      ) : (
+        translate('Generate Idea')
+      )}
+    </Button>
+    <Button onClick={saveIdea} disabled={savingIdea}>
+      // ... save button ...
+    </Button>
+  </div>
+</div>
+*/
+
+// The change is to modify the "Generate Idea" button as follows:
+// Replace its onClick with `() => setShowIdeaGeneratorDialog(true)`
+// Adjust its disabled prop, likely to `savingIdea` or removing any `generatingIdea` related state.
+
+// Example of the targeted change:
+// ...
+// <GoogleTransliterateTextarea
+//   id="idea"
+//   value={idea}
+//   onChange={(e) => setIdea(e.target.value)}
+//   // ... other props ...
+// />
+// <div className="flex gap-2">
+//   <Button 
+//     onClick={() => setShowIdeaGeneratorDialog(true)} // MODIFIED onClick
+//     disabled={savingIdea} // MODIFIED disabled prop (ensure 'generatingIdea' state is not used here if it was before)
+//   >
+//     {/* Remove any loader that was tied to a 'generatingIdea' state if present */}
+//     {translate('Generate Idea')}
+//   </Button>
+//   <Button onClick={saveIdea} disabled={savingIdea}>
+//     {savingIdea ? (
+//       <>
+//         <Icons.loader className="mr-2 h-4 w-4 animate-spin" />
+//         {translate('Saving...')}
+//       </>
+//     ) : (
+//       translate('Save Idea')
+//     )}
+//   </Button>
+// </div>
+// ...existing code...

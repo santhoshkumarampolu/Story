@@ -2,7 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getInitialContent } from "@/app/api/projects/new/route";
+
+function getInitialContent(type: string) {
+  const indianNames = ['Arjun', 'Priya', 'Kiran', 'Meera'];
+  const characterName = indianNames[Math.floor(Math.random() * indianNames.length)];
+  
+  return {
+    version: 1,
+    structureType: type === 'shortfilm' ? 'three-act' : undefined,
+    idea: '',
+    logline: '',
+    treatment: '',
+    characters: {
+      create: [
+        {
+          name: characterName,
+          description: 'Main character description',
+          motivation: '',
+          backstory: '',
+          arc: '',
+          relationships: ''
+        }
+      ]
+    },
+    scenes: {
+      create: [
+        {
+          title: 'Scene 1',
+          summary: 'Opening scene',
+          order: 0,
+          act: 'act1',
+          notes: '',
+          version: 1
+        }
+      ]
+    },
+    cards: {
+      create: [
+        {
+          type: type,
+          content: '',
+          order: 0
+        }
+      ]
+    }
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {

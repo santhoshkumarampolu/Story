@@ -59,7 +59,7 @@ export async function POST(
       .join('\n');
 
     // Create a detailed prompt for the LLM
-    const prompt = `Write a detailed script for this scene in the context of the following project:
+    const prompt = `Write a detailed script for this scene in the context of the following project, specifically for an Indian audience:
 
 Project Type: ${project.type}
 Project Logline: ${project.logline || "Not provided"}
@@ -77,6 +77,18 @@ Please write a professional script that:
 4. Includes both dialogue and action descriptions
 5. Aligns with the scene summary while adding necessary details
 6. Uses the characters' established traits and motivations
+7. Uses authentic Indian contexts, locations, and cultural references
+8. Incorporates realistic Indian dialogue patterns and expressions
+9. Reflects Indian social dynamics, family relationships, and cultural nuances
+10. Uses appropriate Indian settings (homes, streets, markets, offices, etc.)
+
+Cultural Guidelines:
+- Use Indian names and locations where appropriate
+- Include realistic Indian social situations and interactions
+- Consider regional Indian cultural elements
+- Incorporate authentic Indian speech patterns and expressions
+- Reflect Indian family dynamics and social hierarchies
+- Use appropriate Indian settings and environments
 
 Format the script in proper screenplay style with:
 - Scene headings (INT./EXT. LOCATION - TIME)
@@ -90,7 +102,7 @@ Format the script in proper screenplay style with:
       messages: [
         {
           role: "system",
-          content: "You are a professional screenwriter with expertise in creating engaging and well-structured scripts. Your task is to write detailed scene scripts that maintain character consistency and follow proper screenplay formatting.",
+          content: "You are a professional screenwriter with expertise in creating engaging and well-structured scripts for Indian cinema. You understand Indian culture, regional diversity, languages, social dynamics, family structures, and contemporary Indian life. Your task is to write detailed scene scripts that maintain character consistency, follow proper screenplay formatting, and authentically represent Indian contexts and experiences.",
         },
         {
           role: "user",

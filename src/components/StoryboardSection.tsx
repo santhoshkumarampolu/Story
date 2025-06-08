@@ -55,7 +55,7 @@ export function StoryboardSection({
             <>
               <Button
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700 text-white"
+                variant="ai"
                 onClick={onGenerateStoryboard}
                 disabled={isGenerating || !script}
               >
