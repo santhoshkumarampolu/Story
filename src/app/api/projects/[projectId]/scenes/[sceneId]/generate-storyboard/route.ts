@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai, trackImageGeneration } from "@/lib/openai";
-import { uploadImage } from "@/lib/cloudinary";
+import { openai, trackTokenUsage } from "@/lib/openai";
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ projectId: string; sceneId: string }> }
+  request: NextRequest,
+  { params }: { params: { projectId: string; sceneId: string } }
 ) {
   try {
-    // Get user session
+    const { projectId, sceneId } = params;
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "You must be logged in to generate storyboards" },
@@ -19,94 +19,132 @@ export async function POST(
       );
     }
 
-    // Get project ID and scene ID from params
-    const { projectId, sceneId } = await params;
-    if (!projectId || !sceneId) {
-      return NextResponse.json(
-        { error: "Project ID and Scene ID are required" },
-        { status: 400 }
-      );
-    }
-
     // Get request body
-    const body = await req.json();
-    const { script, title, summary } = body;
+    const body = await request.json();
+    const {
+      sceneTitle,
+      sceneSummary,
+      sceneScript, // Script from client, can be context for storyboard
+      projectLanguage, // Language preference from client
+      logline, // Project-level context from client
+      treatment, // Project-level context from client
+      characters, // Project characters from client for context
+    } = body;
 
-    if (!script) {
+    if (!sceneSummary && !sceneScript) {
       return NextResponse.json(
-        { error: "Script is required" },
+        { error: "Scene summary or script is required to generate a storyboard" },
         { status: 400 }
       );
     }
 
-    // Verify project exists and belongs to user
+    // Verify project exists and belongs to user, and scene belongs to project
     const project = await prisma.project.findUnique({
       where: {
         id: projectId,
         userId: session.user.id,
       },
+      include: {
+        scenes: { where: { id: sceneId } },
+        // You might also want to fetch project.characters if not passed reliably from client
+      },
     });
 
-    if (!project) {
+    if (!project || !project.scenes || project.scenes.length === 0) {
       return NextResponse.json(
-        { error: "Project not found or you don't have access" },
+        { error: "Project or Scene not found, or access denied" },
         { status: 404 }
       );
     }
+    const scene = project.scenes[0]; // The specific scene we are working with
 
-    // Generate image using DALL-E
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: `Create a black and white storyboard frame in a professional cinematic style for this Indian film scene: ${title || 'Untitled Scene'}\n\nSummary: ${summary || 'No summary'}\n\nScript: ${script}\n\nStyle: Black and white, high contrast, cinematic lighting, professional storyboard style with clear composition and framing. Use a wide shot with all characters and key elements fully visible, leaving extra space around the scene. Do not crop any characters or important objects. Everything should fit comfortably within the frame. Focus on key visual elements and dramatic moments.\n\nIndian Context: Use authentic Indian settings, environments, and visual elements. Consider Indian architecture, clothing, cultural objects, and social settings. If characters are specified with Indian names, portray them appropriately. Include realistic Indian backgrounds like urban apartments, rural settings, traditional homes, modern offices, streets, markets, or other culturally appropriate locations based on the scene context.`,
-      n: 1,
-      size: "1792x1024",
-      quality: "standard",
-      style: "natural",
-    });
-
-    if (!response.data?.[0]?.url) {
-      throw new Error("Failed to generate image");
+    // Construct the prompt for OpenAI text generation
+    let promptContent = `Project Logline: ${logline || project.logline || 'N/A'}\n`;
+    promptContent += `Project Treatment Summary: ${treatment || project.treatment || 'N/A'}\n`;
+    if (characters && characters.length > 0) {
+      promptContent += `Characters involved in the story:\n${characters.map((c: any) => `- ${c.name}: ${c.description || 'No description'}`).join('\n')}\n\n`;
+    }
+    promptContent += `Scene Title: ${sceneTitle || scene.title}\n`;
+    promptContent += `Scene Summary: ${sceneSummary || scene.summary}\n`;
+    if (sceneScript || scene.script) { // Use script from body if provided, else from DB
+      promptContent += `Scene Script:\n${sceneScript || scene.script}\n`;
+    }
+    promptContent += `\nBased on the above information, generate a textual storyboard. Describe key shots, camera angles, character actions, and visual elements for this scene. The output should be a series of distinct shot descriptions, each clearly delineated.`;
+    
+    const effectiveLanguage = projectLanguage || project.language || "English";
+    if (effectiveLanguage !== "English") {
+      promptContent += `\nGenerate the storyboard in ${effectiveLanguage}.`;
     }
 
-    // Track image generation cost
-    await trackImageGeneration({
-      userId: session.user.id,
-      projectId,
-      type: "storyboard",
-      model: "dall-e-3",
-      size: "1792x1024",
-      imageCount: 1,
-    });
+    const model = "gpt-4o"; // Or your preferred model for text generation
+    let generatedStoryboardText = "";
+    let tokensUsed = 0;
+    let cost = 0;
+    let promptTokens = 0;
+    let completionTokens = 0;
 
-    const imageUrl = response.data[0].url;
+    try {
+      const aiCompletion = await openai.chat.completions.create({
+        model: model,
+        messages: [{ role: "user", content: promptContent }],
+        // max_tokens: 1500, // Optional: Adjust as needed
+      });
 
-    // Download the image and upload to Cloudinary
-    const imageResponse = await fetch(imageUrl);
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = `data:image/png;base64,${Buffer.from(imageBuffer).toString('base64')}`;
+      if (aiCompletion.choices[0].message.content) {
+        generatedStoryboardText = aiCompletion.choices[0].message.content;
+        promptTokens = aiCompletion.usage?.prompt_tokens || 0;
+        completionTokens = aiCompletion.usage?.completion_tokens || 0;
+        tokensUsed = aiCompletion.usage?.total_tokens || 0;
 
-    const cloudinaryResult = await uploadImage(base64Image, {
-      folder: `story-studio/${projectId}/${sceneId}`,
-      resource_type: 'image',
-    });
+        // Track token usage
+        const usageTrackingResult = await trackTokenUsage({
+          userId: session.user.id,
+          projectId,
+          type: "storyboard", // Ensure this type is valid in your enum/function
+          model,
+          promptTokens,
+          completionTokens,
+          totalTokens: tokensUsed,
+          operationName: `Scene Storyboard: ${scene.title || 'Untitled Scene'}`,
+        });
+        cost = usageTrackingResult.cost || 0; // trackTokenUsage calculates and returns cost
 
-    // Update scene with the Cloudinary URL
+      } else {
+        throw new Error("AI response for storyboard generation was empty or invalid.");
+      }
+
+    } catch (aiError: any) {
+      console.error("[AI_STORYBOARD_GENERATION_ERROR]", aiError);
+      return NextResponse.json(
+        { error: `Failed to generate storyboard using AI: ${aiError.message}` },
+        { status: 500 }
+      );
+    }
+    
+    // Update scene with the generated textual storyboard
     const updatedScene = await prisma.scene.update({
       where: {
         id: sceneId,
-        projectId: projectId,
+        // projectId: projectId, // Already confirmed scene belongs to project
       },
       data: {
-        storyboard: cloudinaryResult.secure_url,
+        storyboard: generatedStoryboardText, // Save the text storyboard
+        version: { increment: 1 },
       },
     });
 
-    return NextResponse.json(updatedScene);
-  } catch (error) {
-    console.error("[GENERATE_STORYBOARD] Error:", error);
+    return NextResponse.json({
+      storyboard: updatedScene.storyboard,
+      tokensUsed,
+      cost,
+    }, { status: 200 });
+
+  } catch (error: any) {
+    console.error("[SCENE_GENERATE_STORYBOARD_POST_ERROR]", error);
+    const errorMessage = error.message || "Failed to generate scene storyboard";
     return NextResponse.json(
-      { error: "Failed to generate storyboard" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
-} 
+}

@@ -69,11 +69,11 @@ model Project {
   description    String?
   language       String? // For UI language preference or project content language
   type           String?      @default("story") // story, shortfilm, screenplay
-  logline        String?
-  idea           String?
-  generatedIdeas Json?
+  logline        String?      @db.Text
+  idea           String?      @db.Text
   treatment      String?      @db.Text
-  structureType  String? // "three-act", "twist", etc.
+  structureType  String? 
+  fullScript     String?      @db.Text // New field for the full script
   version        Int          @default(1)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)

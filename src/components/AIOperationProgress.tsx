@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 interface AIOperationProgressProps {
   isGenerating: boolean;
-  operationType: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes"; // Added "scenes"
+  operationType: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes" | "save"; // Added "save"
   operationName: string;
 }
 
@@ -23,10 +23,12 @@ const getOperationEstimates = (type: string) => {
       return { tokens: 600, cost: 0.018, duration: 12000 };
     case "logline":
       return { tokens: 300, cost: 0.009, duration: 8000 };
-    case "character_generation": // Added estimates for character_generation
+    case "character_generation":
       return { tokens: 700, cost: 0.021, duration: 16000 };
-    case "scenes": // Added estimates for scenes
-      return { tokens: 1500, cost: 0.045, duration: 25000 }; // Example estimates
+    case "scenes":
+      return { tokens: 1500, cost: 0.045, duration: 25000 };
+    case "save": // Added estimates for save
+      return { tokens: 0, cost: 0, duration: 2000 }; // Example estimates for save
     default:
       return { tokens: 500, cost: 0.015, duration: 10000 };
   }
@@ -44,10 +46,12 @@ const getOperationIcon = (type: string) => {
       return <Icons.lightbulb className="h-5 w-5" />;
     case "logline":
       return <Icons.fileText className="h-5 w-5" />;
-    case "character_generation": // Added icon for character_generation
+    case "character_generation":
       return <Icons.users className="h-5 w-5" />;
-    case "scenes": // Added icon for scenes
-      return <Icons.film className="h-5 w-5" />; // Using film icon for scenes
+    case "scenes":
+      return <Icons.film className="h-5 w-5" />;
+    case "save": // Added icon for save
+      return <Icons.save className="h-5 w-5" />; // Using save icon
     default:
       return <Icons.sparkles className="h-5 w-5" />;
   }
@@ -65,10 +69,12 @@ const getOperationColor = (type: string) => {
       return "yellow";
     case "logline":
       return "orange";
-    case "character_generation": // Added color for character_generation
-      return "pink"; // Example color
-    case "scenes": // Added color for scenes
-      return "teal"; // Example color
+    case "character_generation":
+      return "pink";
+    case "scenes":
+      return "teal";
+    case "save": // Added color for save
+      return "gray"; // Example color for save
     default:
       return "purple";
   }
