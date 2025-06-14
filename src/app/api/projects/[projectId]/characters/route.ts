@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function POST(
       );
     }
 
-    const { projectId } = params;
+    const { projectId } = await params;
     if (!projectId) {
       return NextResponse.json(
         { error: "Project ID is required" },

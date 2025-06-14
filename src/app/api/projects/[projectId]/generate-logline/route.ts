@@ -27,9 +27,9 @@ async function getProjectDetails(projectId: string) {
 
 export async function POST(
   request: Request, // request might still be needed for other purposes, or can be removed if not used elsewhere
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = params;
+  const { projectId } = await params;
   try {
     // Pass only authOptions to getServerSession in App Router
     const session = await getServerSession(authOptions); 
@@ -128,7 +128,7 @@ Please provide only the logline, no additional text or explanation.`;
 
 export async function GET(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   return NextResponse.json(
     { error: 'GET method not allowed for this endpoint. Use POST to generate a logline.' },

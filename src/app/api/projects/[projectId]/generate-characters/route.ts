@@ -25,9 +25,9 @@ interface CharacterOutput {
 
 export async function POST(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = params;
+  const { projectId } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -193,7 +193,7 @@ Format the response as a JSON array of character objects:
 
 export async function GET(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   return NextResponse.json(
     { error: 'GET method not allowed for this endpoint. Use POST to generate characters.' },

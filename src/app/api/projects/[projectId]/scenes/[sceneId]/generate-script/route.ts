@@ -10,10 +10,10 @@ const openai = new OpenAI({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { projectId: string; sceneId: string } }
+  { params }: { params: Promise<{ projectId: string; sceneId: string }> }
 ) {
   try {
-    const { projectId, sceneId } = params;
+    const { projectId, sceneId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {

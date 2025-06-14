@@ -13,13 +13,8 @@ export async function POST(req: NextRequestType, context: { params: Promise<{ pr
       return new NextResponse("Unauthorized", { status: 401 });
     }
     const { generatedIdeas, idea, generateRandom } = await req.json();
-    // If generatedIdeas is present, save to project (optional, for inspiration history)
-    if (Array.isArray(generatedIdeas)) {
-      await prisma.project.update({
-        where: { id: projectId },
-        data: { generatedIdeas: JSON.stringify(generatedIdeas) }, // You may need to add this field to your schema
-      });
-    }
+    // Note: generatedIdeas saving removed as field doesn't exist in schema
+    // If you want to save idea generation history, consider adding a separate model
 
     // Get project and verify ownership
     const project = await prisma.project.findUnique({
@@ -73,8 +68,9 @@ export async function POST(req: NextRequestType, context: { params: Promise<{ pr
         projectId,
         type: "idea",
         model: "gpt-4",
-        inputTokens: completion.usage.prompt_tokens,
-        outputTokens: completion.usage.completion_tokens,
+        promptTokens: completion.usage.prompt_tokens,
+        completionTokens: completion.usage.completion_tokens,
+        totalTokens: completion.usage.total_tokens,
       });
     }
 

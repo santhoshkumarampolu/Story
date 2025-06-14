@@ -80,7 +80,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -91,7 +91,7 @@ export async function POST(
       );
     }
 
-    const { projectId } = params;
+    const { projectId } = await params;
     if (!projectId || typeof projectId !== "string") {
       return NextResponse.json(
         { error: "Invalid project ID." },

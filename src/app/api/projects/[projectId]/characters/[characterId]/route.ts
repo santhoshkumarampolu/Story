@@ -6,10 +6,10 @@ import { prisma } from "@/lib/prisma";
 // PATCH handler to update a character
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { projectId: string; characterId: string } }
+  { params }: { params: Promise<{ projectId: string; characterId: string }> }
 ) {
   try {
-    const { projectId, characterId } = params;
+    const { projectId, characterId } = await params;
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -84,14 +84,14 @@ export async function PATCH(
       data: updateData,
     });
 
-    console.log('Updated character:', updatedCharacter);
+    console.log("Updated character:", updatedCharacter);
 
     return NextResponse.json(updatedCharacter, { status: 200 });
   } catch (error) {
     console.error("[CHARACTERS_PATCH] Error:", error);
     let errorMessage = "Failed to update character";
     if (error instanceof Error) {
-        errorMessage = error.message;
+      errorMessage = error.message;
     }
     return NextResponse.json(
       { error: errorMessage },
@@ -103,12 +103,12 @@ export async function PATCH(
 // GET handler to fetch a single character by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; characterId: string } }
+  { params }: { params: Promise<{ projectId: string; characterId: string }> }
 ) {
-  try {
-    const { projectId, characterId } = params;
-    const session = await getServerSession(authOptions);
+  const { projectId, characterId } = await params;
 
+  try {
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -125,7 +125,7 @@ export async function GET(
         id: characterId,
         projectId: projectId,
         project: {
-          userId: session.user.id, // Ensure character belongs to a project owned by the user
+          userId: session.user.id,
         },
       },
     });
@@ -139,22 +139,19 @@ export async function GET(
     console.error("[CHARACTER_GET] Error:", error);
     let errorMessage = "Failed to fetch character";
     if (error instanceof Error) {
-        errorMessage = error.message;
+      errorMessage = error.message;
     }
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
 // DELETE handler to delete a single character by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { projectId: string; characterId: string } }
+  { params }: { params: Promise<{ projectId: string; characterId: string }> }
 ) {
   try {
-    const { projectId, characterId } = params;
+    const { projectId, characterId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -185,14 +182,14 @@ export async function DELETE(
 
     // Verify character exists before attempting to delete
     const existingCharacter = await prisma.character.findUnique({
-        where: {
-            id: characterId,
-            projectId: projectId,
-        }
+      where: {
+        id: characterId,
+        projectId: projectId,
+      },
     });
 
     if (!existingCharacter) {
-        return NextResponse.json({ error: "Character not found" }, { status: 404 });
+      return NextResponse.json({ error: "Character not found" }, { status: 404 });
     }
 
     await prisma.character.delete({
@@ -201,12 +198,15 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({ message: "Character deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Character deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("[CHARACTER_DELETE] Error:", error);
     let errorMessage = "Failed to delete character";
     if (error instanceof Error) {
-        errorMessage = error.message;
+      errorMessage = error.message;
     }
     return NextResponse.json(
       { error: errorMessage },

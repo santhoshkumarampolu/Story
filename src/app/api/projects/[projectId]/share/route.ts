@@ -36,16 +36,17 @@ export async function POST(request: NextRequest) {
     // Generate a unique token
     const shareToken = crypto.randomBytes(32).toString('hex');
 
-    // Create share link
-    const shareLink = await prisma.share.create({
-      data: {
-        token: shareToken,
-        projectId,
-      },
-    });
+    // TODO: Create share link - Share model needs to be added to Prisma schema
+    // const shareLink = await prisma.share.create({
+    //   data: {
+    //     token: shareToken,
+    //     projectId,
+    //   },
+    // });
 
     return NextResponse.json({
       shareUrl: `${process.env.NEXT_PUBLIC_APP_URL}/share/${shareToken}`,
+      message: "Share functionality not fully implemented - Share model needed in schema"
     });
   } catch (error) {
     console.error("[SHARE_CREATE] Error:", error);
@@ -85,17 +86,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all share links for the project
-    const shareLinks = await prisma.share.findMany({
-      where: {
-        projectId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    // TODO: Get all share links for the project - Share model needs to be added to Prisma schema
+    // const shareLinks = await prisma.share.findMany({
+    //   where: {
+    //     projectId,
+    //   },
+    //   orderBy: {
+    //     createdAt: "desc",
+    //   },
+    // });
 
-    return NextResponse.json(shareLinks);
+    return NextResponse.json({
+      message: "Share functionality not fully implemented - Share model needed in schema",
+      shareLinks: []
+    });
   } catch (error) {
     console.error("[SHARE_LIST] Error:", error);
     return NextResponse.json(

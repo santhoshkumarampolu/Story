@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { projectId: string; sceneId: string } }
+  { params }: { params: Promise<{ projectId: string; sceneId: string }> }
 ) {
   try {
-    const { projectId, sceneId } = params; // Destructure projectId and sceneId
+    const { projectId, sceneId } = await params; // Destructure projectId and sceneId
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -126,10 +126,10 @@ export async function PATCH(
 // Optional: Add GET handler to fetch a single scene by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; sceneId: string } }
+  { params }: { params: Promise<{ projectId: string; sceneId: string }> }
 ) {
   try {
-    const { projectId, sceneId } = params;
+    const { projectId, sceneId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -174,10 +174,10 @@ export async function GET(
 // Optional: Add DELETE handler to delete a single scene by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { projectId: string; sceneId: string } }
+  { params }: { params: Promise<{ projectId: string; sceneId: string }> }
 ) {
   try {
-    const { projectId, sceneId } = params;
+    const { projectId, sceneId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
