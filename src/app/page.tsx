@@ -317,8 +317,8 @@ export default function Home() {
           </section>
 
           {/* Value Proposition Section */}
-          <section className="relative py-32 px-4">
-            <div className="container mx-auto max-w-6xl">
+          <section className="relative py-24 px-4">
+            <div className="container mx-auto max-w-7xl">
               <motion.div 
                 className="text-center space-y-4 mb-16"
                 initial="initial"
@@ -333,7 +333,7 @@ export default function Home() {
                   Why Choose Story Studio?
                 </motion.h2>
                 <motion.p 
-                  className="text-white/70 max-w-2xl mx-auto"
+                  className="text-white/70 max-w-3xl mx-auto text-lg"
                   variants={fadeInUp}
                 >
                   Say goodbye to scattered tools and endless revisions. Story Studio is your all-in-one 
@@ -341,7 +341,7 @@ export default function Home() {
                 </motion.p>
               </motion.div>
               <motion.div 
-                className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 px-4"
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
                 initial="initial"
                 whileInView="animate"
                 viewport={{ once: true }}
@@ -350,14 +350,18 @@ export default function Home() {
                 {valueProps.map((prop) => (
                   <motion.div
                     key={prop.title}
-                    className="group relative rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-sm transition-all hover:bg-white/10 h-[340px] min-w-[270px] max-w-[340px] flex flex-col items-center mx-auto"
+                    className="group relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all hover:bg-white/10 hover:border-purple-400/30 overflow-hidden"
                     variants={scaleIn}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                   >
-                    <div className="space-y-8 flex flex-col items-center">
-                      <prop.icon className="h-16 w-16 text-purple-400 mb-2" />
-                      <h3 className="font-space-grotesk text-3xl font-bold text-center">{prop.title}</h3>
-                      <p className="text-xl text-white/70 text-center">
+                    <div className="p-8 h-full flex flex-col items-center text-center">
+                      <div className="mb-6 p-4 rounded-xl bg-purple-500/10 border border-purple-400/20">
+                        <prop.icon className="h-12 w-12 text-purple-400" />
+                      </div>
+                      <h3 className="font-space-grotesk text-xl font-bold mb-4 text-white leading-tight">
+                        {prop.title}
+                      </h3>
+                      <p className="text-base text-white/70 leading-relaxed flex-grow flex items-center">
                         {prop.description}
                       </p>
                     </div>
