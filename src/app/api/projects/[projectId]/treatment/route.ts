@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ projec
     }
 
     // Call OpenAI to generate treatment
-    const prompt = `Given the following idea and logline, write a detailed treatment (story overview/outline) for a short film.
+    const prompt = `Write a detailed treatment (story overview) for a short film based on the following idea and logline.
 Project Language: ${targetLanguage}
 
 Idea: ${idea}
@@ -42,13 +42,58 @@ Logline: ${logline}
 
 ${languageSpecificPrompt}
 
+Please structure the treatment with the following sections:
+
+1. Story Overview (2-3 paragraphs)
+   - Main plot points
+   - Key character arcs
+   - Central themes
+   - Emotional journey
+
+2. Character Dynamics
+   - Main character's journey
+   - Key relationships
+   - Character motivations
+   - Conflicts and resolutions
+
+3. Story Structure
+   - Beginning (setup and inciting incident)
+   - Middle (rising action and complications)
+   - End (climax and resolution)
+   - Key turning points
+
+4. Themes and Messages
+   - Core themes
+   - Cultural elements
+   - Social commentary
+   - Emotional resonance
+
+5. Visual and Stylistic Elements
+   - Key locations
+   - Visual motifs
+   - Tone and atmosphere
+   - Cultural aesthetics
+
+Please ensure the treatment:
+- Is 2-3 pages in length
+- Maintains narrative coherence
+- Develops characters meaningfully
+- Creates emotional impact
+- Respects cultural context
+- Sets up clear story progression
+
 Treatment:`;
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
-        { role: "system", content: "You are a creative writing assistant specializing in short film treatments for Indian cinema. You understand Indian culture, regional diversity, family structures, social dynamics, and contemporary issues. You create authentic stories that resonate with Indian audiences while respecting cultural nuances and traditions." },
-        { role: "user", content: prompt },
+        { 
+          role: "system", 
+          content: "You are a professional screenwriter and story consultant specializing in Indian cinema. You excel at creating detailed treatments that balance narrative structure, character development, and cultural authenticity. You understand both traditional storytelling and contemporary filmmaking techniques."
+        },
+        { role: "user", content: prompt }
       ],
+      max_tokens: 2000,
+      temperature: 0.7,
     });
     const treatment = completion.choices[0].message.content?.trim() || "";
 
@@ -59,8 +104,10 @@ Treatment:`;
         projectId,
         type: "treatment",
         model: "gpt-4",
-        inputTokens: completion.usage.prompt_tokens,
-        outputTokens: completion.usage.completion_tokens,
+        promptTokens: completion.usage.prompt_tokens,
+        completionTokens: completion.usage.completion_tokens,
+        totalTokens: completion.usage.total_tokens,
+        operationName: "Treatment Generation"
       });
     }
 

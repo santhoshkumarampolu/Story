@@ -99,11 +99,17 @@ model Story {
 model Character {
   id            String   @id @default(cuid())
   name          String
-  description   String   @db.Text
-  motivation    String?  @db.Text
-  backstory     String?  @db.Text
-  arc           String?  @db.Text
-  relationships String?  @db.Text
+  description   String
+  motivation    String?
+  backstory     String?
+  arc           String?
+  relationships String?
+  goals         String?
+  conflicts     String?
+  personality   String?
+  traits        String[]
+  imagePath     String?
+  notes         String?
   projectId     String
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
@@ -113,19 +119,23 @@ model Character {
 }
 
 model Scene {
-  id         String   @id @default(cuid())
-  title      String
-  summary    String   @db.Text
-  script     String?  @db.Text
-  storyboard String? // Could be JSON for fabric.js or a URL
-  order      Int      @default(0)
-  act        String? // e.g., "act1", "act2", "act3"
-  notes      String?  @db.Text
-  version    Int      @default(1)
-  projectId  String
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  script      String?
+  storyboard  String?
+  order       Int      @default(0)
+  act         String?
+  location    String?
+  timeOfDay   String?
+  goals       String?
+  conflicts   String?
+  notes       String?
+  version     Int      @default(1)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([projectId])
 }
@@ -145,7 +155,7 @@ model Card {
 
 model TokenUsage {
   id        String   @id @default(cuid())
-  type      String // e.g., "translation", "generation", "image"
+  type      String // e.g., "translation", "generation", "image", "logline", "scenes", "character_generation"
   tokens    Int
   cost      Float    @default(0) // Cost in some unit, e.g., USD cents
   userId    String
@@ -154,6 +164,12 @@ model TokenUsage {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // New fields for detailed tracking
+  modelUsed        String? // Stores the specific model string, e.g., "gpt-3.5-turbo-1106"
+  promptTokens     Int?    // Stores the number of prompt tokens
+  completionTokens Int?    // Stores the number of completion tokens
+  operationName    String? // A more descriptive name for the operation, e.g., "Scene Generation"
 
   @@index([userId])
   @@index([projectId])

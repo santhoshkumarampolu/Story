@@ -10,7 +10,7 @@ interface TokenUpdate {
   tokens: number;
   cost: number;
   timestamp: number;
-  type: "script" | "storyboard" | "treatment" | "idea";
+  type: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes";
   operation: string;
 }
 
@@ -35,12 +35,15 @@ export function TokenAnimationTest() {
   
   const [tokenUpdates, setTokenUpdates] = useState<TokenUpdate[]>([]);
 
-  const simulateTokenUsage = (type: "script" | "storyboard" | "treatment" | "idea") => {
+  const simulateTokenUsage = (type: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes") => {
     const operations = {
       script: { name: "Script Generation", tokens: 850, cost: 0.025 },
       storyboard: { name: "Storyboard Creation", tokens: 0, cost: 0.04 },
       treatment: { name: "Treatment Writing", tokens: 650, cost: 0.019 },
-      idea: { name: "Idea Generation", tokens: 420, cost: 0.012 }
+      idea: { name: "Idea Generation", tokens: 420, cost: 0.012 },
+      logline: { name: "Logline Generation", tokens: 100, cost: 0.002 }, // Added logline
+      character_generation: { name: "Character Generation", tokens: 500, cost: 0.01 }, // Added character_generation
+      scenes: { name: "Scene Generation", tokens: 700, cost: 0.02 } // Added scenes
     };
 
     const operation = operations[type];
@@ -119,6 +122,24 @@ export function TokenAnimationTest() {
             className="bg-yellow-600 hover:bg-yellow-700"
           >
             Test Idea Generation
+          </Button>
+          <Button
+            onClick={() => simulateTokenUsage("logline")}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Test Logline Generation
+          </Button>
+          <Button
+            onClick={() => simulateTokenUsage("character_generation")}
+            className="bg-pink-600 hover:bg-pink-700"
+          >
+            Test Character Generation
+          </Button>
+          <Button
+            onClick={() => simulateTokenUsage("scenes")}
+            className="bg-teal-600 hover:bg-teal-700"
+          >
+            Test Scene Generation
           </Button>
         </div>
 

@@ -11,10 +11,11 @@ const TOKEN_COSTS = {
     input: 0.01,
     output: 0.03,
   },
-  "gpt-3.5-turbo": {
+  "gpt-3.5-turbo": { // Covers variants like gpt-3.5-turbo-1106, gpt-3.5-turbo-0125
     input: 0.0005,
     output: 0.0015,
   },
+  // Add other models and their costs as needed
 };
 
 // DALL-E pricing (as of 2024)
@@ -39,35 +40,66 @@ export async function trackTokenUsage({
   projectId,
   type,
   model,
-  inputTokens,
-  outputTokens,
+  promptTokens,
+  completionTokens,
+  totalTokens,
+  operationName,
+  cost
 }: {
   userId: string;
   projectId: string;
-  type: "script" | "storyboard" | "treatment" | "idea" | "character_generation"; // Added "character_generation"
-  model: "gpt-4" | "gpt-3.5-turbo";
-  inputTokens: number;
-  outputTokens: number;
+  type: "script" | "storyboard" | "treatment" | "idea" | "character_generation" | "logline" | "scenes";
+  model: string; 
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  operationName?: string;
+  cost?: number;
 }) {
-  const inputCost = (inputTokens / 1000) * TOKEN_COSTS[model].input;
-  const outputCost = (outputTokens / 1000) * TOKEN_COSTS[model].output;
-  const totalCost = inputCost + outputCost;
-  const totalTokens = inputTokens + outputTokens;
+  let calculatedCost = cost;
+  if (typeof calculatedCost !== 'number') { 
+    let modelKeyForCost = "gpt-3.5-turbo"; 
+    if (model.includes("gpt-4")) {
+      modelKeyForCost = "gpt-4";
+    }
+    
+    const costs = TOKEN_COSTS[modelKeyForCost as keyof typeof TOKEN_COSTS];
+    if (costs) {
+      const inputCost = (promptTokens / 1000) * costs.input;
+      const outputCost = (completionTokens / 1000) * costs.output;
+      calculatedCost = inputCost + outputCost;
+    } else {
+      console.warn(`Cost calculation skipped: Pricing not found for model key derived from '${model}'. Using 0.`);
+      calculatedCost = 0;
+    }
+  }
 
-  await prisma.tokenUsage.create({
-    data: {
-      userId,
-      projectId,
-      type,
+  try {
+    await prisma.tokenUsage.create({
+      data: {
+        userId,
+        projectId,
+        type,
+        tokens: totalTokens,
+        cost: calculatedCost,
+        promptTokens,     
+        completionTokens, 
+        operationName: operationName || type, 
+      },
+    });
+
+    return {
       tokens: totalTokens,
-      cost: totalCost,
-    },
-  });
-
-  return {
-    tokens: totalTokens,
-    cost: totalCost,
-  };
+      cost: calculatedCost,
+    };
+  } catch (error) {
+    console.error("Failed to track token usage in DB:", error);
+    return {
+      tokens: totalTokens,
+      cost: calculatedCost, 
+      error: "Failed to save token usage to database."
+    };
+  }
 }
 
 export async function trackImageGeneration({
@@ -76,32 +108,62 @@ export async function trackImageGeneration({
   type,
   model,
   size,
+  quality,
+  style,
   imageCount = 1,
+  operationName,
+  cost
 }: {
   userId: string;
   projectId: string;
-  type: "storyboard";
+  type: "storyboard" | "image_generation";
   model: "dall-e-3" | "dall-e-2";
   size: string;
+  quality?: "standard" | "hd";
+  style?: "vivid" | "natural";
   imageCount?: number;
+  operationName?: string;
+  cost?: number;
 }) {
-  const costPerImage = DALLE_COSTS[model]?.[size as keyof typeof DALLE_COSTS[typeof model]] || 0;
-  const totalCost = costPerImage * imageCount;
+  let calculatedCost = cost;
+  if (typeof calculatedCost !== 'number') {
+    const dalleModelKey = model as keyof typeof DALLE_COSTS;
+    let sizeKey = size;
+    if (model === 'dall-e-3' && quality === 'hd') {
+      sizeKey = `${size}_hd`;
+    }
+    const costPerImage = DALLE_COSTS[dalleModelKey]?.[sizeKey as keyof typeof DALLE_COSTS[typeof dalleModelKey]] || 0;
+    calculatedCost = costPerImage * imageCount;
+  }
+  
+  const opName = operationName || `${type} (${model}, ${size}${quality === 'hd' ? '_hd' : ''}${style ? `_${style}` : ''}, count: ${imageCount})`;
 
-  await prisma.tokenUsage.create({
-    data: {
-      userId,
-      projectId,
-      type,
-      tokens: 0, // DALL-E doesn't use tokens
-      cost: totalCost,
-    },
-  });
-
-  return {
-    cost: totalCost,
-    images: imageCount,
-  };
+  try {
+    await prisma.tokenUsage.create({
+      data: {
+        userId,
+        projectId,
+        type,
+        tokens: 0, 
+        cost: calculatedCost,
+        modelUsed: model,
+        operationName: opName,
+        // Storing image-specific details if the schema is extended for them
+        // e.g., imageSize: size, imageQuality: quality, imageStyle: style, imageCount
+      }
+    });
+    return {
+      cost: calculatedCost,
+      operationName: opName
+    };
+  } catch (error) {
+    console.error("Failed to track image generation usage in DB:", error);
+    return {
+      cost: calculatedCost,
+      operationName: opName,
+      error: "Failed to save image generation usage to database."
+    };
+  }
 }
 
 export async function getUserTokenUsage(userId: string) {

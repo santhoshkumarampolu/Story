@@ -29,6 +29,7 @@ export async function POST(
   request: Request, // request might still be needed for other purposes, or can be removed if not used elsewhere
   { params }: { params: { projectId: string } }
 ) {
+  const { projectId } = params;
   try {
     // Pass only authOptions to getServerSession in App Router
     const session = await getServerSession(authOptions); 
@@ -37,7 +38,6 @@ export async function POST(
     }
     const userId = session.user.id;
 
-    const projectId = params.projectId;
     if (!projectId) {
       return NextResponse.json(
         { error: 'Project ID is required' },
@@ -64,27 +64,51 @@ export async function POST(
 
     const { idea, language } = projectDetails;
 
-    const prompt = `Generate a compelling logline for a story with the following idea.\nLogline should be in ${language || 'English'}.\nIdea: "${idea}"\nLogline:`;
+    const prompt = `Create a compelling one-sentence logline for a story based on the following idea.
+The logline should be in ${language || 'English'} and follow these guidelines:
+
+1. Structure: [Protagonist] must [goal] before [stakes]
+2. Include:
+   - Main character and their motivation
+   - Central conflict or challenge
+   - Stakes or consequences
+   - Clear genre/tone indication
+3. Keep it concise (25-30 words)
+4. Make it engaging and hook the reader
+5. Avoid spoilers or revealing the ending
+6. Use active voice and present tense
+
+Story Idea: "${idea}"
+
+Please provide only the logline, no additional text or explanation.`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 60, // Max tokens for a logline
+      model: 'gpt-4', // Upgraded to GPT-4 for better quality
+      messages: [
+        { 
+          role: "system", 
+          content: "You are a professional screenwriter specializing in crafting compelling loglines. You understand story structure, character motivation, and how to create engaging hooks that capture the essence of a story in a single sentence."
+        },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 100,
       temperature: 0.7,
     });
 
     const logline = completion.choices[0]?.message?.content?.trim() || '';
-    const inputTokens = completion.usage?.prompt_tokens || 0;
-    const outputTokens = completion.usage?.completion_tokens || 0;
+    const promptTokens = completion.usage?.prompt_tokens || 0;
+    const completionTokens = completion.usage?.completion_tokens || 0;
+    const totalTokens = completion.usage?.total_tokens || (promptTokens + completionTokens);
 
     // Track token usage
     await trackTokenUsage({
       userId: projectDetails.userId, 
       projectId,
-      type: 'idea', // Consider if 'logline' should be a new type or use 'idea'
-      model: 'gpt-3.5-turbo',
-      inputTokens,
-      outputTokens,
+      type: 'logline',
+      model: 'gpt-4',
+      promptTokens,
+      completionTokens,
+      totalTokens,
     });
 
     return NextResponse.json({ logline });

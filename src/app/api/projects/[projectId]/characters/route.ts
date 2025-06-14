@@ -3,26 +3,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
   try {
-    // Get projectId from URL
-    const url = new URL(request.url);
-    const projectId = url.pathname.split('/')[3]; // /api/projects/[projectId]/characters
-
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "You must be logged in to create characters" },
+        { error: "You must be logged in to create a character" },
         { status: 401 }
+      );
+    }
+
+    const { projectId } = params;
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "Project ID is required" },
+        { status: 400 }
       );
     }
 
     const body = await request.json();
     const { name, description } = body;
 
-    if (typeof name !== 'string' || typeof description !== 'string') {
+    if (!name || typeof name !== 'string') {
       return NextResponse.json(
-        { error: "Name and description are required" },
+        { error: "Name is required and must be a string" },
+        { status: 400 }
+      );
+    }
+
+    if (description && typeof description !== 'string') {
+      return NextResponse.json(
+        { error: "Description must be a string" },
         { status: 400 }
       );
     }
@@ -37,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (!project) {
       return NextResponse.json(
-        { error: "Project not found" },
+        { error: "Project not found or you do not have permission to access it" },
         { status: 404 }
       );
     }
@@ -46,17 +60,21 @@ export async function POST(request: NextRequest) {
     const newCharacter = await prisma.character.create({
       data: {
         name,
-        description,
-        projectId,
+        description: description || "", // Ensure description is not undefined
+        projectId: projectId,
       },
     });
 
-    return NextResponse.json(newCharacter);
+    return NextResponse.json(newCharacter, { status: 201 });
   } catch (error) {
     console.error("[CHARACTER_CREATE] Error:", error);
+    // Check for specific Prisma errors if necessary, e.g., unique constraint violation
+    // if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    //   // Handle specific Prisma errors
+    // }
     return NextResponse.json(
       { error: "Failed to create character" },
       { status: 500 }
     );
   }
-} 
+}

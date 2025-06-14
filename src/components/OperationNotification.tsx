@@ -9,7 +9,7 @@ interface TokenUpdate {
   tokens: number;
   cost: number;
   timestamp: number;
-  type: "script" | "storyboard" | "treatment" | "idea";
+  type: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes";
   operation: string;
 }
 
