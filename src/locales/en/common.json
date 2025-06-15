@@ -1,0 +1,80 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "generate": "Generate",
+    "create": "Create",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "export": "Export",
+    "import": "Import",
+    "share": "Share",
+    "copy": "Copy",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "upload": "Upload",
+    "download": "Download"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "My Projects",
+    "newProject": "New Project",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "signOut": "Sign Out",
+    "home": "Home"
+  },
+  "states": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "generating": "Generating...",
+    "deleting": "Deleting...",
+    "uploading": "Uploading...",
+    "processing": "Processing...",
+    "success": "Success",
+    "error": "Error",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "messages": {
+    "success": "Operation completed successfully",
+    "error": "An error occurred. Please try again.",
+    "deleteConfirm": "Are you sure you want to delete this item?",
+    "unsavedChanges": "You have unsaved changes. Do you want to save them?",
+    "noData": "No data available",
+    "unauthorized": "You are not authorized to perform this action",
+    "networkError": "Network error. Please check your connection."
+  },
+  "common": {
+    "title": "Title",
+    "description": "Description",
+    "name": "Name",
+    "type": "Type",
+    "status": "Status",
+    "created": "Created",
+    "updated": "Updated",
+    "lastUpdated": "Last updated",
+    "author": "Author",
+    "language": "Language",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "view": "View",
+    "preview": "Preview"
+  },
+  "time": {
+    "now": "now",
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} weeks ago",
+    "monthsAgo": "{{count}} months ago"
+  }
+}

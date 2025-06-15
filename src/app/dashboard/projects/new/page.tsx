@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { PROJECT_CONFIGURATIONS, ProjectType } from '@/lib/project-templates';
 import { Check, Clock, FileText, Film, Video, Book } from 'lucide-react';
+import { TranslationProvider, useTranslations, T } from '@/components/TranslationProvider';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const projectTypes: { value: ProjectType; label: string; description: string; icon: string }[] = [
   {
@@ -59,6 +61,7 @@ export default function NewProjectPage() {
   const [title, setTitle] = useState('');
   const [projectType, setProjectType] = useState<ProjectType>('short-story');
   const [isLoading, setIsLoading] = useState(false);
+  const [userLanguage, setUserLanguage] = useState('English'); // Default language
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -112,19 +115,107 @@ export default function NewProjectPage() {
   };
 
   return (
+    <TranslationProvider language={userLanguage} enabled={userLanguage !== 'English'}>
+      <NewProjectContent
+        title={title}
+        setTitle={setTitle}
+        projectType={projectType}
+        setProjectType={setProjectType}
+        isLoading={isLoading}
+        handleSubmit={handleSubmit}
+        router={router}
+        userLanguage={userLanguage}
+        setUserLanguage={setUserLanguage}
+      />
+    </TranslationProvider>
+  );
+}
+
+function NewProjectContent({
+  title,
+  setTitle,
+  projectType,
+  setProjectType,
+  isLoading,
+  handleSubmit,
+  router,
+  userLanguage,
+  setUserLanguage
+}: {
+  title: string;
+  setTitle: (title: string) => void;
+  projectType: ProjectType;
+  setProjectType: (type: ProjectType) => void;
+  isLoading: boolean;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  router: any;
+  userLanguage: string;
+  setUserLanguage: (language: string) => void;
+}) {
+  const { t } = useTranslations();
+
+  const projectTypes: { value: ProjectType; label: string; description: string; icon: string }[] = [
+    {
+      value: 'shortfilm',
+      label: t('projectTypes.shortfilm', { ns: 'projects', defaultValue: 'Short Film' }),
+      description: t('projectTypeDescriptions.shortfilm', { ns: 'projects', defaultValue: 'Create a compelling short film from concept to screen-ready script' }),
+      icon: '🎬'
+    },
+    {
+      value: 'short-story',
+      label: t('projectTypes.shortStory', { ns: 'projects', defaultValue: 'Short Story' }),
+      description: t('projectTypeDescriptions.shortStory', { ns: 'projects', defaultValue: 'Craft a compelling short story with rich characters and themes' }),
+      icon: '📖'
+    },
+    {
+      value: 'novel',
+      label: t('projectTypes.novel', { ns: 'projects', defaultValue: 'Novel' }),
+      description: t('projectTypeDescriptions.novel', { ns: 'projects', defaultValue: 'Develop a full-length novel with complex plot and character development' }),
+      icon: '📚'
+    },
+    {
+      value: 'screenplay',
+      label: t('projectTypes.screenplay', { ns: 'projects', defaultValue: 'Feature Screenplay' }),
+      description: t('projectTypeDescriptions.screenplay', { ns: 'projects', defaultValue: 'Write a full-length feature film screenplay with professional formatting' }),
+      icon: '🎭'
+    },
+    {
+      value: 'film-story',
+      label: t('projectTypes.filmStory', { ns: 'projects', defaultValue: 'Film Story' }),
+      description: t('projectTypeDescriptions.filmStory', { ns: 'projects', defaultValue: 'Develop a story specifically crafted for film adaptation' }),
+      icon: '🎥'
+    },
+    {
+      value: 'synopsis',
+      label: t('projectTypes.synopsis', { ns: 'projects', defaultValue: 'Synopsis' }),
+      description: t('projectTypeDescriptions.synopsis', { ns: 'projects', defaultValue: 'Create a compelling synopsis for pitching your story or screenplay' }),
+      icon: '📋'
+    }
+  ];
+
+  return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
       <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-white">Create New Project</CardTitle>
-          <CardDescription className="text-gray-300">
-            Choose your project type and give it a title
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl font-bold text-white">
+                <T k="headers.createProject" ns="projects" defaultValue="Create New Project" />
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                <T k="actions.chooseProjectType" ns="projects" defaultValue="Choose your project type and give it a title" />
+              </CardDescription>
+            </div>
+            <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-6">
               <div className="space-y-4">
-                <Label className="text-gray-300 text-lg font-medium">Choose Your Project Type</Label>
+                <Label className="text-gray-300 text-lg font-medium">
+                  <T k="actions.chooseProjectType" ns="projects" defaultValue="Choose Your Project Type" />
+                </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {projectTypes.map((type) => (
                     <div
@@ -160,37 +251,37 @@ export default function NewProjectPage() {
                           {type.value === 'shortfilm' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <Clock className="w-3 h-3 mr-1" />
-                              <span>5-30 minutes</span>
+                              <span>5-30 {t('labels.minuteCount', { ns: 'projects', defaultValue: 'minutes', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                           {type.value === 'short-story' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <FileText className="w-3 h-3 mr-1" />
-                              <span>1,000-7,500 words</span>
+                              <span>1,000-7,500 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                           {type.value === 'novel' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <Book className="w-3 h-3 mr-1" />
-                              <span>50,000-120,000 words</span>
+                              <span>50,000-120,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                           {type.value === 'screenplay' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <Film className="w-3 h-3 mr-1" />
-                              <span>90-120 pages</span>
+                              <span>90-120 {t('labels.pageCount', { ns: 'projects', defaultValue: 'pages', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                           {type.value === 'film-story' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <Video className="w-3 h-3 mr-1" />
-                              <span>15,000-40,000 words</span>
+                              <span>15,000-40,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                           {type.value === 'synopsis' && (
                             <div className="mt-3 flex items-center text-xs text-purple-300">
                               <FileText className="w-3 h-3 mr-1" />
-                              <span>500-2,000 words</span>
+                              <span>500-2,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
                             </div>
                           )}
                         </div>
@@ -201,11 +292,13 @@ export default function NewProjectPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-gray-300 text-lg font-medium">Project Title</Label>
+                <Label htmlFor="title" className="text-gray-300 text-lg font-medium">
+                  <T k="labels.projectTitle" ns="projects" defaultValue="Project Title" />
+                </Label>
                 <Input
                   id="title"
                   type="text"
-                  placeholder="Enter your project title..."
+                  placeholder={t('placeholders.projectTitle', { ns: 'projects', defaultValue: 'Enter your project title...' })}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="bg-white/10 text-white placeholder:text-gray-400 border-white/10 h-12 text-lg"
@@ -220,7 +313,7 @@ export default function NewProjectPage() {
                 onClick={() => router.back()}
                 className="text-white border-white/20 hover:bg-white/10"
               >
-                Cancel
+                <T k="buttons.cancel" ns="common" defaultValue="Cancel" />
               </Button>
               <Button 
                 type="submit" 
@@ -230,10 +323,10 @@ export default function NewProjectPage() {
                 {isLoading ? (
                   <>
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
+                    <T k="states.loading" ns="common" defaultValue="Creating..." />
                   </>
                 ) : (
-                  "Create Project"
+                  <T k="buttons.create" ns="common" defaultValue="Create Project" />
                 )}
               </Button>
             </div>

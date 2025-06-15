@@ -19,6 +19,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { TokenAnimationDisplay } from '@/components/TokenAnimationDisplay';
 import { AIOperationProgress } from '@/components/AIOperationProgress';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslations } from '@/components/TranslationProvider';
 import { cn } from "@/lib/utils";
 import { getProjectConfiguration, ProjectType } from '@/lib/project-templates';
 import { OutlineEditor } from '@/components/story/outline-editor';
@@ -205,11 +206,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const router = useRouter();
   const ideaGeneratorRef = useRef<IdeaGeneratorHandle>(null);
 
-  // Translation hook setup
-  const { translate, isTranslating, translateAsync, preloadTranslations } = useTranslation({
-    targetLanguage: currentProjectLanguage,
-    enabled: !!(currentProjectLanguage && currentProjectLanguage !== 'English')
-  });
+  // Translation hook setup - using the new translation system
+  const { t } = useTranslations();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -247,8 +245,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       } catch (error) {
         console.error('Error fetching project:', error);
         toast({
-          title: translate("Error"),
-          description: translate("Failed to load project"),
+          title: t("messages.error", { ns: "editor", defaultValue: "Error" }),
+          description: t("messages.failedToLoadProject", { ns: "editor", defaultValue: "Failed to load project" }),
           variant: "destructive",
         });
       } finally {
@@ -259,7 +257,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     if (projectId) {
       fetchProjectData();
     }
-  }, [projectId, toast, translate, router, status]);
+  }, [projectId, toast, t, router, status]);
 
   const updateTokenUsage = async (operationType?: string, operationName?: string) => { /* Placeholder */ };
 
@@ -284,9 +282,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   variant="ai"
                 >
                   {generatingIdea ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Idea')}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('actions.generateIdea', { ns: 'editor', defaultValue: 'Generate Idea' })}</>
                   )}
                 </Button>
               </div>
@@ -296,7 +294,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   initialValue={idea}
                   onValueChange={setIdea}
                   className="min-h-[150px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                  placeholder={translate("Describe your story idea...")}
+                  placeholder={t('placeholders.enterIdea', { ns: 'editor', defaultValue: 'Describe your story idea...' })}
                   transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                   destinationLanguage={currentProjectLanguage}
                 />
@@ -306,9 +304,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingIdea ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.saving', { ns: 'editor', defaultValue: 'Saving...' })}</>
                   ) : (
-                    <><Icons.save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                    <><Icons.save className="h-4 w-4 mr-2" />{t('toolbar.save', { ns: 'editor', defaultValue: 'Save' })}</>
                   )}
                 </Button>
               </div>
@@ -331,9 +329,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   variant="ai"
                 >
                   {generatingLogline ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Logline')}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('actions.generateLogline', { ns: 'editor', defaultValue: 'Generate Logline' })}</>
                   )}
                 </Button>
               </div>
@@ -343,7 +341,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   initialValue={logline}
                   onValueChange={setLogline}
                   className="min-h-[100px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                  placeholder={translate("Enter your logline here...")}
+                  placeholder={t('placeholders.enterLogline', { ns: 'editor', defaultValue: 'Enter your logline here...' })}
                   transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                   destinationLanguage={currentProjectLanguage}
                 />
@@ -353,9 +351,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingLogline ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
                   ) : (
-                    <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                    <><Save className="h-4 w-4 mr-2" />{t('Save')}</>
                   )}
                 </Button>
               </div>
@@ -378,9 +376,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   variant="ai"
                 >
                   {generatingTreatment ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Generating...')}</>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Treatment')}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Treatment')}</>
                   )}
                 </Button>
               </div>
@@ -390,7 +388,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   initialValue={treatment}
                   onValueChange={setTreatment}
                   className="min-h-[200px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                  placeholder={translate("Write your treatment here...")}
+                  placeholder={t('placeholders.enterTreatment', { ns: 'editor', defaultValue: 'Write a detailed treatment of your story...' })}
                   transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                   destinationLanguage={currentProjectLanguage}
                 />
@@ -400,9 +398,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingTreatment ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
                   ) : (
-                    <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                    <><Save className="h-4 w-4 mr-2" />{t('Save')}</>
                   )}
                 </Button>
               </div>
@@ -426,9 +424,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                     variant="ai"
                   >
                     {generatingCharacters ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Generating...')}</>
                     ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Characters')}</>
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Characters')}</>
                     )}
                   </Button>
                   <Button
@@ -436,7 +434,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                     variant="outline"
                     className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
                   >
-                    <Plus className="h-4 w-4 mr-2" /> {translate('Add Character')}
+                    <Plus className="h-4 w-4 mr-2" /> {t('Add Character')}
                   </Button>
                 </div>
               </div>
@@ -448,19 +446,19 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                         value={character.name || ''}
                         onChange={(e) => handleCharacterChange(character.clientId || character.id, 'name', e.target.value)}
                         className="text-lg font-semibold bg-transparent border-0 p-0 mb-2 text-white"
-                        placeholder={translate("Character Name")}
+                        placeholder={t('placeholders.characterName', { ns: 'editor', defaultValue: 'Character Name' })}
                       />
                       <Textarea
                         value={character.description || ''}
                         onChange={(e) => handleCharacterChange(character.clientId || character.id, 'description', e.target.value)}
                         className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px]"
-                        placeholder={translate("Description")}
+                        placeholder={t('placeholders.description', { ns: 'editor', defaultValue: 'Description' })}
                       />
                       {character.hasOwnProperty('backstory') && (
                         <Textarea 
                           value={character.backstory || ''} 
                           onChange={(e) => handleCharacterChange(character.clientId || character.id, 'backstory', e.target.value)}
-                          placeholder={translate("Backstory...")}
+                          placeholder={t('placeholders.backstory', { ns: 'editor', defaultValue: 'Backstory...' })}
                           className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
                         />
                       )}
@@ -468,7 +466,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                         <Textarea 
                           value={character.motivation || ''} 
                           onChange={(e) => handleCharacterChange(character.clientId || character.id, 'motivation', e.target.value)}
-                          placeholder={translate("Motivation...")}
+                          placeholder={t('placeholders.motivation', { ns: 'editor', defaultValue: 'Motivation...' })}
                           className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
                         />
                       )}
@@ -480,9 +478,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                           className="bg-purple-500 hover:bg-purple-600 text-white"
                         >
                           {savingCharacterId === (character.clientId || character.id) ? (
-                            <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                            <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
                           ) : (
-                            <><Save className="h-4 w-4 mr-2" />{translate('Save Character')}</>
+                            <><Save className="h-4 w-4 mr-2" />{t('Save Character')}</>
                           )}
                         </Button>
                       </div>
@@ -500,16 +498,16 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
             beats={outlineBeats}
             onBeatsChange={setOutlineBeats}
             onGenerateOutline={() => {
-              toast({ title: translate("Outline Generation"), description: translate("Coming soon!") });
+              toast({ title: t('messages.outlineGeneration', { ns: 'editor', defaultValue: 'Outline Generation' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             isGenerating={false}
             isSaving={false}
             onSave={() => {
-              toast({ title: translate("Outline Saved"), description: translate("Coming soon!") });
+              toast({ title: t('messages.outlineSaved', { ns: 'editor', defaultValue: 'Outline Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
             language={currentProjectLanguage}
-            translate={translate}
+            translate={t}
           />
         );
       
@@ -519,16 +517,16 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
             chapters={chapters}
             onChaptersChange={setChapters}
             onGenerateChapters={() => {
-              toast({ title: translate("Chapter Generation"), description: translate("Coming soon!") });
+              toast({ title: t('messages.chapterGeneration', { ns: 'editor', defaultValue: 'Chapter Generation' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             isGenerating={false}
             isSaving={false}
             onSave={() => {
-              toast({ title: translate("Chapters Saved"), description: translate("Coming soon!") });
+              toast({ title: t('messages.chaptersSaved', { ns: 'editor', defaultValue: 'Chapters Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
             language={currentProjectLanguage}
-            translate={translate}
+            translate={t}
           />
         );
       
@@ -538,16 +536,16 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
             drafts={narrativeDrafts}
             onDraftsChange={setNarrativeDrafts}
             onGenerateDraft={() => {
-              toast({ title: translate("Draft Generation"), description: translate("Coming soon!") });
+              toast({ title: t('messages.draftGeneration', { ns: 'editor', defaultValue: 'Draft Generation' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             isGenerating={false}
             isSaving={false}
             onSave={() => {
-              toast({ title: translate("Draft Saved"), description: translate("Coming soon!") });
+              toast({ title: t('messages.draftSaved', { ns: 'editor', defaultValue: 'Draft Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
             language={currentProjectLanguage}
-            translate={translate}
+            translate={t}
           />
         );
       
@@ -564,15 +562,15 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {translate('Genre')}
+                    {t('Genre')}
                   </label>
                   <select 
                     className="w-full bg-white/10 border border-white/10 text-white rounded-md p-2"
                     onChange={(e) => {
-                      toast({ title: translate("Genre Updated"), description: e.target.value });
+                      toast({ title: t('messages.genreUpdated', { ns: 'editor', defaultValue: 'Genre Updated' }), description: e.target.value });
                     }}
                   >
-                    <option value="">{translate('Select Genre')}</option>
+                    <option value="">{t('Select Genre')}</option>
                     <option value="literary">Literary Fiction</option>
                     <option value="mystery">Mystery/Thriller</option>
                     <option value="romance">Romance</option>
@@ -585,15 +583,15 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {translate('Tone')}
+                    {t('Tone')}
                   </label>
                   <select 
                     className="w-full bg-white/10 border border-white/10 text-white rounded-md p-2"
                     onChange={(e) => {
-                      toast({ title: translate("Tone Updated"), description: e.target.value });
+                      toast({ title: t('messages.toneUpdated', { ns: 'editor', defaultValue: 'Tone Updated' }), description: e.target.value });
                     }}
                   >
-                    <option value="">{translate('Select Tone')}</option>
+                    <option value="">{t('Select Tone')}</option>
                     <option value="light">Light & Humorous</option>
                     <option value="serious">Serious & Dramatic</option>
                     <option value="dark">Dark & Intense</option>
@@ -624,7 +622,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   // TODO: Update project theme
                 }}
                 className="min-h-[150px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                placeholder={translate("What themes does your story explore? (e.g., love vs duty, the cost of ambition, finding identity)")}
+                placeholder={t('placeholders.themeExploration', { ns: 'editor', defaultValue: 'What themes does your story explore? (e.g., love vs duty, the cost of ambition, finding identity)' })}
                 transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                 destinationLanguage={currentProjectLanguage}
               />
@@ -649,7 +647,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   // TODO: Update project world building
                 }}
                 className="min-h-[200px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                placeholder={translate("Describe the world, setting, culture, history, and rules that govern your story's universe...")}
+                placeholder={t('placeholders.worldDescription', { ns: 'editor', defaultValue: 'Describe the world, setting, culture, history, and rules that govern your story universe...' })}
                 transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                 destinationLanguage={currentProjectLanguage}
               />
@@ -670,7 +668,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {translate('Visual Style')}
+                    {t('Visual Style')}
                   </label>
                   <GoogleTransliterateTextarea
                     id="visual-style-textarea"
@@ -679,14 +677,14 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                       // TODO: Update visual style
                     }}
                     className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                    placeholder={translate("Describe the visual aesthetic, color palette, cinematography style...")}
+                    placeholder={t('placeholders.visualAesthetic', { ns: 'editor', defaultValue: 'Describe the visual aesthetic, color palette, cinematography style...' })}
                     transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                     destinationLanguage={currentProjectLanguage}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {translate('Key Visual Moments')}
+                    {t('Key Visual Moments')}
                   </label>
                   <GoogleTransliterateTextarea
                     id="visual-moments-textarea"
@@ -695,7 +693,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                       // TODO: Update visual moments
                     }}
                     className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                    placeholder={translate("List important visual moments, symbols, or cinematic opportunities...")}
+                    placeholder={t('placeholders.visualMoments', { ns: 'editor', defaultValue: 'List important visual moments, symbols, or cinematic opportunities...' })}
                     transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                     destinationLanguage={currentProjectLanguage}
                   />
@@ -721,9 +719,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                     variant="ai"
                   >
                     {generatingScenes ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Generating...')}</>
                     ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Scenes')}</>
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Scenes')}</>
                     )}
                   </Button>
                   <Button
@@ -731,7 +729,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                     variant="outline"
                     className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
                   >
-                    <Plus className="h-4 w-4 mr-2" /> {translate('Add Scene')}
+                    <Plus className="h-4 w-4 mr-2" /> {t('Add Scene')}
                   </Button>
                 </div>
               </div>
@@ -741,13 +739,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                     value={scene.title || ''}
                     onChange={(e) => handleSceneChange(scene.id, 'title', e.target.value)}
                     className="text-xl font-semibold bg-transparent border-0 p-0 mb-2 text-white focus:ring-0 focus:border-purple-400"
-                    placeholder={translate("Scene Title")}
+                    placeholder={t("Scene Title")}
                   />
                   <Textarea
                     value={scene.summary || ''}
                     onChange={(e) => handleSceneChange(scene.id, 'summary', e.target.value)}
                     className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px] focus:ring-0 focus:border-purple-400"
-                    placeholder={translate("Summary")}
+                    placeholder={t("Summary")}
                   />
                 </div>
               ))}
@@ -771,9 +769,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   variant="ai"
                 >
                   {generatingFullScript ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating Script...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Full Script')}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('actions.generateFullScript', { ns: 'editor', defaultValue: 'Generate Full Script' })}</>
                   )}
                 </Button>
               </div>
@@ -782,7 +780,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                 initialValue={fullScript || ''}
                 onValueChange={(value) => setFullScript(value)}
                 className="min-h-[600px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full p-3 rounded-md mb-4"
-                placeholder={translate("Generate or paste your full script here...")}
+                placeholder={t("Generate or paste your full script here...")}
                 transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
                 destinationLanguage={currentProjectLanguage}
                 readOnly={generatingFullScript || savingFullScript} 
@@ -794,9 +792,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   {savingFullScript ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
                   ) : (
-                    <><Save className="h-4 w-4 mr-2" />{translate('Save Script')}</>
+                    <><Save className="h-4 w-4 mr-2" />{t('Save Script')}</>
                   )}
                 </Button>
                 <Button
@@ -806,7 +804,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
                 >
                   <ClipboardCopy className="h-4 w-4 mr-2" />
-                  {translate('Copy')}
+                  {t('Copy')}
                 </Button>
                 <Button
                   onClick={downloadFullScript}
@@ -815,7 +813,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  {translate('Download')}
+                  {t('Download')}
                 </Button>
               </div>
             </CardContent>
@@ -919,13 +917,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         updatedAt: new Date().toISOString(), // Placeholder
       }));
       setCharacters(prev => [...prev, ...newCharactersWithClientId]);
-      toast({ title: translate("Success"), description: translate("Characters generated successfully!") });
+      toast({ title: t("Success"), description: t("Characters generated successfully!") });
       updateTokenUsage("character_generation", "Generate Characters");
     } catch (error: any) {
       console.error("Error generating characters:", error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to generate characters."),
+        title: t("Error"),
+        description: error.message || t("Failed to generate characters."),
         variant: "destructive",
       });
     } finally {
@@ -937,7 +935,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     const newCharacter: Character = {
       id: `manual-${Date.now()}`, // Temporary ID, will be replaced by DB ID on save
       clientId: `temp-manual-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name: translate('New Character'),
+      name: t('New Character'),
       description: '',
       backstory: '',
       motivation: '',
@@ -945,13 +943,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       updatedAt: new Date().toISOString(),
     };
     setCharacters(prev => [...prev, newCharacter]);
-    toast({ title: translate("Character Added (Locally)"), description: translate("Save to persist changes.") });
+    toast({ title: t("Character Added (Locally)"), description: t("Save to persist changes.") });
   };
   const generateScenesApiCall = async () => {
     if (!idea || !logline || !treatment || characters.length === 0) {
       toast({
-        title: translate("Cannot Generate Scenes"),
-        description: translate("Idea, Logline, Treatment, and at least one Character are required to generate scenes."),
+        title: t("Cannot Generate Scenes"),
+        description: t("Idea, Logline, Treatment, and at least one Character are required to generate scenes."),
         variant: "destructive",
       });
       return;
@@ -989,13 +987,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         isScriptExpanded: false,
       }));
       setScenes(prevScenes => [...prevScenes, ...newScenes]);
-      toast({ title: translate("Success"), description: translate("Scenes generated successfully!") });
+      toast({ title: t("Success"), description: t("Scenes generated successfully!") });
       updateTokenUsage("scenes", "Generate Scenes");
     } catch (error: any) {
       console.error("Error generating scenes:", error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to generate scenes."),
+        title: t("Error"),
+        description: error.message || t("Failed to generate scenes."),
         variant: "destructive",
       });
     } finally {
@@ -1006,7 +1004,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     // Placeholder: Implement actual logic to add a scene manually
     const newScene: Scene = {
       id: `manual-scene-${Date.now()}`,
-      title: translate('New Scene'),
+      title: t('New Scene'),
       summary: '',
       script: null,
       storyboard: null,
@@ -1026,13 +1024,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       isScriptExpanded: false,
     };
     setScenes(prev => [...prev, newScene]);
-    toast({ title: translate("Scene Added (Locally)"), description: translate("Save to persist changes.") });
+    toast({ title: t("Scene Added (Locally)"), description: t("Save to persist changes.") });
   };
 
   const generateSceneScriptApiCall = async (sceneId: string) => {
     const sceneToGenerate = scenes.find(s => s.id === sceneId);
     if (!sceneToGenerate) {
-      toast({ title: translate("Error"), description: translate("Scene not found."), variant: "destructive" });
+      toast({ title: t("Error"), description: t("Scene not found."), variant: "destructive" });
       return;
     }
 
@@ -1076,12 +1074,12 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
          updateTokenUsage("script", `Scene Script: ${sceneToGenerate.title}`);
       }
       
-      toast({ title: translate("Success"), description: translate(`Script generated for scene "${sceneToGenerate.title}"`) });
+      toast({ title: t("Success"), description: t(`Script generated for scene "${sceneToGenerate.title}"`) });
     } catch (error: any) {
       console.error(`Error generating script for scene ${sceneId}:`, error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to generate scene script."),
+        title: t("Error"),
+        description: error.message || t("Failed to generate scene script."),
         variant: "destructive",
       });
     } finally {
@@ -1092,7 +1090,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const generateSceneStoryboardApiCall = async (sceneId: string) => {
     const sceneToGenerate = scenes.find(s => s.id === sceneId);
     if (!sceneToGenerate) {
-      toast({ title: translate("Error"), description: translate("Scene not found."), variant: "destructive" });
+      toast({ title: t("Error"), description: t("Scene not found."), variant: "destructive" });
       return;
     }
 
@@ -1137,12 +1135,12 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         updateTokenUsage("storyboard", `Scene Storyboard: ${sceneToGenerate.title}`);
       }
 
-      toast({ title: translate("Success"), description: translate(`Storyboard generated for scene "${sceneToGenerate.title}"`) });
+      toast({ title: t("Success"), description: t(`Storyboard generated for scene "${sceneToGenerate.title}"`) });
     } catch (error: any) {
       console.error(`Error generating storyboard for scene ${sceneId}:`, error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to generate scene storyboard."),
+        title: t("Error"),
+        description: error.message || t("Failed to generate scene storyboard."),
         variant: "destructive",
       });
     } finally {
@@ -1182,13 +1180,13 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         updateTokenUsage("script", `Full Script: ${project.title}`);
       }
 
-      toast({ title: translate("Success"), description: translate("Full script generated successfully!") });
+      toast({ title: t("Success"), description: t("Full script generated successfully!") });
       setActiveTab("full-script"); // Switch to the full script tab
     } catch (error: any) {
       console.error("Error generating full script:", error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to generate full script."),
+        title: t("Error"),
+        description: error.message || t("Failed to generate full script."),
         variant: "destructive",
       });
     } finally {
@@ -1199,8 +1197,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const saveFullScriptApiCall = async () => {
     if (!project || fullScript === null) {
       toast({
-        title: translate("Nothing to save"),
-        description: translate("Full script is empty or project not loaded."),
+        title: t("Nothing to save"),
+        description: t("Full script is empty or project not loaded."),
         variant: "destructive",
       });
       return;
@@ -1224,12 +1222,12 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         setFullScript(updatedProject.fullScript);
       }
       
-      toast({ title: translate("Success"), description: translate("Full script saved successfully!") });
+      toast({ title: t("Success"), description: t("Full script saved successfully!") });
     } catch (error: any) {
       console.error("Error saving full script:", error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to save full script."),
+        title: t("Error"),
+        description: error.message || t("Failed to save full script."),
         variant: "destructive",
       });
     } finally {
@@ -1241,14 +1239,14 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     if (fullScript && fullScript.trim() !== "") {
       navigator.clipboard.writeText(fullScript)
         .then(() => {
-          toast({ title: translate("Copied!"), description: translate("Full script copied to clipboard.") });
+          toast({ title: t("Copied!"), description: t("Full script copied to clipboard.") });
         })
         .catch(err => {
           console.error('Failed to copy text: ', err);
-          toast({ title: translate("Error"), description: translate("Failed to copy script."), variant: "destructive" });
+          toast({ title: t("Error"), description: t("Failed to copy script."), variant: "destructive" });
         });
     } else {
-      toast({ title: translate("Nothing to copy"), description: translate("Full script is empty."), variant: "default" });
+      toast({ title: t("Nothing to copy"), description: t("Full script is empty."), variant: "default" });
     }
   };
 
@@ -1263,9 +1261,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      toast({ title: translate("Downloaded"), description: translate("Full script download started.") });
+      toast({ title: t("Downloaded"), description: t("Full script download started.") });
     } else {
-      toast({ title: translate("Nothing to download"), description: translate("Full script is empty."), variant: "default" });
+      toast({ title: t("Nothing to download"), description: t("Full script is empty."), variant: "default" });
     }
   };
 
@@ -1306,14 +1304,14 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       );
 
       toast({
-        title: translate("Success"),
-        description: translate(`Character "${savedCharacter.name}" ${isNewCharacter ? 'created' : 'updated'} successfully.`),
+        title: t("Success"),
+        description: t(`Character "${savedCharacter.name}" ${isNewCharacter ? 'created' : 'updated'} successfully.`),
       });
     } catch (error: any) {
       console.error(`Error ${isNewCharacter ? 'creating' : 'updating'} character:`, error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to save character."),
+        title: t("Error"),
+        description: error.message || t("Failed to save character."),
         variant: "destructive",
       });
     } finally {
@@ -1355,14 +1353,14 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       );
 
       toast({
-        title: translate("Success"),
-        description: translate(`Scene "${savedScene.title}" ${isNewScene ? 'created' : 'updated'} successfully.`),
+        title: t("Success"),
+        description: t(`Scene "${savedScene.title}" ${isNewScene ? 'created' : 'updated'} successfully.`),
       });
     } catch (error: any) {
       console.error(`Error ${isNewScene ? 'creating' : 'updating'} scene:`, error);
       toast({
-        title: translate("Error"),
-        description: error.message || translate("Failed to save scene."),
+        title: t("Error"),
+        description: error.message || t("Failed to save scene."),
         variant: "destructive",
       });
     } finally {
@@ -1383,9 +1381,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground">
         <IAlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <p className="text-xl">{translate('Project not found or access denied.')}</p>
+        <p className="text-xl">{t('Project not found or access denied.')}</p>
         <Button onClick={() => router.push('/dashboard')} className="mt-4">
-          {translate('Go to Dashboard')}
+          {t('Go to Dashboard')}
         </Button>
       </div>
     );
@@ -1412,18 +1410,18 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
             "script" // Default
           }
           operationName={
-            generatingScript ? translate("Full Script Generation") : 
-            generatingStoryboard ? translate("Full Storyboard Generation") :
-            generatingSceneScript ? translate("Scene Script Generation") : 
-            generatingSceneStoryboard ? translate("Scene Storyboard Generation") : 
-            generatingFullScript ? translate("Full Script Generation") : 
-            savingFullScript ? translate("Saving Full Script") : // Added saving full script
-            generatingTreatment ? translate("Treatment Generation") :
-            generatingIdea ? translate("Idea Generation") : 
-            generatingLogline ? translate("Logline Generation") :
-            generatingCharacters ? translate("Character Generation") :
-            generatingScenes ? translate("Scene Generation") :
-            translate("AI Generation") // Default
+            generatingScript ? t("Full Script Generation") : 
+            generatingStoryboard ? t("Full Storyboard Generation") :
+            generatingSceneScript ? t("Scene Script Generation") : 
+            generatingSceneStoryboard ? t("Scene Storyboard Generation") : 
+            generatingFullScript ? t("Full Script Generation") : 
+            savingFullScript ? t("Saving Full Script") : // Added saving full script
+            generatingTreatment ? t("Treatment Generation") :
+            generatingIdea ? t("Idea Generation") : 
+            generatingLogline ? t("Logline Generation") :
+            generatingCharacters ? t("Character Generation") :
+            generatingScenes ? t("Scene Generation") :
+            t("AI Generation") // Default
           }
         />
         {/* Header */}
@@ -1456,7 +1454,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                       isTransliterationEnabled ? "bg-purple-600 text-white hover:bg-purple-700" : "text-gray-400 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    {isTransliterationEnabled ? translate("Disable") : translate("Enable")} {translate("Tenglish")}
+                    {isTransliterationEnabled ? t("labels.disable", { ns: "editor", defaultValue: "Disable" }) : t("labels.enable", { ns: "editor", defaultValue: "Enable" })} {t("labels.tenglish", { ns: "editor", defaultValue: "Tenglish" })}
                   </Button>
                 )}
               </div>
@@ -1468,7 +1466,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                 {saving && (
                   <span className="text-sm text-gray-400 flex items-center">
                     <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                    {translate("Saving...")}
+                    {t("Saving...")}
                   </span>
                 )}
               </div>
@@ -1489,10 +1487,10 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               </TabsTrigger>
             )) || (
               <>
-                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Overview')}</TabsTrigger>
-                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Characters')}</TabsTrigger>
-                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Scenes')}</TabsTrigger>
-                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Full Script')}</TabsTrigger>
+                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Overview')}</TabsTrigger>
+                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Characters')}</TabsTrigger>
+                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Scenes')}</TabsTrigger>
+                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Full Script')}</TabsTrigger>
               </>
             )}
           </TabsList>

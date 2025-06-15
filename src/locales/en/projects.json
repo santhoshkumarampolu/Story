@@ -1,0 +1,50 @@
+{
+  "projectTypes": {
+    "shortfilm": "Short Film",
+    "shortStory": "Short Story",
+    "novel": "Novel",
+    "screenplay": "Feature Screenplay",
+    "filmStory": "Film Story",
+    "synopsis": "Synopsis"
+  },
+  "projectTypeDescriptions": {
+    "shortfilm": "Create a compelling short film from concept to screen-ready script",
+    "shortStory": "Craft a compelling short story with rich characters and themes",
+    "novel": "Develop a full-length novel with complex plot and character development",
+    "screenplay": "Write a full-length feature film screenplay with professional formatting",
+    "filmStory": "Develop a story specifically crafted for film adaptation",
+    "synopsis": "Create a compelling synopsis for pitching your story or screenplay"
+  },
+  "actions": {
+    "createNewProject": "Create New Project",
+    "chooseProjectType": "Choose Your Project Type",
+    "enterTitle": "Enter your project title...",
+    "deleteProject": "Delete Project",
+    "duplicateProject": "Duplicate Project",
+    "exportProject": "Export Project",
+    "shareProject": "Share Project"
+  },
+  "headers": {
+    "myProjects": "My Projects",
+    "createProject": "Create New Project",
+    "manageProjects": "Manage and edit your writing projects",
+    "projectDetails": "Project Details",
+    "recentProjects": "Recent Projects"
+  },
+  "labels": {
+    "projectTitle": "Project Title",
+    "projectType": "Project Type",
+    "noProjectsYet": "No projects yet",
+    "createFirstProject": "Create your first project to get started",
+    "projectsFound": "{{count}} projects found",
+    "lastModified": "Last modified",
+    "wordCount": "{{count}} words",
+    "pageCount": "{{count}} pages",
+    "minuteCount": "{{count}} minutes"
+  },
+  "placeholders": {
+    "searchProjects": "Search projects...",
+    "projectTitle": "Enter project title...",
+    "filterByType": "Filter by type..."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "recentProjects": "Recent Projects",
+    "noProjectsYet": "No projects yet",
+    "createFirstProject": "Create your first project to get started",
+    "lastUpdated": "Last updated",
+    "quickActions": "Quick Actions"
+  },
+  "actions": {
+    "newProject": "New Project", 
+    "allProjects": "All Projects",
+    "viewProject": "View Project",
+    "editProject": "Edit Project"
+  }
+}

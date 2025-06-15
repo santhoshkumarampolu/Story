@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Icons } from '@/components/ui/icons';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
+import { TranslationProvider, useTranslations, T } from '@/components/TranslationProvider';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface Project {
   id: string;
@@ -24,6 +26,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userLanguage, setUserLanguage] = useState('English');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -85,13 +88,49 @@ export default function DashboardPage() {
   };
 
   return (
+    <TranslationProvider language={userLanguage} enabled={userLanguage !== 'English'}>
+      <DashboardContent 
+        projects={projects}
+        session={session}
+        getProjectTypeIcon={getProjectTypeIcon}
+        formatDate={formatDate}
+        userLanguage={userLanguage}
+        setUserLanguage={setUserLanguage}
+      />
+    </TranslationProvider>
+  );
+}
+
+function DashboardContent({ 
+  projects, 
+  session, 
+  getProjectTypeIcon, 
+  formatDate,
+  userLanguage,
+  setUserLanguage 
+}: {
+  projects: Project[];
+  session: any;
+  getProjectTypeIcon: (type: string) => React.ReactNode;
+  formatDate: (dateString: string) => string;
+  userLanguage: string;
+  setUserLanguage: (language: string) => void;
+}) {
+  const { t } = useTranslations();
+
+  return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <div className="container max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Dashboard</h1>
-            <p className="text-gray-400 mt-1">Welcome back, {session?.user?.name}</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+              <T k="dashboard.title" ns="dashboard" defaultValue="Dashboard" />
+            </h1>
+            <p className="text-gray-400 mt-1">
+              <T k="dashboard.welcome" ns="dashboard" defaultValue="Welcome back" />, {session?.user?.name}
+            </p>
           </div>
+          <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
         </div>
 
         <motion.div
@@ -105,7 +144,9 @@ export default function DashboardPage() {
               className="w-full h-32 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-lg rounded-xl flex flex-col items-center justify-center space-y-2"
             >
               <Icons.plus className="w-8 h-8 text-purple-500" />
-              <span className="text-white font-medium">New Project</span>
+              <span className="text-white font-medium">
+                <T k="actions.newProject" ns="dashboard" defaultValue="New Project" />
+              </span>
             </Button>
           </Link>
 
@@ -114,7 +155,9 @@ export default function DashboardPage() {
               className="w-full h-32 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-lg rounded-xl flex flex-col items-center justify-center space-y-2"
             >
               <Icons.book className="w-8 h-8 text-purple-500" />
-              <span className="text-white font-medium">All Projects</span>
+              <span className="text-white font-medium">
+                <T k="actions.allProjects" ns="dashboard" defaultValue="All Projects" />
+              </span>
             </Button>
           </Link>
         </motion.div>
@@ -126,13 +169,17 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
           className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10"
         >
-          <h2 className="text-xl font-bold text-white mb-4">Recent Projects</h2>
+          <h2 className="text-xl font-bold text-white mb-4">
+            <T k="dashboard.recentProjects" ns="dashboard" defaultValue="Recent Projects" />
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.length === 0 ? (
               <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <h3 className="text-white font-medium mb-2">No projects yet</h3>
+                <h3 className="text-white font-medium mb-2">
+                  <T k="dashboard.noProjectsYet" ns="dashboard" defaultValue="No projects yet" />
+                </h3>
                 <p className="text-white/70 text-sm">
-                  Create your first project to get started
+                  <T k="dashboard.createFirstProject" ns="dashboard" defaultValue="Create your first project to get started" />
                 </p>
               </div>
             ) : (
@@ -151,7 +198,9 @@ export default function DashboardPage() {
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                       <div className="text-sm text-gray-400">
-                        <p>Last updated: {formatDate(project.updatedAt)}</p>
+                        <p>
+                          <T k="dashboard.lastUpdated" ns="dashboard" defaultValue="Last updated" />: {formatDate(project.updatedAt)}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>

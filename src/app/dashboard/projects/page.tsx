@@ -18,6 +18,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { TranslationProvider, useTranslations, T } from '@/components/TranslationProvider';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface Project {
   id: string;
@@ -37,6 +39,7 @@ export default function ProjectsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [userLanguage, setUserLanguage] = useState('English'); // Default language
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -44,6 +47,7 @@ export default function ProjectsPage() {
     }
   }, [status, router]);
 
+  // Rest of existing useEffect and functions...
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -167,31 +171,91 @@ export default function ProjectsPage() {
   };
 
   return (
+    <TranslationProvider language={userLanguage} enabled={userLanguage !== 'English'}>
+      <ProjectsContent
+        projects={projects}
+        deleteDialogOpen={deleteDialogOpen}
+        setDeleteDialogOpen={setDeleteDialogOpen}
+        projectToDelete={projectToDelete}
+        isDeleting={isDeleting}
+        handleDeleteProject={handleDeleteProject}
+        openDeleteDialog={openDeleteDialog}
+        getProjectTypeLabel={getProjectTypeLabel}
+        getProjectTypeIcon={getProjectTypeIcon}
+        formatDate={formatDate}
+        userLanguage={userLanguage}
+        setUserLanguage={setUserLanguage}
+      />
+    </TranslationProvider>
+  );
+}
+
+function ProjectsContent({
+  projects,
+  deleteDialogOpen,
+  setDeleteDialogOpen,
+  projectToDelete,
+  isDeleting,
+  handleDeleteProject,
+  openDeleteDialog,
+  getProjectTypeLabel,
+  getProjectTypeIcon,
+  formatDate,
+  userLanguage,
+  setUserLanguage
+}: {
+  projects: Project[];
+  deleteDialogOpen: boolean;
+  setDeleteDialogOpen: (open: boolean) => void;
+  projectToDelete: Project | null;
+  isDeleting: boolean;
+  handleDeleteProject: () => Promise<void>;
+  openDeleteDialog: (project: Project) => void;
+  getProjectTypeLabel: (type: string) => string;
+  getProjectTypeIcon: (type: string) => React.ReactNode;
+  formatDate: (dateString: string) => string;
+  userLanguage: string;
+  setUserLanguage: (language: string) => void;
+}) {
+  const { t } = useTranslations();
+
+  return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       <div className="container max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] bg-clip-text text-transparent">My Projects</h1>
-            <p className="text-gray-400 mt-1">Manage and edit your writing projects</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] bg-clip-text text-transparent">
+              <T k="navigation.projects" ns="common" defaultValue="My Projects" />
+            </h1>
+            <p className="text-gray-400 mt-1">
+              <T k="headers.manageProjects" ns="projects" defaultValue="Manage and edit your writing projects" />
+            </p>
           </div>
-          <Link href="/dashboard/projects/new">
-            <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white">
-              <Icons.book className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
+            <Link href="/dashboard/projects/new">
+              <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white">
+                <Icons.book className="h-4 w-4 mr-2" />
+                <T k="navigation.newProject" ns="common" defaultValue="New Project" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {projects.length === 0 ? (
           <Card className="border border-[#1F1F1F] bg-[#0A0A0A] shadow-lg">
             <CardContent className="p-8 text-center">
               <Icons.book className="h-12 w-12 mx-auto text-[#8B5CF6] mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
-              <p className="text-gray-400 mb-6">Create your first project to get started</p>
+              <h3 className="text-lg font-medium text-white mb-2">
+                <T k="labels.noProjectsYet" ns="projects" defaultValue="No projects yet" />
+              </h3>
+              <p className="text-gray-400 mb-6">
+                <T k="labels.createFirstProject" ns="projects" defaultValue="Create your first project to get started" />
+              </p>
               <Link href="/dashboard/projects/new">
                 <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white">
                   <Icons.book className="h-4 w-4 mr-2" />
-                  Create New Project
+                  <T k="actions.createNewProject" ns="projects" defaultValue="Create New Project" />
                 </Button>
               </Link>
             </CardContent>
@@ -235,8 +299,12 @@ export default function ProjectsPage() {
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                       <div className="text-sm text-gray-400">
-                        <p>Last updated: {formatDate(project.updatedAt)}</p>
-                        <p>Created: {formatDate(project.createdAt)}</p>
+                        <p>
+                          <T k="common.lastUpdated" ns="common" defaultValue="Last updated" />: {formatDate(project.updatedAt)}
+                        </p>
+                        <p>
+                          <T k="common.created" ns="common" defaultValue="Created" />: {formatDate(project.createdAt)}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -251,9 +319,15 @@ export default function ProjectsPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="bg-[#0A0A0A] border border-[#1F1F1F] text-white">
           <DialogHeader>
-            <DialogTitle className="text-red-400">Delete Project</DialogTitle>
+            <DialogTitle className="text-red-400">
+              <T k="actions.deleteProject" ns="projects" defaultValue="Delete Project" />
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Are you sure you want to delete "{projectToDelete?.title}"? This action cannot be undone.
+              {t('messages.deleteConfirm', { 
+                ns: 'common', 
+                defaultValue: `Are you sure you want to delete "${projectToDelete?.title}"? This action cannot be undone.`,
+                interpolation: { title: projectToDelete?.title }
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
@@ -263,7 +337,7 @@ export default function ProjectsPage() {
               disabled={isDeleting}
               className="border-[#1F1F1F] text-white hover:bg-[#1F1F1F]"
             >
-              Cancel
+              <T k="buttons.cancel" ns="common" defaultValue="Cancel" />
             </Button>
             <Button
               onClick={handleDeleteProject}
@@ -273,12 +347,12 @@ export default function ProjectsPage() {
               {isDeleting ? (
                 <>
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  <T k="states.deleting" ns="common" defaultValue="Deleting..." />
                 </>
               ) : (
                 <>
                   <Icons.trash className="mr-2 h-4 w-4" />
-                  Delete
+                  <T k="buttons.delete" ns="common" defaultValue="Delete" />
                 </>
               )}
             </Button>

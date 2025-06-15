@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "manageProjects": "Manage and edit your writing projects",
+    "createProject": "Create New Project"
+  },
+  "labels": {
+    "projectTitle": "Project Title",
+    "projectType": "Project Type",
+    "noProjectsYet": "No projects yet",
+    "createFirstProject": "Create your first project to get started",
+    "wordCount": "words",
+    "pageCount": "pages",
+    "minuteCount": "minutes"
+  },
+  "actions": {
+    "createNewProject": "Create New Project",
+    "deleteProject": "Delete Project",
+    "chooseProjectType": "Choose your project type and give it a title"
+  },
+  "projectTypes": {
+    "shortfilm": "Short Film",
+    "shortStory": "Short Story", 
+    "novel": "Novel",
+    "screenplay": "Feature Screenplay",
+    "filmStory": "Film Story",
+    "synopsis": "Synopsis"
+  },
+  "projectTypeDescriptions": {
+    "shortfilm": "Create a compelling short film from concept to screen-ready script",
+    "shortStory": "Craft a compelling short story with rich characters and themes",
+    "novel": "Develop a full-length novel with complex plot and character development",
+    "screenplay": "Write a full-length feature film screenplay with professional formatting",
+    "filmStory": "Develop a story specifically crafted for film adaptation",
+    "synopsis": "Create a compelling synopsis for pitching your story or screenplay"
+  },
+  "placeholders": {
+    "projectTitle": "Enter your project title..."
+  }
+}
