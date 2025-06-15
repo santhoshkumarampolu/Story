@@ -25,6 +25,7 @@ import { getProjectConfiguration, ProjectType } from '@/lib/project-templates';
 import { OutlineEditor } from '@/components/story/outline-editor';
 import { ChapterManager } from '@/components/story/chapter-manager';
 import { NarrativeDraftEditor } from '@/components/story/narrative-draft-editor';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 // Define types based on enhanced schema
 type CardType = "story" | "scene" | "act" | "dialogue" | "shortfilm" | "advertisement" | "novel" | "synopsis" | "film-story" | "short-story";
@@ -126,7 +127,17 @@ interface GeneratedIdea {
   UniqueElement?: string;
 }
 
-export function EditorPageClient({ projectId }: { projectId: string }) {
+interface EditorPageClientProps {
+  projectId: string;
+  currentLanguage: string;
+  onLanguageChange: (language: string) => void;
+}
+
+export default function EditorPageClient({ 
+  projectId, 
+  currentLanguage, 
+  onLanguageChange 
+}: EditorPageClientProps) {
   const [project, setProject] = useState<Project | null>(null);
   const [projectConfig, setProjectConfig] = useState<any>(null);
   const [idea, setIdea] = useState<string>("");
@@ -147,7 +158,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const [generatingSceneStoryboard, setGeneratingSceneStoryboard] = useState<string | null>(null); // For specific scene storyboard
   const [selectedStoryboard, setSelectedStoryboard] = useState<string | null>(null);
   const [isTransliterationEnabled, setIsTransliterationEnabled] = useState(false);
-  const [currentProjectLanguage, setCurrentProjectLanguage] = useState<string>("English");
   const [generatingIdea, setGeneratingIdea] = useState(false);
   const [savingIdea, setSavingIdea] = useState(false);
   const [generatingLogline, setGeneratingLogline] = useState(false);
@@ -160,6 +170,14 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const [savingCharacterId, setSavingCharacterId] = useState<string | null>(null);
   const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
   const [activeTab, setActiveTab] = useState<string>("idea"); // Default to first workflow step
+  const { t } = useTranslations();
+  const [cinematicTheme, setCinematicTheme] = useState<string>("");
+  const [generatingTheme, setGeneratingTheme] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
+  const [visualStyle, setVisualStyle] = useState<string>("");
+  const [keyVisualMoments, setKeyVisualMoments] = useState<string>("");
+  const [generatingVisualElements, setGeneratingVisualElements] = useState(false);
+  const [savingVisualElements, setSavingVisualElements] = useState(false);
 
   // Function to handle character field changes
   const handleCharacterChange = (characterId: string, field: keyof Character, value: string) => {
@@ -206,9 +224,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const router = useRouter();
   const ideaGeneratorRef = useRef<IdeaGeneratorHandle>(null);
 
-  // Translation hook setup - using the new translation system
-  const { t } = useTranslations();
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/auth/signin");
@@ -240,7 +255,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         setTreatment(data.treatment || "");
         setCharacters(data.characters || []);
         setScenes(data.scenes.map(s => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false, isScriptExpanded: false })) || []);
-        setCurrentProjectLanguage(data.language || "English");
         setFullScript(data.fullScript || null); // Set full script from fetched data
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -295,8 +309,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   onValueChange={setIdea}
                   className="min-h-[150px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                   placeholder={t('placeholders.enterIdea', { ns: 'editor', defaultValue: 'Describe your story idea...' })}
-                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                  destinationLanguage={currentProjectLanguage}
+                  transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                  destinationLanguage={currentLanguage}
                 />
                 <Button
                   onClick={saveIdeaApiCall}
@@ -342,8 +356,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   onValueChange={setLogline}
                   className="min-h-[100px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                   placeholder={t('placeholders.enterLogline', { ns: 'editor', defaultValue: 'Enter your logline here...' })}
-                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                  destinationLanguage={currentProjectLanguage}
+                  transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                  destinationLanguage={currentLanguage}
                 />
                 <Button
                   onClick={saveLoglineApiCall}
@@ -389,8 +403,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   onValueChange={setTreatment}
                   className="min-h-[200px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                   placeholder={t('placeholders.enterTreatment', { ns: 'editor', defaultValue: 'Write a detailed treatment of your story...' })}
-                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                  destinationLanguage={currentProjectLanguage}
+                  transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                  destinationLanguage={currentLanguage}
                 />
                 <Button
                   onClick={saveTreatmentApiCall}
@@ -506,7 +520,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               toast({ title: t('messages.outlineSaved', { ns: 'editor', defaultValue: 'Outline Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
-            language={currentProjectLanguage}
+            language={currentLanguage}
             translate={t}
           />
         );
@@ -525,7 +539,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               toast({ title: t('messages.chaptersSaved', { ns: 'editor', defaultValue: 'Chapters Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
-            language={currentProjectLanguage}
+            language={currentLanguage}
             translate={t}
           />
         );
@@ -544,7 +558,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
               toast({ title: t('messages.draftSaved', { ns: 'editor', defaultValue: 'Draft Saved' }), description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' }) });
             }}
             transliterationEnabled={isTransliterationEnabled}
-            language={currentProjectLanguage}
+            language={currentLanguage}
             translate={t}
           />
         );
@@ -614,17 +628,39 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   <Heart className="h-5 w-5 mr-2" />
                   {stepLabel}
                 </h2>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={generateThemeApiCall}
+                    disabled={generatingTheme}
+                    variant="ai"
+                  >
+                    {generatingTheme ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
+                    ) : (
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Cinematic Themes', { ns: 'editor', defaultValue: 'Generate Cinematic Themes' })}</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={saveThemeApiCall}
+                    disabled={savingTheme || generatingTheme}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {savingTheme ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.saving', { ns: 'editor', defaultValue: 'Saving...' })}</>
+                    ) : (
+                      <><Icons.save className="h-4 w-4 mr-2" />{t('toolbar.save', { ns: 'editor', defaultValue: 'Save' })}</>
+                    )}
+                  </Button>
+                </div>
               </div>
               <GoogleTransliterateTextarea
                 id="theme-textarea"
-                initialValue=""
-                onValueChange={(value) => {
-                  // TODO: Update project theme
-                }}
+                initialValue={cinematicTheme}
+                onValueChange={setCinematicTheme}
                 className="min-h-[150px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                 placeholder={t('placeholders.themeExploration', { ns: 'editor', defaultValue: 'What themes does your story explore? (e.g., love vs duty, the cost of ambition, finding identity)' })}
-                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                destinationLanguage={currentProjectLanguage}
+                transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                destinationLanguage={currentLanguage}
               />
             </CardContent>
           </Card>
@@ -648,8 +684,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                 }}
                 className="min-h-[200px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                 placeholder={t('placeholders.worldDescription', { ns: 'editor', defaultValue: 'Describe the world, setting, culture, history, and rules that govern your story universe...' })}
-                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                destinationLanguage={currentProjectLanguage}
+                transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                destinationLanguage={currentLanguage}
               />
             </CardContent>
           </Card>
@@ -664,6 +700,30 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   <Camera className="h-5 w-5 mr-2" />
                   {stepLabel}
                 </h2>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={generateVisualElementsApiCall}
+                    disabled={generatingVisualElements}
+                    variant="ai"
+                  >
+                    {generatingVisualElements ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
+                    ) : (
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Visual Elements', { ns: 'editor', defaultValue: 'Generate Visual Elements' })}</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={saveVisualElementsApiCall}
+                    disabled={savingVisualElements || generatingVisualElements}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {savingVisualElements ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.saving', { ns: 'editor', defaultValue: 'Saving...' })}</>
+                    ) : (
+                      <><Icons.save className="h-4 w-4 mr-2" />{t('toolbar.save', { ns: 'editor', defaultValue: 'Save' })}</>
+                    )}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-4">
                 <div>
@@ -672,14 +732,12 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   </label>
                   <GoogleTransliterateTextarea
                     id="visual-style-textarea"
-                    initialValue=""
-                    onValueChange={(value) => {
-                      // TODO: Update visual style
-                    }}
+                    initialValue={visualStyle}
+                    onValueChange={setVisualStyle}
                     className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                     placeholder={t('placeholders.visualAesthetic', { ns: 'editor', defaultValue: 'Describe the visual aesthetic, color palette, cinematography style...' })}
-                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                    destinationLanguage={currentProjectLanguage}
+                    transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                    destinationLanguage={currentLanguage}
                   />
                 </div>
                 <div>
@@ -688,14 +746,12 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                   </label>
                   <GoogleTransliterateTextarea
                     id="visual-moments-textarea"
-                    initialValue=""
-                    onValueChange={(value) => {
-                      // TODO: Update visual moments
-                    }}
+                    initialValue={keyVisualMoments}
+                    onValueChange={setKeyVisualMoments}
                     className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
                     placeholder={t('placeholders.visualMoments', { ns: 'editor', defaultValue: 'List important visual moments, symbols, or cinematic opportunities...' })}
-                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                    destinationLanguage={currentProjectLanguage}
+                    transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                    destinationLanguage={currentLanguage}
                   />
                 </div>
               </div>
@@ -781,8 +837,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
                 onValueChange={(value) => setFullScript(value)}
                 className="min-h-[600px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full p-3 rounded-md mb-4"
                 placeholder={t("Generate or paste your full script here...")}
-                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                destinationLanguage={currentProjectLanguage}
+                transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                destinationLanguage={currentLanguage}
                 readOnly={generatingFullScript || savingFullScript} 
               />
               <div className="flex justify-end space-x-2">
@@ -839,11 +895,15 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         );
     }
   };
+
   const handleLanguageChange = async (newLanguage: string) => { 
-    setCurrentProjectLanguage(newLanguage);
+    onLanguageChange(newLanguage);
     setProject(prev => prev ? {...prev, language: newLanguage} : null);
     // TODO: Consider saving this change to the backend immediately or as part of a general save
-    toast({ title: "Language Updated (Placeholder)", description: `Language changed to ${newLanguage}`});
+    toast({ 
+      title: t('notifications.languageUpdated', { ns: 'editor', defaultValue: 'Language Updated' }), 
+      description: t('notifications.languageChanged', { ns: 'editor', defaultValue: 'Language changed to {{language}}', interpolation: { language: newLanguage } })
+    });
   };
   
   const generateIdeaApiCall = async () => { 
@@ -851,14 +911,20 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     console.log("Generating idea..."); 
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
     setGeneratingIdea(false);
-    toast({title: "Idea generation (Placeholder)"});
+    toast({
+      title: t('operations.ideaGeneration', { ns: 'editor', defaultValue: 'Idea Generation' }),
+      description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' })
+    });
   };
   const saveIdeaApiCall = async () => { 
     setSavingIdea(true); 
     console.log("Saving idea...", idea); 
     await new Promise(resolve => setTimeout(resolve, 1000)); 
     setSavingIdea(false);
-    toast({title: "Idea saved (Placeholder)"});
+    toast({
+      title: t('notifications.ideaSaved', { ns: 'editor', defaultValue: 'Idea Saved' }),
+      description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' })
+    });
   };
   const generateLoglineApiCall = async () => { 
     setGeneratingLogline(true); 
@@ -900,7 +966,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
           logline: project?.logline,
           treatment: project?.treatment,
           existingCharacters: characters.map(c => ({ name: c.name, description: c.description })),
-          language: currentProjectLanguage,
+          language: currentLanguage,
         }),
       });
       if (!response.ok) {
@@ -935,7 +1001,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     const newCharacter: Character = {
       id: `manual-${Date.now()}`, // Temporary ID, will be replaced by DB ID on save
       clientId: `temp-manual-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name: t('New Character'),
+      name: t('placeholders.characterName', { ns: 'editor', defaultValue: 'New Character' }),
       description: '',
       backstory: '',
       motivation: '',
@@ -943,7 +1009,10 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       updatedAt: new Date().toISOString(),
     };
     setCharacters(prev => [...prev, newCharacter]);
-    toast({ title: t("Character Added (Locally)"), description: t("Save to persist changes.") });
+    toast({ 
+      title: t('notifications.characterAdded', { ns: 'editor', defaultValue: 'Character Added (Locally)' }), 
+      description: t('notifications.saveTopersist', { ns: 'editor', defaultValue: 'Save to persist changes.' }) 
+    });
   };
   const generateScenesApiCall = async () => {
     if (!idea || !logline || !treatment || characters.length === 0) {
@@ -964,7 +1033,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
           logline: logline, // Use state variable 'logline'
           treatment: treatment, // Use state variable 'treatment'
           characters: characters.map(c => ({ name: c.name, description: c.description, backstory: c.backstory, motivation: c.motivation })),
-          language: currentProjectLanguage,
+          language: currentLanguage,
           numScenes: 10 // Example: make this configurable later
         }),
       });
@@ -1004,7 +1073,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     // Placeholder: Implement actual logic to add a scene manually
     const newScene: Scene = {
       id: `manual-scene-${Date.now()}`,
-      title: t('New Scene'),
+      title: t('placeholders.sceneTitle', { ns: 'editor', defaultValue: 'New Scene' }),
       summary: '',
       script: null,
       storyboard: null,
@@ -1024,7 +1093,10 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       isScriptExpanded: false,
     };
     setScenes(prev => [...prev, newScene]);
-    toast({ title: t("Scene Added (Locally)"), description: t("Save to persist changes.") });
+    toast({
+      title: t('notifications.sceneAdded', { ns: 'editor', defaultValue: 'Scene Added (Locally)' }),
+      description: t('notifications.saveTopersist', { ns: 'editor', defaultValue: 'Save to persist changes.' })
+    });
   };
 
   const generateSceneScriptApiCall = async (sceneId: string) => {
@@ -1042,7 +1114,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         body: JSON.stringify({
           sceneSummary: sceneToGenerate.summary,
           sceneTitle: sceneToGenerate.title,
-          projectLanguage: currentProjectLanguage,
+          projectLanguage: currentLanguage,
           logline: project?.logline, // Pass project logline for context
           treatment: project?.treatment, // Pass project treatment for context
           characters: characters.map(c => ({ name: c.name, description: c.description })), // Pass all characters for context
@@ -1103,7 +1175,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
           sceneTitle: sceneToGenerate.title,
           sceneSummary: sceneToGenerate.summary,
           sceneScript: sceneToGenerate.script, // Pass the current script as context
-          projectLanguage: currentProjectLanguage,
+          projectLanguage: currentLanguage,
           logline: project?.logline,
           treatment: project?.treatment,
           characters: characters.map(c => ({ name: c.name, description: c.description })),
@@ -1154,40 +1226,41 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     try {
       const response = await fetch(`/api/projects/${projectId}/generate-full-script`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // No body needed as backend fetches all required data based on projectId
+        headers: { 'Content-Type': 'application/json' }
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate full script');
+        throw new Error(errorData.error || t('messages.failedToGenerateScript', { ns: 'editor', defaultValue: 'Failed to generate full script' }));
       }
 
-      const data = await response.json(); // Expect { fullScript: string, tokensUsed: number, cost: number }
-
+      const data = await response.json();
       setFullScript(data.fullScript);
       setProject(prev => prev ? { ...prev, fullScript: data.fullScript } : null);
 
-      if (data.tokensUsed && data.cost && project) { // Added project check for title
+      if (data.tokensUsed && data.cost && project) {
         setTokenUpdates(prev => [...prev, {
           id: `full-script-${projectId}-${Date.now()}`,
           tokens: data.tokensUsed,
           cost: data.cost,
           timestamp: Date.now(),
-          type: "script", // Or a new type like "full_script"
-          operation: `Full Script: ${project.title}`
+          type: "script",
+          operation: `${t('operations.fullScriptGeneration', { ns: 'editor' })}: ${project.title}`
         }]);
-        updateTokenUsage("script", `Full Script: ${project.title}`);
+        updateTokenUsage("script", `${t('operations.fullScriptGeneration', { ns: 'editor' })}: ${project.title}`);
       }
 
-      toast({ title: t("Success"), description: t("Full script generated successfully!") });
-      setActiveTab("full-script"); // Switch to the full script tab
+      toast({ 
+        title: t('messages.success', { ns: 'editor', defaultValue: 'Success' }), 
+        description: t('notifications.scriptGeneratedSuccess', { ns: 'editor', defaultValue: 'Full script generated successfully!' })
+      });
+      setActiveTab("full-script");
     } catch (error: any) {
       console.error("Error generating full script:", error);
       toast({
-        title: t("Error"),
-        description: error.message || t("Failed to generate full script."),
-        variant: "destructive",
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('messages.failedToGenerateScript', { ns: 'editor', defaultValue: 'Failed to generate full script.' }),
+        variant: "destructive"
       });
     } finally {
       setGeneratingFullScript(false);
@@ -1197,9 +1270,9 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const saveFullScriptApiCall = async () => {
     if (!project || fullScript === null) {
       toast({
-        title: t("Nothing to save"),
-        description: t("Full script is empty or project not loaded."),
-        variant: "destructive",
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Nothing to save' }),
+        description: t('messages.emptyScript', { ns: 'editor', defaultValue: 'Full script is empty or project not loaded.' }),
+        variant: "destructive"
       });
       return;
     }
@@ -1213,22 +1286,25 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save full script');
+        throw new Error(errorData.error || t('messages.failedToSaveScript', { ns: 'editor', defaultValue: 'Failed to save full script' }));
       }
       const updatedProject = await response.json();
-      // Assuming the PATCH endpoint returns the updated project or at least the updated field
+      
       setProject(prev => prev ? { ...prev, fullScript: updatedProject.fullScript !== undefined ? updatedProject.fullScript : fullScript } : null);
       if (updatedProject.fullScript !== undefined) {
         setFullScript(updatedProject.fullScript);
       }
       
-      toast({ title: t("Success"), description: t("Full script saved successfully!") });
+      toast({ 
+        title: t('messages.success', { ns: 'editor', defaultValue: 'Success' }), 
+        description: t('notifications.scriptSavedSuccess', { ns: 'editor', defaultValue: 'Full script saved successfully!' })
+      });
     } catch (error: any) {
       console.error("Error saving full script:", error);
       toast({
-        title: t("Error"),
-        description: error.message || t("Failed to save full script."),
-        variant: "destructive",
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('messages.failedToSaveScript', { ns: 'editor', defaultValue: 'Failed to save full script.' }),
+        variant: "destructive"
       });
     } finally {
       setSavingFullScript(false);
@@ -1239,14 +1315,25 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     if (fullScript && fullScript.trim() !== "") {
       navigator.clipboard.writeText(fullScript)
         .then(() => {
-          toast({ title: t("Copied!"), description: t("Full script copied to clipboard.") });
+          toast({ 
+            title: t('messages.success', { ns: 'editor', defaultValue: 'Copied!' }), 
+            description: t('notifications.scriptCopied', { ns: 'editor', defaultValue: 'Full script copied to clipboard.' })
+          });
         })
         .catch(err => {
           console.error('Failed to copy text: ', err);
-          toast({ title: t("Error"), description: t("Failed to copy script."), variant: "destructive" });
+          toast({ 
+            title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }), 
+            description: t('messages.failedToCopy', { ns: 'editor', defaultValue: 'Failed to copy script.' }), 
+            variant: "destructive" 
+          });
         });
     } else {
-      toast({ title: t("Nothing to copy"), description: t("Full script is empty."), variant: "default" });
+      toast({ 
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Nothing to copy' }), 
+        description: t('messages.emptyScript', { ns: 'editor', defaultValue: 'Full script is empty.' }), 
+        variant: "default" 
+      });
     }
   };
 
@@ -1261,15 +1348,21 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      toast({ title: t("Downloaded"), description: t("Full script download started.") });
+      toast({ 
+        title: t('messages.success', { ns: 'editor', defaultValue: 'Downloaded' }), 
+        description: t('notifications.scriptDownloaded', { ns: 'editor', defaultValue: 'Full script download started.' })
+      });
     } else {
-      toast({ title: t("Nothing to download"), description: t("Full script is empty."), variant: "default" });
+      toast({ 
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Nothing to download' }), 
+        description: t('messages.emptyScript', { ns: 'editor', defaultValue: 'Full script is empty.' }), 
+        variant: "default" 
+      });
     }
   };
 
   const saveCharacterApiCall = async (characterToSave: Character) => {
     setSavingCharacterId(characterToSave.clientId || characterToSave.id);
-    console.log("Saving character...", characterToSave);
 
     const isNewCharacter = characterToSave.id.startsWith('temp-') || characterToSave.id.startsWith('manual-') || !!characterToSave.clientId;
     const apiUrl = isNewCharacter
@@ -1278,8 +1371,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     const httpMethod = isNewCharacter ? 'POST' : 'PATCH';
 
     try {
-      // Remove temporary clientId if it exists, the backend uses 'id' from the path for PATCH
-      // or generates a new 'id' for POST.
       const { clientId, ...characterDataForApi } = characterToSave;
 
       const response = await fetch(apiUrl, {
@@ -1290,7 +1381,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${isNewCharacter ? 'create' : 'update'} character`);
+        throw new Error(errorData.error || t('messages.failedToSaveCharacter', { ns: 'editor', defaultValue: 'Failed to save character' }));
       }
 
       const savedCharacter = await response.json();
@@ -1298,21 +1389,28 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       setCharacters(prevCharacters =>
         prevCharacters.map(char =>
           (char.id === characterToSave.id || char.clientId === characterToSave.clientId) 
-            ? { ...savedCharacter, id: savedCharacter.id, clientId: undefined } // Ensure clientId is removed/undefined after save
+            ? { ...savedCharacter, id: savedCharacter.id, clientId: undefined }
             : char
         )
       );
 
       toast({
-        title: t("Success"),
-        description: t(`Character "${savedCharacter.name}" ${isNewCharacter ? 'created' : 'updated'} successfully.`),
+        title: t('messages.success', { ns: 'editor', defaultValue: 'Success' }),
+        description: t('notifications.characterSaved', {
+          ns: 'editor',
+          defaultValue: 'Character "{{name}}" {{action}} successfully.',
+          interpolation: {
+            name: savedCharacter.name,
+            action: isNewCharacter ? t('created', { ns: 'editor' }) : t('updated', { ns: 'editor' })
+          }
+        })
       });
     } catch (error: any) {
       console.error(`Error ${isNewCharacter ? 'creating' : 'updating'} character:`, error);
       toast({
-        title: t("Error"),
-        description: error.message || t("Failed to save character."),
-        variant: "destructive",
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('messages.failedToSaveCharacter', { ns: 'editor', defaultValue: 'Failed to save character.' }),
+        variant: "destructive"
       });
     } finally {
       setSavingCharacterId(null);
@@ -1321,7 +1419,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
 
   const saveSceneApiCall = async (sceneToSave: Scene) => {
     setSavingSceneId(sceneToSave.id);
-    console.log("Saving scene...", sceneToSave);
 
     const isNewScene = sceneToSave.id.startsWith('temp-') || sceneToSave.id.startsWith('manual-');
     const apiUrl = isNewScene
@@ -1330,7 +1427,6 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
     const httpMethod = isNewScene ? 'POST' : 'PATCH';
 
     try {
-      // Remove temporary client-side flags before sending to backend
       const { isSummaryExpanded, isStoryboardExpanded, isScriptExpanded, ...sceneDataForApi } = sceneToSave;
 
       const response = await fetch(apiUrl, {
@@ -1341,7 +1437,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${isNewScene ? 'create' : 'update'} scene`);
+        throw new Error(errorData.error || t('messages.failedToSaveScene', { ns: 'editor', defaultValue: 'Failed to save scene' }));
       }
 
       const savedScene = await response.json();
@@ -1353,21 +1449,110 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
       );
 
       toast({
-        title: t("Success"),
-        description: t(`Scene "${savedScene.title}" ${isNewScene ? 'created' : 'updated'} successfully.`),
+        title: t('messages.success', { ns: 'editor', defaultValue: 'Success' }),
+        description: t('notifications.sceneSaved', { 
+          ns: 'editor', 
+          defaultValue: 'Scene "{{title}}" {{action}} successfully.',
+          interpolation: {
+            title: savedScene.title,
+            action: isNewScene ? t('created', { ns: 'editor' }) : t('updated', { ns: 'editor' })
+          }
+        })
       });
     } catch (error: any) {
       console.error(`Error ${isNewScene ? 'creating' : 'updating'} scene:`, error);
       toast({
-        title: t("Error"),
-        description: error.message || t("Failed to save scene."),
-        variant: "destructive",
+        title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('messages.failedToSaveScene', { ns: 'editor', defaultValue: 'Failed to save scene.' }),
+        variant: "destructive"
       });
     } finally {
       setSavingSceneId(null);
     }
   };
 
+  const generateThemeApiCall = async () => {
+    setGeneratingTheme(true);
+    try {
+      // Replace with your actual API endpoint and payload
+      const response = await fetch(`/api/projects/${projectId}/generate-theme`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea,
+          logline,
+          treatment,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to generate theme');
+      const data = await response.json();
+      setCinematicTheme(data.theme || "");
+      toast({ title: t('Success'), description: t('Cinematic theme generated!') });
+    } catch (error: any) {
+      toast({ title: t('Error'), description: error.message, variant: "destructive" });
+    } finally {
+      setGeneratingTheme(false);
+    }
+  };
+
+  const saveThemeApiCall = async () => {
+    setSavingTheme(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: cinematicTheme }),
+      });
+      if (!response.ok) throw new Error('Failed to save theme');
+      toast({ title: t('Success'), description: t('Theme saved!') });
+    } catch (error: any) {
+      toast({ title: t('Error'), description: error.message, variant: 'destructive' });
+    } finally {
+      setSavingTheme(false);
+    }
+  };
+
+  const generateVisualElementsApiCall = async () => {
+    setGeneratingVisualElements(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/generate-visual-elements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea,
+          logline,
+          treatment,
+          theme: cinematicTheme,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to generate visual elements');
+      const data = await response.json();
+      setVisualStyle(data.visualStyle || "");
+      setKeyVisualMoments(data.keyVisualMoments || "");
+      toast({ title: t('Success'), description: t('Visual elements generated!') });
+    } catch (error: any) {
+      toast({ title: t('Error'), description: error.message, variant: 'destructive' });
+    } finally {
+      setGeneratingVisualElements(false);
+    }
+  };
+
+  const saveVisualElementsApiCall = async () => {
+    setSavingVisualElements(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visualStyle, keyVisualMoments }),
+      });
+      if (!response.ok) throw new Error('Failed to save visual elements');
+      toast({ title: t('Success'), description: t('Visual elements saved!') });
+    } catch (error: any) {
+      toast({ title: t('Error'), description: error.message, variant: 'destructive' });
+    } finally {
+      setSavingVisualElements(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -1393,6 +1578,8 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   return (
     <ScrollArea className="h-full bg-background text-foreground">
       <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+        <div className="flex items-center justify-between mb-6">
+        </div>
         <AIOperationProgress
           isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment || generatingIdea || generatingLogline || generatingCharacters || generatingScenes || !!generatingSceneScript || !!generatingSceneStoryboard || generatingFullScript || savingFullScript}
           operationType={
@@ -1428,47 +1615,26 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         <div className="bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-8">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => router.push("/dashboard")}
                   className="text-gray-400 hover:text-white hover:bg-white/5"
                 >
-                  <Icons.arrowLeft className="h-5 w-5" />
+                  <Icons.arrowLeft className="h-4 w-4" />
                 </Button>
-                <h1 className="text-xl font-semibold text-white">{project.title}</h1>
-                <LanguageSelector
-                  value={currentProjectLanguage}
-                  onChange={handleLanguageChange}
-                  variant="button"
-                  size="sm"
-                />
-                {currentProjectLanguage === "Telugu" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsTransliterationEnabled(!isTransliterationEnabled)}
-                    className={cn(
-                      "ml-2",
-                      isTransliterationEnabled ? "bg-purple-600 text-white hover:bg-purple-700" : "text-gray-400 hover:text-white hover:bg-white/5"
-                    )}
-                  >
-                    {isTransliterationEnabled ? t("labels.disable", { ns: "editor", defaultValue: "Disable" }) : t("labels.enable", { ns: "editor", defaultValue: "Enable" })} {t("labels.tenglish", { ns: "editor", defaultValue: "Tenglish" })}
-                  </Button>
+                {project && (
+                  <h1 className="text-lg font-semibold text-white">
+                    {project.title}
+                  </h1>
                 )}
               </div>
               <div className="flex items-center space-x-4">
-                <TokenAnimationDisplay 
-                  tokenUsage={tokenUsage} 
-                  tokenUpdates={tokenUpdates} 
+                <LanguageSwitcher 
+                  currentLanguage={currentLanguage}
+                  onLanguageChange={onLanguageChange}
                 />
-                {saving && (
-                  <span className="text-sm text-gray-400 flex items-center">
-                    <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
-                    {t("Saving...")}
-                  </span>
-                )}
               </div>
             </div>
           </div>

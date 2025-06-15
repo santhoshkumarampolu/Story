@@ -39,6 +39,7 @@ export function useI18n({
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState(targetLanguage || 'en');
   const loadedNamespaces = useRef<Set<string>>(new Set());
+  const pendingLoads = useRef<Set<string>>(new Set());
 
   // Update current language when prop changes
   useEffect(() => {
@@ -50,17 +51,20 @@ export function useI18n({
   const loadNamespace = useCallback(async (namespace: string) => {
     const cacheKey = `${currentLanguage}:${namespace}`;
     
-    // Return if already loaded
-    if (translationCache[cacheKey] || loadedNamespaces.current.has(cacheKey)) {
+    // Return if already loaded or currently loading
+    if (translationCache[cacheKey] || loadedNamespaces.current.has(cacheKey) || pendingLoads.current.has(cacheKey)) {
       return;
     }
 
+    pendingLoads.current.add(cacheKey);
     setIsLoading(true);
+
     try {
-      // Map language codes
-      const langCode = currentLanguage === 'English' ? 'en' : 
-                      currentLanguage === 'Telugu' ? 'te' :
-                      currentLanguage === 'Hindi' ? 'hi' : 'en';
+      // Map language codes (support both names and codes)
+      const langCode =
+        currentLanguage === 'English' || currentLanguage === 'en' ? 'en' :
+        currentLanguage === 'Telugu'  || currentLanguage === 'te' ? 'te' :
+        currentLanguage === 'Hindi'   || currentLanguage === 'hi' ? 'hi' : 'en';
 
       // Try to load the translation file
       const response = await fetch(`/locales/${langCode}/${namespace}.json`);
@@ -83,14 +87,10 @@ export function useI18n({
     } catch (error) {
       console.warn(`Failed to load translations for ${namespace}:`, error);
     } finally {
+      pendingLoads.current.delete(cacheKey);
       setIsLoading(false);
     }
   }, [currentLanguage]);
-
-  // Auto-load common translations on language change
-  useEffect(() => {
-    loadNamespace('common');
-  }, [currentLanguage, loadNamespace]);
 
   const t = useCallback((
     key: string, 
@@ -111,8 +111,10 @@ export function useI18n({
     const translations = translationCache[cacheKey];
     
     if (!translations) {
-      // Try to load namespace if not loaded
-      loadNamespace(ns);
+      // Queue namespace loading but don't wait for it
+      if (!pendingLoads.current.has(cacheKey)) {
+        loadNamespace(ns).catch(console.error);
+      }
       return defaultValue;
     }
 
@@ -135,6 +137,7 @@ export function useI18n({
     setCurrentLanguage(language);
     // Clear loaded namespaces to force reload
     loadedNamespaces.current.clear();
+    translationCache[language] = {};
   }, []);
 
   return {

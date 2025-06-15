@@ -1,45 +1,69 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from 'react';
-import { useI18n } from '@/hooks/useI18n';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import useI18n from '@/hooks/useI18n';
 
-interface TranslationContextValue {
+interface TranslationContextType {
   t: (key: string, options?: { ns?: string; defaultValue?: string; interpolation?: Record<string, any> }) => string;
-  isLoading: boolean;
-  loadNamespace: (namespace: string) => Promise<void>;
   setLanguage: (language: string) => void;
   currentLanguage: string;
+  isLoading: boolean;
+  loadNamespace: (namespace: string) => Promise<void>;
 }
 
-const TranslationContext = createContext<TranslationContextValue | null>(null);
+const TranslationContext = createContext<TranslationContextType | null>(null);
 
 interface TranslationProviderProps {
   children: React.ReactNode;
-  language: string;
+  targetLanguage: string;
   enabled?: boolean;
 }
 
 export function TranslationProvider({ 
   children, 
-  language, 
+  targetLanguage,
   enabled = true 
 }: TranslationProviderProps) {
-  const i18n = useI18n({ 
-    targetLanguage: language, 
-    enabled 
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { t, setLanguage, currentLanguage, isLoading, loadNamespace } = useI18n({
+    targetLanguage,
+    enabled
   });
 
-  // Preload common namespaces
+  // Load required namespaces on mount and language change
   useEffect(() => {
-    if (enabled && language && language !== 'English') {
-      i18n.loadNamespace('common');
-      i18n.loadNamespace('projects');
-      i18n.loadNamespace('editor');
-    }
-  }, [i18n, language, enabled]);
+    const initializeTranslations = async () => {
+      if (enabled && targetLanguage && targetLanguage !== 'English') {
+        try {
+          await Promise.all([
+            loadNamespace('common'),
+            loadNamespace('projects'),
+            loadNamespace('editor')
+          ]);
+        } catch (error) {
+          console.error('Failed to load translations:', error);
+        }
+      }
+      setIsInitialized(true);
+    };
+
+    initializeTranslations();
+  }, [targetLanguage, enabled, loadNamespace]);
+
+  // Don't render children until translations are loaded
+  if (!isInitialized || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading translations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <TranslationContext.Provider value={i18n}>
+    <TranslationContext.Provider value={{ t, setLanguage, currentLanguage, isLoading, loadNamespace }}>
       {children}
     </TranslationContext.Provider>
   );

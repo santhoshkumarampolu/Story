@@ -72,6 +72,8 @@ model Project {
   genre          String?      // Story genre
   tone           String?      // Story tone/mood
   theme          String?      // Central theme
+  visualStyle    String?      // Visual style/aesthetic for the project
+  keyVisualMoments String?    // Key visual moments or motifs
   targetLength   Int?         // Word count goal
   logline        String?      @db.Text
   idea           String?      @db.Text

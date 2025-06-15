@@ -102,7 +102,7 @@ The landing page contains marketing copy and feature descriptions.
 }
 ``` -->
 
-### **Priority 3: Advanced Features** 🚀
+### **Priority 2: Advanced Features** 🚀
 
 #### **3.5 User Language Preference Persistence:**
 

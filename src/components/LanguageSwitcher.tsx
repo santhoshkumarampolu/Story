@@ -17,7 +17,7 @@ const supportedLanguages = [
 
 export function LanguageSwitcher({ currentLanguage, onLanguageChange }: LanguageSwitcherProps) {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-4">
       <span className="text-sm text-gray-400">Language:</span>
       <Select value={currentLanguage} onValueChange={onLanguageChange}>
         <SelectTrigger className="w-40 bg-white/10 border-white/10 text-white">
@@ -30,7 +30,7 @@ export function LanguageSwitcher({ currentLanguage, onLanguageChange }: Language
               value={lang.code}
               className="text-white hover:bg-white/10 focus:bg-white/10"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-4">
                 <span>{lang.label}</span>
                 <span className="text-xs opacity-70">({lang.nativeLabel})</span>
               </div>
