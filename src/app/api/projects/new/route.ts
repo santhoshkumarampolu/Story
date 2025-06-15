@@ -4,15 +4,25 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-type ProjectType = 'shortfilm' | 'story' | 'screenplay';
+type ProjectType = 'shortfilm' | 'short-story' | 'novel' | 'screenplay' | 'film-story' | 'synopsis';
 
 function getInitialContent(type: string) {
   const indianNames = ['Arjun', 'Priya', 'Kiran', 'Meera'];
   const characterName = indianNames[Math.floor(Math.random() * indianNames.length)];
   
+  // Determine structure type based on project type
+  let structureType;
+  if (type === 'shortfilm' || type === 'screenplay' || type === 'film-story') {
+    structureType = 'three-act';
+  } else if (type === 'novel') {
+    structureType = 'hero-journey';
+  } else if (type === 'short-story') {
+    structureType = 'freytag';
+  }
+  
   return {
     version: 1,
-    structureType: type === 'shortfilm' ? 'three-act' : undefined,
+    structureType,
     idea: '',
     logline: '',
     treatment: '',

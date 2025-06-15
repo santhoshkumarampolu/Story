@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { IdeaGenerator, IdeaGeneratorHandle } from '@/components/ideas/idea-generator';
-import { Save, Share2, Download, Plus, Pencil, Trash2, AlertCircle as IAlertCircle, ClipboardCopy } from "lucide-react";
+import { Save, Share2, Download, Plus, Pencil, Trash2, AlertCircle as IAlertCircle, ClipboardCopy, Tag, Heart, Globe, Camera } from "lucide-react";
 import { Icons } from "@/components/ui/icons";
 import { GoogleTransliterateTextarea } from '@/components/GoogleTransliterateTextarea';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -20,10 +20,13 @@ import { TokenAnimationDisplay } from '@/components/TokenAnimationDisplay';
 import { AIOperationProgress } from '@/components/AIOperationProgress';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from "@/lib/utils";
+import { getProjectConfiguration, ProjectType } from '@/lib/project-templates';
+import { OutlineEditor } from '@/components/story/outline-editor';
+import { ChapterManager } from '@/components/story/chapter-manager';
+import { NarrativeDraftEditor } from '@/components/story/narrative-draft-editor';
 
-// Define types based on Prisma schema
-type ProjectType = "shortfilm" | "story" | "screenplay";
-type CardType = "story" | "scene" | "act" | "dialogue" | "shortfilm" | "advertisement";
+// Define types based on enhanced schema
+type CardType = "story" | "scene" | "act" | "dialogue" | "shortfilm" | "advertisement" | "novel" | "synopsis" | "film-story" | "short-story";
 
 interface ProjectCard {
   id: string;
@@ -124,10 +127,14 @@ interface GeneratedIdea {
 
 export function EditorPageClient({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<Project | null>(null);
+  const [projectConfig, setProjectConfig] = useState<any>(null);
   const [idea, setIdea] = useState<string>("");
   const [logline, setLogline] = useState<string>("");
   const [treatment, setTreatment] = useState<string>("");
   const [fullScript, setFullScript] = useState<string | null>(null); // New state for full script
+  const [outlineBeats, setOutlineBeats] = useState<any[]>([]);
+  const [chapters, setChapters] = useState<any[]>([]);
+  const [narrativeDrafts, setNarrativeDrafts] = useState<any[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [savingScene, setSavingScene] = useState<string | null>(null); // DEPRECATED by savingSceneId, consider removing if not used elsewhere
@@ -151,7 +158,7 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   const [savingSceneId, setSavingSceneId] = useState<string | null>(null);
   const [savingCharacterId, setSavingCharacterId] = useState<string | null>(null);
   const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("overview"); // New state for active tab, default to overview
+  const [activeTab, setActiveTab] = useState<string>("idea"); // Default to first workflow step
 
   // Function to handle character field changes
   const handleCharacterChange = (characterId: string, field: keyof Character, value: string) => {
@@ -220,6 +227,16 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
         }
         const data: Project = await response.json();
         setProject(data);
+        
+        // Set project configuration based on project type
+        const config = getProjectConfiguration(data.type as ProjectType);
+        setProjectConfig(config);
+        
+        // Set active tab to first workflow step
+        if (config.workflow && config.workflow.length > 0) {
+          setActiveTab(config.workflow[0]);
+        }
+        
         setIdea(data.idea || "");
         setLogline(data.logline || "");
         setTreatment(data.treatment || "");
@@ -245,6 +262,585 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
   }, [projectId, toast, translate, router, status]);
 
   const updateTokenUsage = async (operationType?: string, operationName?: string) => { /* Placeholder */ };
+
+  // Dynamic content renderer based on workflow step
+  const renderWorkflowStep = (step: string) => {
+    const config = projectConfig;
+    const stepLabel = config?.labels?.[step] || step.charAt(0).toUpperCase() + step.slice(1);
+    
+    switch (step) {
+      case 'idea':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.lightbulb className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+                <Button
+                  onClick={generateIdeaApiCall}
+                  disabled={generatingIdea || savingIdea}
+                  variant="ai"
+                >
+                  {generatingIdea ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Idea')}</>
+                  )}
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <GoogleTransliterateTextarea
+                  id="idea-textarea"
+                  initialValue={idea}
+                  onValueChange={setIdea}
+                  className="min-h-[150px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                  placeholder={translate("Describe your story idea...")}
+                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                  destinationLanguage={currentProjectLanguage}
+                />
+                <Button
+                  onClick={saveIdeaApiCall}
+                  disabled={savingIdea || generatingIdea}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {savingIdea ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                  ) : (
+                    <><Icons.save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'logline':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileText className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+                <Button
+                  onClick={generateLoglineApiCall}
+                  disabled={generatingLogline || savingLogline || !idea}
+                  variant="ai"
+                >
+                  {generatingLogline ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Logline')}</>
+                  )}
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <GoogleTransliterateTextarea
+                  id="logline-textarea"
+                  initialValue={logline}
+                  onValueChange={setLogline}
+                  className="min-h-[100px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                  placeholder={translate("Enter your logline here...")}
+                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                  destinationLanguage={currentProjectLanguage}
+                />
+                <Button
+                  onClick={saveLoglineApiCall}
+                  disabled={savingLogline || generatingLogline}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {savingLogline ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'treatment':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileEdit className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+                <Button
+                  onClick={generateTreatmentApiCall}
+                  disabled={generatingTreatment || savingTreatment || !logline}
+                  variant="ai"
+                >
+                  {generatingTreatment ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Treatment')}</>
+                  )}
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <GoogleTransliterateTextarea
+                  id="treatment-textarea"
+                  initialValue={treatment}
+                  onValueChange={setTreatment}
+                  className="min-h-[200px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                  placeholder={translate("Write your treatment here...")}
+                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                  destinationLanguage={currentProjectLanguage}
+                />
+                <Button
+                  onClick={saveTreatmentApiCall}
+                  disabled={savingTreatment || generatingTreatment}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {savingTreatment ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'characters':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.users className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={generateCharactersApiCall}
+                    disabled={generatingCharacters || !treatment}
+                    variant="ai"
+                  >
+                    {generatingCharacters ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                    ) : (
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Characters')}</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={addCharacterApiCall}
+                    variant="outline"
+                    className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> {translate('Add Character')}
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {characters.map((character) => (
+                  <Card key={character.clientId || character.id} className="bg-white/10 border-white/20">
+                    <CardContent className="p-4">
+                      <Input 
+                        value={character.name || ''}
+                        onChange={(e) => handleCharacterChange(character.clientId || character.id, 'name', e.target.value)}
+                        className="text-lg font-semibold bg-transparent border-0 p-0 mb-2 text-white"
+                        placeholder={translate("Character Name")}
+                      />
+                      <Textarea
+                        value={character.description || ''}
+                        onChange={(e) => handleCharacterChange(character.clientId || character.id, 'description', e.target.value)}
+                        className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px]"
+                        placeholder={translate("Description")}
+                      />
+                      {character.hasOwnProperty('backstory') && (
+                        <Textarea 
+                          value={character.backstory || ''} 
+                          onChange={(e) => handleCharacterChange(character.clientId || character.id, 'backstory', e.target.value)}
+                          placeholder={translate("Backstory...")}
+                          className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
+                        />
+                      )}
+                      {character.hasOwnProperty('motivation') && (
+                        <Textarea 
+                          value={character.motivation || ''} 
+                          onChange={(e) => handleCharacterChange(character.clientId || character.id, 'motivation', e.target.value)}
+                          placeholder={translate("Motivation...")}
+                          className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
+                        />
+                      )}
+                      <div className="mt-2 flex justify-end space-x-2">
+                        <Button
+                          onClick={() => saveCharacterApiCall(character)}
+                          disabled={savingCharacterId === (character.clientId || character.id)}
+                          size="sm"
+                          className="bg-purple-500 hover:bg-purple-600 text-white"
+                        >
+                          {savingCharacterId === (character.clientId || character.id) ? (
+                            <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                          ) : (
+                            <><Save className="h-4 w-4 mr-2" />{translate('Save Character')}</>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'outline':
+        return (
+          <OutlineEditor
+            beats={outlineBeats}
+            onBeatsChange={setOutlineBeats}
+            onGenerateOutline={() => {
+              toast({ title: translate("Outline Generation"), description: translate("Coming soon!") });
+            }}
+            isGenerating={false}
+            isSaving={false}
+            onSave={() => {
+              toast({ title: translate("Outline Saved"), description: translate("Coming soon!") });
+            }}
+            transliterationEnabled={isTransliterationEnabled}
+            language={currentProjectLanguage}
+            translate={translate}
+          />
+        );
+      
+      case 'chapters':
+        return (
+          <ChapterManager
+            chapters={chapters}
+            onChaptersChange={setChapters}
+            onGenerateChapters={() => {
+              toast({ title: translate("Chapter Generation"), description: translate("Coming soon!") });
+            }}
+            isGenerating={false}
+            isSaving={false}
+            onSave={() => {
+              toast({ title: translate("Chapters Saved"), description: translate("Coming soon!") });
+            }}
+            transliterationEnabled={isTransliterationEnabled}
+            language={currentProjectLanguage}
+            translate={translate}
+          />
+        );
+      
+      case 'narrative-draft':
+        return (
+          <NarrativeDraftEditor
+            drafts={narrativeDrafts}
+            onDraftsChange={setNarrativeDrafts}
+            onGenerateDraft={() => {
+              toast({ title: translate("Draft Generation"), description: translate("Coming soon!") });
+            }}
+            isGenerating={false}
+            isSaving={false}
+            onSave={() => {
+              toast({ title: translate("Draft Saved"), description: translate("Coming soon!") });
+            }}
+            transliterationEnabled={isTransliterationEnabled}
+            language={currentProjectLanguage}
+            translate={translate}
+          />
+        );
+      
+      case 'genre':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Tag className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {translate('Genre')}
+                  </label>
+                  <select 
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-md p-2"
+                    onChange={(e) => {
+                      toast({ title: translate("Genre Updated"), description: e.target.value });
+                    }}
+                  >
+                    <option value="">{translate('Select Genre')}</option>
+                    <option value="literary">Literary Fiction</option>
+                    <option value="mystery">Mystery/Thriller</option>
+                    <option value="romance">Romance</option>
+                    <option value="scifi">Science Fiction</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="horror">Horror</option>
+                    <option value="historical">Historical Fiction</option>
+                    <option value="contemporary">Contemporary Fiction</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {translate('Tone')}
+                  </label>
+                  <select 
+                    className="w-full bg-white/10 border border-white/10 text-white rounded-md p-2"
+                    onChange={(e) => {
+                      toast({ title: translate("Tone Updated"), description: e.target.value });
+                    }}
+                  >
+                    <option value="">{translate('Select Tone')}</option>
+                    <option value="light">Light & Humorous</option>
+                    <option value="serious">Serious & Dramatic</option>
+                    <option value="dark">Dark & Intense</option>
+                    <option value="optimistic">Optimistic & Uplifting</option>
+                    <option value="melancholic">Melancholic & Reflective</option>
+                    <option value="suspenseful">Suspenseful & Tense</option>
+                  </select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'theme':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Heart className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+              </div>
+              <GoogleTransliterateTextarea
+                id="theme-textarea"
+                initialValue=""
+                onValueChange={(value) => {
+                  // TODO: Update project theme
+                }}
+                className="min-h-[150px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                placeholder={translate("What themes does your story explore? (e.g., love vs duty, the cost of ambition, finding identity)")}
+                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                destinationLanguage={currentProjectLanguage}
+              />
+            </CardContent>
+          </Card>
+        );
+      
+      case 'world-building':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Globe className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+              </div>
+              <GoogleTransliterateTextarea
+                id="worldbuilding-textarea"
+                initialValue=""
+                onValueChange={(value) => {
+                  // TODO: Update project world building
+                }}
+                className="min-h-[200px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                placeholder={translate("Describe the world, setting, culture, history, and rules that govern your story's universe...")}
+                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                destinationLanguage={currentProjectLanguage}
+              />
+            </CardContent>
+          </Card>
+        );
+      
+      case 'visual-elements':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Camera className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {translate('Visual Style')}
+                  </label>
+                  <GoogleTransliterateTextarea
+                    id="visual-style-textarea"
+                    initialValue=""
+                    onValueChange={(value) => {
+                      // TODO: Update visual style
+                    }}
+                    className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                    placeholder={translate("Describe the visual aesthetic, color palette, cinematography style...")}
+                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                    destinationLanguage={currentProjectLanguage}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {translate('Key Visual Moments')}
+                  </label>
+                  <GoogleTransliterateTextarea
+                    id="visual-moments-textarea"
+                    initialValue=""
+                    onValueChange={(value) => {
+                      // TODO: Update visual moments
+                    }}
+                    className="min-h-[100px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                    placeholder={translate("List important visual moments, symbols, or cinematic opportunities...")}
+                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                    destinationLanguage={currentProjectLanguage}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'scenes':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.film className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={generateScenesApiCall}
+                    disabled={generatingScenes || characters.length === 0}
+                    variant="ai"
+                  >
+                    {generatingScenes ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
+                    ) : (
+                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Scenes')}</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={addSceneApiCall}
+                    variant="outline"
+                    className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> {translate('Add Scene')}
+                  </Button>
+                </div>
+              </div>
+              {scenes.map((scene) => (
+                <div key={scene.id} className="mb-6 bg-white/10 p-4 rounded-lg border-white/20 shadow-lg">
+                  <Input 
+                    value={scene.title || ''}
+                    onChange={(e) => handleSceneChange(scene.id, 'title', e.target.value)}
+                    className="text-xl font-semibold bg-transparent border-0 p-0 mb-2 text-white focus:ring-0 focus:border-purple-400"
+                    placeholder={translate("Scene Title")}
+                  />
+                  <Textarea
+                    value={scene.summary || ''}
+                    onChange={(e) => handleSceneChange(scene.id, 'summary', e.target.value)}
+                    className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px] focus:ring-0 focus:border-purple-400"
+                    placeholder={translate("Summary")}
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        );
+      
+      case 'script':
+      case 'full-script':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileText className="h-5 w-5 mr-2" /> 
+                  {stepLabel}
+                </h2>
+                <Button
+                  onClick={generateFullScriptApiCall}
+                  disabled={generatingFullScript || savingFullScript || scenes.length === 0} 
+                  variant="ai"
+                >
+                  {generatingFullScript ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating Script...')}</>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Full Script')}</>
+                  )}
+                </Button>
+              </div>
+              <GoogleTransliterateTextarea
+                id="full-script-textarea"
+                initialValue={fullScript || ''}
+                onValueChange={(value) => setFullScript(value)}
+                className="min-h-[600px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full p-3 rounded-md mb-4"
+                placeholder={translate("Generate or paste your full script here...")}
+                transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
+                destinationLanguage={currentProjectLanguage}
+                readOnly={generatingFullScript || savingFullScript} 
+              />
+              <div className="flex justify-end space-x-2">
+                <Button
+                  onClick={saveFullScriptApiCall}
+                  disabled={savingFullScript || generatingFullScript || !fullScript}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {savingFullScript ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" />{translate('Save Script')}</>
+                  )}
+                </Button>
+                <Button
+                  onClick={copyFullScriptToClipboard}
+                  disabled={!fullScript || fullScript.trim() === ""}
+                  variant="outline"
+                  className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
+                >
+                  <ClipboardCopy className="h-4 w-4 mr-2" />
+                  {translate('Copy')}
+                </Button>
+                <Button
+                  onClick={downloadFullScript}
+                  disabled={!fullScript || fullScript.trim() === ""}
+                  variant="outline"
+                  className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {translate('Download')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      default:
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileText className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                </h2>
+              </div>
+              <div className="text-gray-400 text-center py-8">
+                <p>This workflow step is not yet implemented.</p>
+                <p className="text-sm mt-2">Coming soon: {stepLabel} editor</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+    }
+  };
   const handleLanguageChange = async (newLanguage: string) => { 
     setCurrentProjectLanguage(newLanguage);
     setProject(prev => prev ? {...prev, language: newLanguage} : null);
@@ -882,464 +1478,47 @@ export function EditorPageClient({ projectId }: { projectId: string }) {
 
         {/* Main Content Area with Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/5 backdrop-blur-md border border-white/10">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Overview')}</TabsTrigger>
-            <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Characters')}</TabsTrigger>
-            <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Scenes')}</TabsTrigger>
-            <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Full Script')}</TabsTrigger>
+          <TabsList className="grid grid-cols-4 mb-6 bg-white/5 backdrop-blur-md border border-white/10" style={{ gridTemplateColumns: `repeat(${projectConfig?.workflow?.length || 4}, 1fr)` }}>
+            {projectConfig?.workflow?.map((step: string) => (
+              <TabsTrigger 
+                key={step} 
+                value={step} 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+              >
+                {projectConfig.labels?.[step] || step.charAt(0).toUpperCase() + step.slice(1)}
+              </TabsTrigger>
+            )) || (
+              <>
+                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Overview')}</TabsTrigger>
+                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Characters')}</TabsTrigger>
+                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Scenes')}</TabsTrigger>
+                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{translate('Full Script')}</TabsTrigger>
+              </>
+            )}
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-8">
-            {/* IDEA */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.lightbulb className="h-5 w-5 mr-2" />
-                    {translate('Idea')}
-                  </h2>
-                  <Button
-                    onClick={generateIdeaApiCall}
-                    disabled={generatingIdea || savingIdea}
-                    variant="ai"
-                  >
-                    {generatingIdea ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                    ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Idea')}</>
-                    )}
-                  </Button>
-                </div>
-                <div className="flex space-x-2">
-                  <GoogleTransliterateTextarea
-                    id="idea-textarea"
-                    initialValue={idea}
-                    onValueChange={setIdea}
-                    className="min-h-[150px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                    placeholder={translate("Describe your film\'s idea...")}
-                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                    destinationLanguage={currentProjectLanguage}
-                  />
-                  <Button
-                    onClick={saveIdeaApiCall}
-                    disabled={savingIdea || generatingIdea}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {savingIdea ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
-                    ) : (
-                      <><Icons.save className="h-4 w-4 mr-2" />{translate('Save')}</>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* LOGLINE */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.fileText className="h-5 w-5 mr-2" />
-                    {translate('Logline')}
-                  </h2>
-                  <Button
-                    onClick={generateLoglineApiCall}
-                    disabled={generatingLogline || savingLogline || !idea}
-                    variant="ai"
-                  >
-                    {generatingLogline ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                    ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Logline')}</>
-                    )}
-                  </Button>
-                </div>
-                <div className="flex space-x-2">
-                  <GoogleTransliterateTextarea
-                    id="logline-textarea"
-                    initialValue={logline}
-                    onValueChange={setLogline}
-                    className="min-h-[100px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                    placeholder={translate("Enter your logline here...")}
-                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                    destinationLanguage={currentProjectLanguage}
-                  />
-                  <Button
-                    onClick={saveLoglineApiCall}
-                    disabled={savingLogline || generatingLogline}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {savingLogline ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
-                    ) : (
-                      <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* TREATMENT */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.fileEdit className="h-5 w-5 mr-2" />
-                    {translate('Treatment')}
-                  </h2>
-                  <Button
-                    onClick={generateTreatmentApiCall}
-                    disabled={generatingTreatment || savingTreatment || !logline}
-                    variant="ai"
-                  >
-                    {generatingTreatment ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                    ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Treatment')}</>
-                    )}
-                  </Button>
-                </div>
-                <div className="flex space-x-2">
-                  <GoogleTransliterateTextarea
-                    id="treatment-textarea"
-                    initialValue={treatment}
-                    onValueChange={setTreatment}
-                    className="min-h-[200px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
-                    placeholder={translate("Write your treatment here...")}
-                    transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                    destinationLanguage={currentProjectLanguage}
-                  />
-                  <Button
-                    onClick={saveTreatmentApiCall}
-                    disabled={savingTreatment || generatingTreatment}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {savingTreatment ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
-                    ) : (
-                      <><Save className="h-4 w-4 mr-2" />{translate('Save')}</>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="characters" className="space-y-8">
-            {/* CHARACTERS CARD - Content moved here from original position */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.users className="h-5 w-5 mr-2" />
-                    {translate('Characters')}
-                  </h2>
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={generateCharactersApiCall}
-                      disabled={generatingCharacters || !treatment}
-                      variant="ai"
-                    >
-                      {generatingCharacters ? (
-                        <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                      ) : (
-                        <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Characters')}</>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={addCharacterApiCall}
-                      variant="outline"
-                      className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
-                    >
-                      <Plus className="h-4 w-4 mr-2" /> {translate('Add Character')}
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {characters.map((character) => (
-                    <Card key={character.clientId || character.id} className="bg-white/10 border-white/20">
-                      <CardContent className="p-4">
-                        <Input 
-                          value={character.name || ''}
-                          onChange={(e) => handleCharacterChange(character.clientId || character.id, 'name', e.target.value)}
-                          className="text-lg font-semibold bg-transparent border-0 p-0 mb-2 text-white"
-                          placeholder={translate("Character Name")}
-                        />
-                        <Textarea
-                          value={character.description || ''}
-                          onChange={(e) => handleCharacterChange(character.clientId || character.id, 'description', e.target.value)}
-                          className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px]"
-                          placeholder={translate("Description")}
-                        />
-                         {character.hasOwnProperty('backstory') && (
-                           <Textarea 
-                             value={character.backstory || ''} 
-                             onChange={(e) => handleCharacterChange(character.clientId || character.id, 'backstory', e.target.value)}
-                             placeholder={translate("Backstory...")}
-                             className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
-                           />
-                         )}
-                         {character.hasOwnProperty('motivation') && (
-                           <Textarea 
-                             value={character.motivation || ''} 
-                             onChange={(e) => handleCharacterChange(character.clientId || character.id, 'motivation', e.target.value)}
-                             placeholder={translate("Motivation...")}
-                             className="text-sm bg-transparent border-0 p-0 mt-2 text-gray-300 min-h-[40px]"
-                           />
-                         )}
-                        <div className="mt-2 flex justify-end space-x-2">
-                          <Button
-                            onClick={() => saveCharacterApiCall(character)}
-                            disabled={savingCharacterId === (character.clientId || character.id)}
-                            size="sm"
-                            className="bg-purple-500 hover:bg-purple-600 text-white"
-                          >
-                            {savingCharacterId === (character.clientId || character.id) ? (
-                              <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
-                            ) : (
-                              <><Save className="h-4 w-4 mr-2" />{translate('Save Character')}</>
-                            )}
-                          </Button>
-                          {/* Optionally, add a delete button here later */}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="scenes" className="space-y-8">
-            {/* SCENES CARD - Content moved here from original position */}
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.film className="h-5 w-5 mr-2" />
-                    {translate('Scenes')}
-                  </h2>
-                  <div className="flex space-x-2">
-                   <Button
-                    onClick={generateScenesApiCall}
-                    disabled={generatingScenes || characters.length === 0}
-                    variant="ai"
-                  >
-                    {generatingScenes ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                    ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Scenes')}</>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={addSceneApiCall}
-                    variant="outline"
-                     className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
-                  >
-                    <Plus className="h-4 w-4 mr-2" /> {translate('Add Scene')}
-                  </Button>
-                  </div>
-                </div>
-                {scenes.map((scene) => (
-                  <div key={scene.id} className="mb-6 bg-white/10 p-4 rounded-lg border-white/20 shadow-lg">
-                    <Input 
-                      value={scene.title || ''}
-                      onChange={(e) => handleSceneChange(scene.id, 'title', e.target.value)}
-                      className="text-xl font-semibold bg-transparent border-0 p-0 mb-2 text-white focus:ring-0 focus:border-purple-400"
-                      placeholder={translate("Scene Title")}
-                    />
-                    <Textarea
-                      value={scene.summary || ''}
-                      onChange={(e) => handleSceneChange(scene.id, 'summary', e.target.value)}
-                      className="text-sm bg-transparent border-0 p-0 text-gray-300 min-h-[60px] focus:ring-0 focus:border-purple-400"
-                      placeholder={translate("Summary")}
-                    />
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 my-3 text-xs">
-                      <Input value={scene.act || ''} onChange={(e) => handleSceneChange(scene.id, 'act', e.target.value)} placeholder={translate("Act")} className="bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 text-xs p-1.5 rounded-sm"/>
-                      <Input value={scene.location || ''} onChange={(e) => handleSceneChange(scene.id, 'location', e.target.value)} placeholder={translate("Location")} className="bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 text-xs p-1.5 rounded-sm"/>
-                      <Input value={scene.timeOfDay || ''} onChange={(e) => handleSceneChange(scene.id, 'timeOfDay', e.target.value)} placeholder={translate("Time of Day")} className="bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 text-xs p-1.5 rounded-sm"/>
-                      <Input value={String(scene.order || '')} type="number" onChange={(e) => handleSceneChange(scene.id, 'order', e.target.value)} placeholder={translate("Order")} className="bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 text-xs p-1.5 rounded-sm"/>
-                    </div>
-
-                    {/* Script Section */}
-                    <div className="mt-4">
-                      <Button variant="link" onClick={() => toggleSceneSection(scene.id, 'isScriptExpanded')} className="text-purple-300 hover:text-purple-200 p-0 mb-1">
-                        {scene.isScriptExpanded ? translate('Hide Script') : translate('Show Script')}
-                      </Button>
-                      {scene.isScriptExpanded && (
-                        <div className="mt-2 space-y-2">
-                          <GoogleTransliterateTextarea
-                            id={`scene-script-${scene.id}`}
-                            initialValue={scene.script || ''}
-                            onValueChange={(value) => handleSceneChange(scene.id, 'script', value)}
-                            className="min-h-[150px] bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 w-full p-2 rounded-md"
-                            placeholder={translate("Write or generate script here...")}
-                            transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                            destinationLanguage={currentProjectLanguage}
-                          />
-                          <div className="flex justify-end space-x-2">
-                            <Button 
-                              onClick={() => generateSceneScriptApiCall(scene.id)}
-                              disabled={generatingSceneScript === scene.id || savingSceneId === scene.id}
-                              variant="ai"
-                              size="sm"
-                            >
-                              {generatingSceneScript === scene.id ? (
-                                <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                              ) : (
-                                <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Script')}</>
-                              )}
-                            </Button>
-                            <Button 
-                              onClick={() => saveSceneApiCall(scene)} 
-                              disabled={savingSceneId === scene.id || generatingSceneScript === scene.id}
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              {savingSceneId === scene.id && scene.script !== null ? (
-                                <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving Script...')}</>
-                              ) : (
-                                <><Save className="h-4 w-4 mr-2" />{translate('Save Script')}</>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Storyboard Section */}
-                    <div className="mt-3">
-                       <Button variant="link" onClick={() => toggleSceneSection(scene.id, 'isStoryboardExpanded')} className="text-purple-300 hover:text-purple-200 p-0 mb-1">
-                        {scene.isStoryboardExpanded ? translate('Hide Storyboard') : translate('Show Storyboard')}
-                      </Button>
-                      {scene.isStoryboardExpanded && (
-                        <div className="mt-2 space-y-2">
-                          <GoogleTransliterateTextarea
-                            id={`scene-storyboard-${scene.id}`}
-                            initialValue={scene.storyboard || ''}
-                            onValueChange={(value) => handleSceneChange(scene.id, 'storyboard', value)}
-                            className="min-h-[100px] bg-white/5 border-white/10 text-gray-300 placeholder-gray-500 w-full p-2 rounded-md"
-                            placeholder={translate("Describe storyboard shots or paste image URLs...")}
-                            transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                            destinationLanguage={currentProjectLanguage}
-                          />
-                          <div className="flex justify-end space-x-2">
-                            <Button 
-                              onClick={() => generateSceneStoryboardApiCall(scene.id)}
-                              disabled={generatingSceneStoryboard === scene.id || savingSceneId === scene.id}
-                              variant="ai"
-                              size="sm"
-                            >
-                              {generatingSceneStoryboard === scene.id ? (
-                                <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating...')}</>
-                              ) : (
-                                <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Storyboard')}</>
-                              )}
-                            </Button>
-                            <Button 
-                              onClick={() => saveSceneApiCall(scene)} 
-                              disabled={savingSceneId === scene.id || generatingSceneStoryboard === scene.id}
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              {savingSceneId === scene.id && scene.storyboard !== null ? (
-                                <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving Storyboard...')}</>
-                              ) : (
-                                <><Save className="h-4 w-4 mr-2" />{translate('Save Storyboard')}</>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button 
-                        onClick={() => saveSceneApiCall(scene)} 
-                        disabled={savingSceneId === scene.id || generatingSceneScript === scene.id || generatingSceneStoryboard === scene.id}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {savingSceneId === scene.id ? (
-                          <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving Scene...')}</>
-                        ) : (
-                          <><Save className="h-4 w-4 mr-2" />{translate('Save Full Scene Details')}</>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="full-script" className="space-y-8">
-            <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-purple-300 flex items-center">
-                    <Icons.fileText className="h-5 w-5 mr-2" /> 
-                    {translate('Full Script')}
-                  </h2>
-                  <Button
-                    onClick={generateFullScriptApiCall}
-                    disabled={generatingFullScript || savingFullScript || scenes.length === 0} 
-                    variant="ai"
-                  >
-                    {generatingFullScript ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Generating Script...')}</>
-                    ) : (
-                      <><Icons.sparkles className="h-4 w-4 mr-2" />{translate('Generate Full Script')}</>
-                    )}
-                  </Button>
-                </div>
-                <GoogleTransliterateTextarea
-                  id="full-script-textarea"
-                  initialValue={fullScript || ''}
-                  onValueChange={(value) => {
-                    setFullScript(value);
-                  }}
-                  className="min-h-[600px] bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full p-3 rounded-md mb-4"
-                  placeholder={translate("Generate or paste your full script here...")}
-                  transliterationEnabled={isTransliterationEnabled && currentProjectLanguage !== 'English'}
-                  destinationLanguage={currentProjectLanguage}
-                  readOnly={generatingFullScript || savingFullScript} 
-                />
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    onClick={saveFullScriptApiCall}
-                    disabled={savingFullScript || generatingFullScript || !fullScript}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    {savingFullScript ? (
-                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{translate('Saving...')}</>
-                    ) : (
-                      <><Save className="h-4 w-4 mr-2" />{translate('Save Script')}</>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={copyFullScriptToClipboard}
-                    disabled={!fullScript || fullScript.trim() === ""}
-                    variant="outline"
-                    className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
-                  >
-                    <ClipboardCopy className="h-4 w-4 mr-2" />
-                    {translate('Copy')}
-                  </Button>
-                  <Button
-                    onClick={downloadFullScript}
-                    disabled={!fullScript || fullScript.trim() === ""}
-                    variant="outline"
-                    className="text-purple-300 border-purple-300 hover:bg-purple-300/10"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {translate('Download')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {projectConfig?.workflow?.map((step: string) => (
+            <TabsContent key={step} value={step} className="space-y-8">
+              {renderWorkflowStep(step)}
+            </TabsContent>
+          )) || (
+            <>
+              <TabsContent value="overview" className="space-y-8">
+                {renderWorkflowStep('idea')}
+                {renderWorkflowStep('logline')}
+                {renderWorkflowStep('treatment')}
+              </TabsContent>
+              <TabsContent value="characters" className="space-y-8">
+                {renderWorkflowStep('characters')}
+              </TabsContent>
+              <TabsContent value="scenes" className="space-y-8">
+                {renderWorkflowStep('scenes')}
+              </TabsContent>
+              <TabsContent value="full-script" className="space-y-8">
+                {renderWorkflowStep('full-script')}
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
     </ScrollArea>

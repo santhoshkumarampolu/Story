@@ -72,6 +72,7 @@ export async function GET(req: NextRequest) {
         id: true,
         title: true,
         language: true,
+        type: true,
         createdAt: true,
         updatedAt: true,
       }

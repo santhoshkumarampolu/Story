@@ -68,19 +68,28 @@ model Project {
   title          String
   description    String?
   language       String? // For UI language preference or project content language
-  type           String?      @default("story") // story, shortfilm, screenplay
+  type           String?      @default("story") // story, shortfilm, screenplay, novel, shortstory, synopsis
+  genre          String?      // Story genre
+  tone           String?      // Story tone/mood
+  theme          String?      // Central theme
+  targetLength   Int?         // Word count goal
   logline        String?      @db.Text
   idea           String?      @db.Text
   treatment      String?      @db.Text
   structureType  String? 
-  fullScript     String?      @db.Text // New field for the full script
+  fullScript     String?      @db.Text // For screenplays
+  worldBuilding  String?      @db.Text // For novels/fantasy
+  blurb          String?      @db.Text // Book description/synopsis
   version        Int          @default(1)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   stories        Story[]
-  scenes         Scene[] // Added relation
+  scenes         Scene[] // Scenes for films, Chapters for novels
   characters     Character[] // Added relation
   cards          Card[] // Added relation
+  outlineBeats   OutlineBeat[] // Story structure beats
+  narrativeDrafts NarrativeDraft[] // Story drafts
+  chapters       Chapter[] // For novels
   tokenUsages    TokenUsage[] // Added relation for TokenUsage
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -136,6 +145,58 @@ model Scene {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// New models for story template features
+model OutlineBeat {
+  id        String   @id @default(cuid())
+  order     Int
+  title     String?
+  summary   String   @db.Text
+  beatType  String?  // "inciting-incident", "midpoint", "climax", "resolution"
+  act       String?  // Which act this beat belongs to
+  notes     String?  @db.Text
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  order     Int
+  title     String
+  summary   String?  @db.Text
+  content   String?  @db.Text
+  wordCount Int?
+  goals     String?  @db.Text
+  conflicts String?  @db.Text
+  notes     String?  @db.Text
+  version   Int      @default(1)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model NarrativeDraft {
+  id        String    @id @default(cuid())
+  type      String    // "full-story", "chapter", "synopsis", "film-narrative"
+  title     String?
+  content   String    @db.Text
+  version   Int       @default(1)
+  wordCount Int?
+  notes     String?   @db.Text
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([projectId])
 }

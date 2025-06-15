@@ -164,3 +164,63 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      console.error("[PROJECT_DELETE] No session or user ID found", { session });
+      return NextResponse.json(
+        { error: "You must be logged in to delete projects" },
+        { status: 401 }
+      );
+    }
+
+    // Resolve dynamic route params
+    const { projectId } = await params;
+    if (!projectId || typeof projectId !== "string") {
+      return NextResponse.json(
+        { error: "Invalid project ID" },
+        { status: 400 }
+      );
+    }
+
+    // Check if project exists and user has access
+    const existingProject = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!existingProject) {
+      return NextResponse.json(
+        { error: "Project not found or you don't have access" },
+        { status: 404 }
+      );
+    }
+
+    // Delete the project (Prisma will handle cascading deletes based on schema)
+    await prisma.project.delete({
+      where: {
+        id: projectId,
+      },
+    });
+
+    console.log("[PROJECT_DELETE] Project deleted successfully", { projectId });
+    return NextResponse.json({ message: "Project deleted successfully" });
+  } catch (error) {
+    console.error("[PROJECT_DELETE] Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return NextResponse.json(
+      { error: "Failed to delete project" },
+      { status: 500 }
+    );
+  }
+}
