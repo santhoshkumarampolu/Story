@@ -166,7 +166,7 @@ export default function TranslationTestPage() {
   const [userLanguage, setUserLanguage] = useState('English');
   
   return (
-    <TranslationProvider language={userLanguage} enabled={userLanguage !== 'English'}>
+    <TranslationProvider targetLanguage={userLanguage} enabled={userLanguage !== 'English'}>
       <TestContent userLanguage={userLanguage} setUserLanguage={setUserLanguage} />
     </TranslationProvider>
   );

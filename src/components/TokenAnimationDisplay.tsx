@@ -23,6 +23,22 @@ interface TokenUsage {
   }>;
   totalTokens: number;
   totalCost: number;
+  subscription?: {
+    status: string;
+    isPro: boolean;
+    limits: {
+      tokens: number;
+      images: number;
+    };
+    currentUsage: {
+      tokens: number;
+      images: number;
+    };
+    remaining: {
+      tokens: number;
+      images: number;
+    };
+  };
 }
 
 interface TokenAnimationDisplayProps {
@@ -216,6 +232,11 @@ export function TokenAnimationDisplay({ tokenUsage, tokenUpdates }: TokenAnimati
               format={(num) => num.toLocaleString()}
             />
           </span>
+          {tokenUsage.subscription && (
+            <span className="text-xs text-gray-400">
+              / {tokenUsage.subscription.limits.tokens.toLocaleString()}
+            </span>
+          )}
         </motion.div>
 
         {/* Cost Counter */}
@@ -244,6 +265,34 @@ export function TokenAnimationDisplay({ tokenUsage, tokenUpdates }: TokenAnimati
             />
           </span>
         </motion.div>
+
+        {/* Subscription Status */}
+        {tokenUsage.subscription && (
+          <motion.div 
+            className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10"
+            whileHover={{ 
+              borderColor: tokenUsage.subscription.isPro ? "rgba(255, 215, 0, 0.3)" : "rgba(156, 163, 175, 0.3)",
+              backgroundColor: tokenUsage.subscription.isPro ? "rgba(255, 215, 0, 0.1)" : "rgba(156, 163, 175, 0.1)"
+            }}
+            transition={{ duration: 0.2 }}
+          >
+            <span className={`text-xs font-medium ${tokenUsage.subscription.isPro ? 'text-yellow-400' : 'text-gray-400'}`}>
+              {tokenUsage.subscription.isPro ? 'PRO' : 'FREE'}
+            </span>
+            <span className="text-xs text-gray-400">
+              {tokenUsage.subscription.remaining.tokens.toLocaleString()} left
+            </span>
+            {/* Warning indicator for high usage */}
+            {tokenUsage.subscription.currentUsage.tokens / tokenUsage.subscription.limits.tokens > 0.8 && (
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="w-2 h-2 bg-orange-400 rounded-full"
+                title="High usage warning"
+              />
+            )}
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Floating Updates */}

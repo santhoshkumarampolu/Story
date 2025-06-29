@@ -1,5 +1,5 @@
 import { Suspense, use } from 'react';
-import { EditorPageClient } from './editor-client';
+import EditorPageClient from './editor-client';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import { EditorWrapper } from './editor-wrapper';
 

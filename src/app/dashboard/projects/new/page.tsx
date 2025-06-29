@@ -115,7 +115,7 @@ export default function NewProjectPage() {
   };
 
   return (
-    <TranslationProvider language={userLanguage} enabled={userLanguage !== 'English'}>
+    <TranslationProvider targetLanguage={userLanguage} enabled={userLanguage !== 'English'}>
       <NewProjectContent
         title={title}
         setTitle={setTitle}

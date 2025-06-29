@@ -50,6 +50,23 @@ export async function GET(
       );
     }
 
+    // Get user subscription info
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        subscriptionStatus: true,
+        tokenUsageThisMonth: true,
+        imageUsageThisMonth: true,
+      },
+    });
+
+    // Determine limits based on subscription
+    const isPro = user?.subscriptionStatus === 'pro';
+    const tokenLimit = isPro ? 100000 : 10000; // From subscription.ts
+    const imageLimit = isPro ? 100 : 10;
+    const currentTokenUsage = user?.tokenUsageThisMonth || 0;
+    const currentImageUsage = user?.imageUsageThisMonth || 0;
+
     // Get usage records
     const usage = await prisma.$queryRaw<TokenUsageRecord[]>`
       SELECT * FROM "TokenUsage"
@@ -68,6 +85,22 @@ export async function GET(
       })),
       totalTokens,
       totalCost,
+      subscription: {
+        status: user?.subscriptionStatus || 'free',
+        isPro,
+        limits: {
+          tokens: tokenLimit,
+          images: imageLimit,
+        },
+        currentUsage: {
+          tokens: currentTokenUsage,
+          images: currentImageUsage,
+        },
+        remaining: {
+          tokens: Math.max(0, tokenLimit - currentTokenUsage),
+          images: Math.max(0, imageLimit - currentImageUsage),
+        },
+      },
     });
   } catch (error) {
     console.error("[USAGE_GET] Error:", error);

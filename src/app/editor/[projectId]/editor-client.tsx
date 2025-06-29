@@ -234,15 +234,27 @@ export default function EditorPageClient({
     const fetchProjectData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/projects/${projectId}`);
-        if (!response.ok) {
+        // Fetch project data
+        const projectResponse = await fetch(`/api/projects/${projectId}`);
+        if (!projectResponse.ok) {
           throw new Error('Failed to fetch project');
         }
-        const data: Project = await response.json();
-        setProject(data);
+        const projectData = await projectResponse.json();
+        setProject(projectData);
+        
+        // Fetch token usage data
+        try {
+          const usageResponse = await fetch(`/api/projects/${projectId}/usage`);
+          if (usageResponse.ok) {
+            const usageData = await usageResponse.json();
+            setTokenUsage(usageData);
+          }
+        } catch (error) {
+          console.error('Failed to fetch token usage:', error);
+        }
         
         // Set project configuration based on project type
-        const config = getProjectConfiguration(data.type as ProjectType);
+        const config = getProjectConfiguration(projectData.type as ProjectType);
         setProjectConfig(config);
         
         // Set active tab to first workflow step
@@ -250,12 +262,12 @@ export default function EditorPageClient({
           setActiveTab(config.workflow[0]);
         }
         
-        setIdea(data.idea || "");
-        setLogline(data.logline || "");
-        setTreatment(data.treatment || "");
-        setCharacters(data.characters || []);
-        setScenes(data.scenes.map(s => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false, isScriptExpanded: false })) || []);
-        setFullScript(data.fullScript || null); // Set full script from fetched data
+        setIdea(projectData.idea || "");
+        setLogline(projectData.logline || "");
+        setTreatment(projectData.treatment || "");
+        setCharacters(projectData.characters || []);
+        setScenes(projectData.scenes.map((s: Scene) => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false, isScriptExpanded: false })) || []);
+        setFullScript(projectData.fullScript || null); // Set full script from fetched data
       } catch (error) {
         console.error('Error fetching project:', error);
         toast({
@@ -273,7 +285,18 @@ export default function EditorPageClient({
     }
   }, [projectId, toast, t, router, status]);
 
-  const updateTokenUsage = async (operationType?: string, operationName?: string) => { /* Placeholder */ };
+  const updateTokenUsage = async (operationType?: string, operationName?: string) => {
+    try {
+      // Fetch current token usage for this project
+      const response = await fetch(`/api/projects/${projectId}/usage`);
+      if (response.ok) {
+        const data = await response.json();
+        setTokenUsage(data);
+      }
+    } catch (error) {
+      console.error('Failed to update token usage:', error);
+    }
+  };
 
   // Dynamic content renderer based on workflow step
   const renderWorkflowStep = (step: string) => {
@@ -909,22 +932,90 @@ export default function EditorPageClient({
   const generateIdeaApiCall = async () => { 
     setGeneratingIdea(true); 
     console.log("Generating idea..."); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    setGeneratingIdea(false);
-    toast({
-      title: t('operations.ideaGeneration', { ns: 'editor', defaultValue: 'Idea Generation' }),
-      description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' })
-    });
+    
+    try {
+      const response = await fetch(`/api/projects/${projectId}/ideas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea: idea || '', // Send user's typed idea if available
+          generateRandom: !idea || idea.trim() === '', // Generate random if no idea provided
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate ideas');
+      }
+
+      const data = await response.json();
+      
+      if (data.generatedIdeas && data.generatedIdeas.length > 0) {
+        // Display the generated ideas to the user
+        // For now, we'll show the first idea in the textarea
+        // In the future, you might want to show a modal with all 3 ideas for selection
+        const firstIdea = data.generatedIdeas[0];
+        const ideaText = `${firstIdea.Concept}\n\nConflict: ${firstIdea.Conflict}\nEmotional Hook: ${firstIdea.EmotionalHook}\nVisual Style: ${firstIdea.VisualStyle}\nUnique Element: ${firstIdea.UniqueElement}`;
+        
+        setIdea(ideaText);
+        
+        toast({
+          title: t('notifications.ideasGenerated', { ns: 'editor', defaultValue: 'Ideas Generated' }),
+          description: t('notifications.ideasGeneratedSuccess', { ns: 'editor', defaultValue: 'Generated {{count}} ideas based on your input', interpolation: { count: data.generatedIdeas.length } })
+        });
+        
+        updateTokenUsage("idea", "Generate Ideas");
+      } else {
+        throw new Error('No ideas were generated');
+      }
+    } catch (error: any) {
+      console.error("Error generating ideas:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToGenerateIdeas', { ns: 'editor', defaultValue: 'Failed to generate ideas.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingIdea(false);
+    }
   };
   const saveIdeaApiCall = async () => { 
     setSavingIdea(true); 
     console.log("Saving idea...", idea); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    setSavingIdea(false);
-    toast({
-      title: t('notifications.ideaSaved', { ns: 'editor', defaultValue: 'Idea Saved' }),
-      description: t('messages.comingSoon', { ns: 'editor', defaultValue: 'Coming soon!' })
-    });
+    
+    try {
+      const response = await fetch(`/api/projects/${projectId}/ideas`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: idea || '',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save idea');
+      }
+
+      const data = await response.json();
+      
+      // Update the project state with the saved idea
+      setProject(prev => prev ? { ...prev, idea: data.idea } : null);
+      
+      toast({
+        title: t('notifications.ideaSaved', { ns: 'editor', defaultValue: 'Idea Saved' }),
+        description: t('notifications.ideaSavedSuccess', { ns: 'editor', defaultValue: 'Your idea has been saved successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error saving idea:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSaveIdea', { ns: 'editor', defaultValue: 'Failed to save idea.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingIdea(false);
+    }
   };
   const generateLoglineApiCall = async () => { 
     setGeneratingLogline(true); 
@@ -1631,6 +1722,10 @@ export default function EditorPageClient({
                 )}
               </div>
               <div className="flex items-center space-x-4">
+                <TokenAnimationDisplay 
+                  tokenUsage={tokenUsage}
+                  tokenUpdates={[]} // We'll implement real-time updates later
+                />
                 <LanguageSwitcher 
                   currentLanguage={currentLanguage}
                   onLanguageChange={onLanguageChange}
