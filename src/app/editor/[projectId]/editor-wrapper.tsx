@@ -33,7 +33,7 @@ export function EditorWrapper({ projectId }: { projectId: string }) {
     };
 
     if (status === 'authenticated') {
-      fetchProjectLanguage();
+    fetchProjectLanguage();
     }
   }, [status, router, projectId]);
 

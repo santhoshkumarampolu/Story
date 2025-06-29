@@ -248,57 +248,57 @@ function ProjectsContent({
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Link href={`/editor/${project.id}`}>
-                <Card className="border border-[#1F1F1F] bg-[#0A0A0A] hover:bg-[#1F1F1F] transition-colors cursor-pointer relative group">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        {getProjectTypeIcon(project.type || project.language)}
-                        <span className="px-2 py-1 text-sm bg-[#1F1F1F] text-[#8B5CF6] rounded-full border border-[#2F2F2F]">
-                          {getProjectTypeLabel(project.type || project.language)}
-                        </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Link href={`/editor/${project.id}`}>
+                  <Card className="border border-[#1F1F1F] bg-[#0A0A0A] hover:bg-[#1F1F1F] transition-colors cursor-pointer relative group">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          {getProjectTypeIcon(project.type || project.language)}
+                          <span className="px-2 py-1 text-sm bg-[#1F1F1F] text-[#8B5CF6] rounded-full border border-[#2F2F2F]">
+                            {getProjectTypeLabel(project.type || project.language)}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-gray-400 hover:text-red-400 h-8 w-8"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openDeleteDialog(project);
+                            }}
+                          >
+                            <Icons.trash className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#8B5CF6] h-8 w-8">
+                            <Icons.arrowLeft className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-gray-400 hover:text-red-400 h-8 w-8"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            openDeleteDialog(project);
-                          }}
-                        >
-                          <Icons.trash className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#8B5CF6] h-8 w-8">
-                          <Icons.arrowLeft className="h-4 w-4" />
-                        </Button>
+                      <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
+                      <div className="text-sm text-gray-400">
+                        <p>
+                          <T k="common.lastUpdated" ns="common" defaultValue="Last updated" />: {formatDate(project.updatedAt)}
+                        </p>
+                        <p>
+                          <T k="common.created" ns="common" defaultValue="Created" />: {formatDate(project.createdAt)}
+                        </p>
                       </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
-                    <div className="text-sm text-gray-400">
-                      <p>
-                        <T k="common.lastUpdated" ns="common" defaultValue="Last updated" />: {formatDate(project.updatedAt)}
-                      </p>
-                      <p>
-                        <T k="common.created" ns="common" defaultValue="Created" />: {formatDate(project.createdAt)}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

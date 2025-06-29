@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import OpenAI from 'openai';
 import { trackTokenUsage } from '@/lib/openai';
 import { Prisma } from '@prisma/client';
+import { checkUserSubscriptionAndUsage } from '@/lib/subscription';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -52,9 +53,16 @@ export async function POST(
     if (!project || project.userId !== session.user.id) {
       return NextResponse.json({ error: 'Project not found or access denied' }, { status: 404 });
     }
-
+    
     if (!project.idea || !project.logline || !project.treatment) {
       return NextResponse.json({ error: 'Project must have an idea, logline, and treatment before generating characters' }, { status: 400 });
+    }
+
+    // Subscription and usage check BEFORE OpenAI call
+    // Estimate 2000 tokens for pre-check (same as max_tokens)
+    const usageCheck = await checkUserSubscriptionAndUsage(session.user.id, 2000, 0);
+    if (!usageCheck.allowed) {
+      return NextResponse.json({ error: 'Token quota exceeded. Upgrade your plan or wait for next month.' }, { status: 403 });
     }
 
     const prompt = `Based on the following story details, generate a list of characters that would be essential to the narrative. For each character, provide a comprehensive profile.
@@ -142,7 +150,7 @@ Format the response as a JSON array of character objects:
       Array.isArray(char.traits)
     )) {
       throw new Error('Generated characters are not in the expected format');
-    }
+      }
 
     // Create characters in the database
     const createdCharacters = await Promise.all(
@@ -169,9 +177,11 @@ Format the response as a JSON array of character objects:
     );
 
     if (completion.usage) {
-      await trackTokenUsage({
+      // Update actual token usage after OpenAI call
+      await checkUserSubscriptionAndUsage(session.user.id, completion.usage.total_tokens, 0);
+    await trackTokenUsage({
         userId: session.user.id,
-        projectId,
+      projectId,
         model: completion.model,
         promptTokens: completion.usage.prompt_tokens,
         completionTokens: completion.usage.completion_tokens,
@@ -179,7 +189,7 @@ Format the response as a JSON array of character objects:
         type: 'character_generation',
         operationName: 'Character Generation',
         cost: ((completion.usage.prompt_tokens / 1000) * 0.0005) + ((completion.usage.completion_tokens / 1000) * 0.0015)
-      });
+    });
     }
 
     return NextResponse.json({ characters: createdCharacters });

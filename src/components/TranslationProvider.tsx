@@ -27,7 +27,7 @@ export function TranslationProvider({
   const [isInitialized, setIsInitialized] = useState(false);
   const { t, setLanguage, currentLanguage, isLoading, loadNamespace } = useI18n({
     targetLanguage,
-    enabled
+    enabled 
   });
 
   // Load required namespaces on mount and language change

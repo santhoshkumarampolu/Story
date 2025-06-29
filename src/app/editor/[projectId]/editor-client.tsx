@@ -19,7 +19,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { TokenAnimationDisplay } from '@/components/TokenAnimationDisplay';
 import { AIOperationProgress } from '@/components/AIOperationProgress';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTranslations } from '@/components/TranslationProvider';
+import { useTranslations, T } from '@/components/TranslationProvider';
 import { cn } from "@/lib/utils";
 import { getProjectConfiguration, ProjectType } from '@/lib/project-templates';
 import { OutlineEditor } from '@/components/story/outline-editor';
@@ -288,7 +288,7 @@ export default function EditorPageClient({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.lightbulb className="h-5 w-5 mr-2" />
-                  {stepLabel}
+                  <T k="labels.idea" ns="editor" defaultValue="Idea" />
                 </h2>
                 <Button
                   onClick={generateIdeaApiCall}
@@ -296,9 +296,9 @@ export default function EditorPageClient({
                   variant="ai"
                 >
                   {generatingIdea ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.generating" ns="editor" defaultValue="Generating..." /></>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('actions.generateIdea', { ns: 'editor', defaultValue: 'Generate Idea' })}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" /><T k="actions.generateIdea" ns="editor" defaultValue="Generate Idea" /></>
                   )}
                 </Button>
               </div>
@@ -318,9 +318,9 @@ export default function EditorPageClient({
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingIdea ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.saving', { ns: 'editor', defaultValue: 'Saving...' })}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.saving" ns="editor" defaultValue="Saving..." /></>
                   ) : (
-                    <><Icons.save className="h-4 w-4 mr-2" />{t('toolbar.save', { ns: 'editor', defaultValue: 'Save' })}</>
+                    <><Icons.save className="h-4 w-4 mr-2" /><T k="toolbar.save" ns="editor" defaultValue="Save" /></>
                   )}
                 </Button>
               </div>
@@ -335,7 +335,7 @@ export default function EditorPageClient({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" />
-                  {stepLabel}
+                  <T k="labels.logline" ns="editor" defaultValue="Logline" />
                 </h2>
                 <Button
                   onClick={generateLoglineApiCall}
@@ -343,9 +343,9 @@ export default function EditorPageClient({
                   variant="ai"
                 >
                   {generatingLogline ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('status.generating', { ns: 'editor', defaultValue: 'Generating...' })}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.generating" ns="editor" defaultValue="Generating..." /></>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('actions.generateLogline', { ns: 'editor', defaultValue: 'Generate Logline' })}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" /><T k="actions.generateLogline" ns="editor" defaultValue="Generate Logline" /></>
                   )}
                 </Button>
               </div>
@@ -365,9 +365,9 @@ export default function EditorPageClient({
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingLogline ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.saving" ns="editor" defaultValue="Saving..." /></>
                   ) : (
-                    <><Save className="h-4 w-4 mr-2" />{t('Save')}</>
+                    <><Save className="h-4 w-4 mr-2" /><T k="toolbar.save" ns="editor" defaultValue="Save" /></>
                   )}
                 </Button>
               </div>
@@ -382,7 +382,7 @@ export default function EditorPageClient({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileEdit className="h-5 w-5 mr-2" />
-                  {stepLabel}
+                  <T k="labels.treatment" ns="editor" defaultValue="Treatment" />
                 </h2>
                 <Button
                   onClick={generateTreatmentApiCall}
@@ -390,9 +390,9 @@ export default function EditorPageClient({
                   variant="ai"
                 >
                   {generatingTreatment ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Generating...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.generating" ns="editor" defaultValue="Generating..." /></>
                   ) : (
-                    <><Icons.sparkles className="h-4 w-4 mr-2" />{t('Generate Treatment')}</>
+                    <><Icons.sparkles className="h-4 w-4 mr-2" /><T k="actions.generateTreatment" ns="editor" defaultValue="Generate Treatment" /></>
                   )}
                 </Button>
               </div>
@@ -412,9 +412,9 @@ export default function EditorPageClient({
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {savingTreatment ? (
-                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.saving" ns="editor" defaultValue="Saving..." /></>
                   ) : (
-                    <><Save className="h-4 w-4 mr-2" />{t('Save')}</>
+                    <><Save className="h-4 w-4 mr-2" /><T k="toolbar.save" ns="editor" defaultValue="Save" /></>
                   )}
                 </Button>
               </div>
@@ -429,7 +429,7 @@ export default function EditorPageClient({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.users className="h-5 w-5 mr-2" />
-                  {stepLabel}
+                  <T k="labels.characters" ns="editor" defaultValue="Characters" />
                 </h2>
                 <div className="flex space-x-2">
                   <Button
@@ -626,7 +626,7 @@ export default function EditorPageClient({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Heart className="h-5 w-5 mr-2" />
-                  {stepLabel}
+                  <T k="labels.theme" ns="editor" defaultValue="Cinematic Theme" />
                 </h2>
                 <div className="flex gap-2">
                   <Button
@@ -1566,14 +1566,13 @@ export default function EditorPageClient({
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground">
         <IAlertCircle className="h-12 w-12 text-destructive mb-4" />
-        <p className="text-xl">{t('Project not found or access denied.')}</p>
+        <p className="text-xl"><T k="messages.projectNotFound" ns="editor" defaultValue="Project not found or access denied." /></p>
         <Button onClick={() => router.push('/dashboard')} className="mt-4">
-          {t('Go to Dashboard')}
+          <T k="messages.goToDashboard" ns="editor" defaultValue="Go to Dashboard" />
         </Button>
       </div>
     );
   }
-
 
   return (
     <ScrollArea className="h-full bg-background text-foreground">
@@ -1597,18 +1596,18 @@ export default function EditorPageClient({
             "script" // Default
           }
           operationName={
-            generatingScript ? t("Full Script Generation") : 
-            generatingStoryboard ? t("Full Storyboard Generation") :
-            generatingSceneScript ? t("Scene Script Generation") : 
-            generatingSceneStoryboard ? t("Scene Storyboard Generation") : 
-            generatingFullScript ? t("Full Script Generation") : 
-            savingFullScript ? t("Saving Full Script") : // Added saving full script
-            generatingTreatment ? t("Treatment Generation") :
-            generatingIdea ? t("Idea Generation") : 
-            generatingLogline ? t("Logline Generation") :
-            generatingCharacters ? t("Character Generation") :
-            generatingScenes ? t("Scene Generation") :
-            t("AI Generation") // Default
+            generatingScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Script Generation" }) : 
+            generatingStoryboard ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Storyboard Generation" }) :
+            generatingSceneScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Script Generation" }) : 
+            generatingSceneStoryboard ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Storyboard Generation" }) : 
+            generatingFullScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Script Generation" }) : 
+            savingFullScript ? t("status.saving", { ns: "editor", defaultValue: "Saving Full Script" }) : // Added saving full script
+            generatingTreatment ? t("ai.operationProgress", { ns: "editor", defaultValue: "Treatment Generation" }) :
+            generatingIdea ? t("ai.operationProgress", { ns: "editor", defaultValue: "Idea Generation" }) : 
+            generatingLogline ? t("ai.operationProgress", { ns: "editor", defaultValue: "Logline Generation" }) :
+            generatingCharacters ? t("ai.operationProgress", { ns: "editor", defaultValue: "Character Generation" }) :
+            generatingScenes ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Generation" }) :
+            t("ai.operationProgress", { ns: "editor", defaultValue: "AI Generation" }) // Default
           }
         />
         {/* Header */}
@@ -1621,6 +1620,7 @@ export default function EditorPageClient({
                   size="icon"
                   onClick={() => router.push("/dashboard")}
                   className="text-gray-400 hover:text-white hover:bg-white/5"
+                  title={t('toolbar.backToDashboard', { ns: 'editor', defaultValue: 'Back to Dashboard' })}
                 >
                   <Icons.arrowLeft className="h-4 w-4" />
                 </Button>
@@ -1649,14 +1649,22 @@ export default function EditorPageClient({
                 value={step} 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
               >
-                {projectConfig.labels?.[step] || step.charAt(0).toUpperCase() + step.slice(1)}
+                {projectConfig.labels?.[step] || t(`tabs.${step}`, { ns: 'editor', defaultValue: step.charAt(0).toUpperCase() + step.slice(1) })}
               </TabsTrigger>
             )) || (
               <>
-                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Overview')}</TabsTrigger>
-                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Characters')}</TabsTrigger>
-                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Scenes')}</TabsTrigger>
-                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">{t('Full Script')}</TabsTrigger>
+                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  <T k="tabs.overview" ns="editor" defaultValue="Overview" />
+                </TabsTrigger>
+                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  <T k="tabs.characters" ns="editor" defaultValue="Characters" />
+                </TabsTrigger>
+                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  <T k="tabs.scenes" ns="editor" defaultValue="Scenes" />
+                </TabsTrigger>
+                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  <T k="tabs.fullScript" ns="editor" defaultValue="Full Script" />
+                </TabsTrigger>
               </>
             )}
           </TabsList>
