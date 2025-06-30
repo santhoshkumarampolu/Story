@@ -462,51 +462,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Social Proof Section */}
-          <section className="relative py-32 px-4 bg-white/5">
-            <div className="container mx-auto max-w-6xl">
-              <motion.div 
-                className="text-center space-y-4 mb-16"
-                initial="initial"
-                whileInView="animate"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-              >
-                <motion.h2 
-                  className="font-space-grotesk text-3xl sm:text-4xl md:text-5xl font-bold"
-                  variants={fadeInUp}
-                >
-                  Join Our Growing Community
-                </motion.h2>
-              </motion.div>
-              <motion.div 
-                className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
-                initial="initial"
-                whileInView="animate"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-              >
-                {stats.map((stat) => (
-                  <motion.div
-                    key={stat.label}
-                    className="text-center"
-                    variants={scaleIn}
-                  >
-                    <motion.p 
-                      className="font-space-grotesk text-4xl font-bold text-purple-400"
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                    >
-                      {stat.value}
-                    </motion.p>
-                    <p className="text-white/70">{stat.label}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </section>
-
           {/* Final CTA Section */}
           <section className="relative py-32 px-4">
             <div className="container mx-auto max-w-4xl text-center">

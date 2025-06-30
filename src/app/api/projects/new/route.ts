@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     const project = await prisma.project.create({
       data: {
         title,
-        language: "en", // Default UI language to English
+        language: "English", // Default UI language to English (matches LanguageSwitcher codes)
         type: projectType, // Store the project type correctly
         userId: session.user.id,
         ...initialContent

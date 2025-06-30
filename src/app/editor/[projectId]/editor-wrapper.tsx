@@ -23,10 +23,14 @@ export function EditorWrapper({ projectId }: { projectId: string }) {
         const response = await fetch(`/api/projects/${projectId}`);
         if (response.ok) {
           const data = await response.json();
-          setCurrentLanguage(data.language || 'English');
+          // Ensure we always have a valid language, default to 'English' if null/undefined
+          const projectLanguage = data.language || 'English';
+          setCurrentLanguage(projectLanguage);
         }
       } catch (error) {
         console.error('Error fetching project language:', error);
+        // Fallback to English if there's an error
+        setCurrentLanguage('English');
       } finally {
         setIsLoading(false);
       }

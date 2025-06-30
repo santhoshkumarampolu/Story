@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 interface AIOperationProgressProps {
   isGenerating: boolean;
-  operationType: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes" | "save"; // Added "save"
+  operationType: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes" | "synopsis" | "plot-points" | "save"; // Added "plot-points"
   operationName: string;
 }
 
@@ -27,6 +27,10 @@ const getOperationEstimates = (type: string) => {
       return { tokens: 700, cost: 0.021, duration: 16000 };
     case "scenes":
       return { tokens: 1500, cost: 0.045, duration: 25000 };
+    case "synopsis":
+      return { tokens: 800, cost: 0.024, duration: 15000 };
+    case "plot-points":
+      return { tokens: 0, cost: 0, duration: 2000 };
     case "save": // Added estimates for save
       return { tokens: 0, cost: 0, duration: 2000 }; // Example estimates for save
     default:
@@ -50,6 +54,10 @@ const getOperationIcon = (type: string) => {
       return <Icons.users className="h-5 w-5" />;
     case "scenes":
       return <Icons.film className="h-5 w-5" />;
+    case "synopsis":
+      return <Icons.fileText className="h-5 w-5" />;
+    case "plot-points":
+      return <Icons.fileText className="h-5 w-5" />;
     case "save": // Added icon for save
       return <Icons.save className="h-5 w-5" />; // Using save icon
     default:
@@ -73,6 +81,10 @@ const getOperationColor = (type: string) => {
       return "pink";
     case "scenes":
       return "teal";
+    case "synopsis":
+      return "indigo";
+    case "plot-points":
+      return "gray";
     case "save": // Added color for save
       return "gray"; // Example color for save
     default:

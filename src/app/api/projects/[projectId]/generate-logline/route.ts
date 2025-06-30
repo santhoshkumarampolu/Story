@@ -45,11 +45,15 @@ export async function POST(
       );
     }
 
+    // Parse request body to get idea and language
+    const body = await request.json();
+    const { idea: requestIdea, language: requestLanguage } = body;
+
     const projectDetails = await getProjectDetails(projectId);
 
-    if (!projectDetails || !projectDetails.idea) {
+    if (!projectDetails) {
       return NextResponse.json(
-        { error: 'Project idea not found or project does not exist' },
+        { error: 'Project not found' },
         { status: 404 }
       );
     }
@@ -62,7 +66,16 @@ export async function POST(
         );
     }
 
-    const { idea, language } = projectDetails;
+    // Use idea from request body if provided, otherwise fall back to database
+    const idea = requestIdea || projectDetails.idea;
+    const language = requestLanguage || projectDetails.language;
+
+    if (!idea) {
+      return NextResponse.json(
+        { error: 'No idea provided. Please add an idea first.' },
+        { status: 400 }
+      );
+    }
 
     const prompt = `Create a compelling one-sentence logline for a story based on the following idea.
 The logline should be in ${language || 'English'} and follow these guidelines:

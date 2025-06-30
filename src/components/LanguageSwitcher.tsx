@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface LanguageSwitcherProps {
-  currentLanguage: string;
+  currentLanguage: string | null | undefined;
   onLanguageChange: (language: string) => void;
 }
 
@@ -16,10 +16,13 @@ const supportedLanguages = [
 ];
 
 export function LanguageSwitcher({ currentLanguage, onLanguageChange }: LanguageSwitcherProps) {
+  // Default to 'English' if currentLanguage is null, undefined, or empty
+  const selectedLanguage = currentLanguage || 'English';
+  
   return (
     <div className="flex items-center space-x-4">
       <span className="text-sm text-gray-400">Language:</span>
-      <Select value={currentLanguage} onValueChange={onLanguageChange}>
+      <Select value={selectedLanguage} onValueChange={onLanguageChange}>
         <SelectTrigger className="w-40 bg-white/10 border-white/10 text-white">
           <SelectValue />
         </SelectTrigger>

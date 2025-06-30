@@ -39,6 +39,10 @@ export async function POST(
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
     }
 
+    // Parse request body to get story content
+    const body = await request.json();
+    const { idea: requestIdea, logline: requestLogline, treatment: requestTreatment, language: requestLanguage } = body;
+
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       select: { 
@@ -53,8 +57,14 @@ export async function POST(
     if (!project || project.userId !== session.user.id) {
       return NextResponse.json({ error: 'Project not found or access denied' }, { status: 404 });
     }
+
+    // Use values from request body if provided, otherwise fall back to database
+    const idea = requestIdea || project.idea;
+    const logline = requestLogline || project.logline;
+    const treatment = requestTreatment || project.treatment;
+    const language = requestLanguage || project.language;
     
-    if (!project.idea || !project.logline || !project.treatment) {
+    if (!idea || !logline || !treatment) {
       return NextResponse.json({ error: 'Project must have an idea, logline, and treatment before generating characters' }, { status: 400 });
     }
 
@@ -68,9 +78,9 @@ export async function POST(
     const prompt = `Based on the following story details, generate a list of characters that would be essential to the narrative. For each character, provide a comprehensive profile.
 
 Story Details:
-Idea: ${project.idea}
-Logline: ${project.logline}
-Treatment: ${project.treatment}
+Idea: ${idea}
+Logline: ${logline}
+Treatment: ${treatment}
 
 Generate 3-5 main characters that:
 1. Serve distinct narrative functions

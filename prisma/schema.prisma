@@ -86,6 +86,7 @@ model Project {
   fullScript     String?      @db.Text // For screenplays
   worldBuilding  String?      @db.Text // For novels/fantasy
   blurb          String?      @db.Text // Book description/synopsis
+  plotPoints     String?      @db.Text // Plot points and story structure
   version        Int          @default(1)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)

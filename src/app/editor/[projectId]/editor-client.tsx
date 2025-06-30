@@ -81,6 +81,8 @@ interface Project {
   logline: string | null;
   idea: string | null;
   treatment: string | null;
+  blurb: string | null; // For synopsis
+  plotPoints?: string | null; // For plot points
   structureType: string | null;
   fullScript?: string | null; // Added fullScript
   userId: string;
@@ -107,7 +109,7 @@ interface TokenUpdate {
   tokens: number;
   cost: number;
   timestamp: number;
-  type: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes";
+  type: "script" | "storyboard" | "treatment" | "idea" | "logline" | "character_generation" | "scenes" | "synopsis";
   operation: string;
 }
 
@@ -143,6 +145,7 @@ export default function EditorPageClient({
   const [idea, setIdea] = useState<string>("");
   const [logline, setLogline] = useState<string>("");
   const [treatment, setTreatment] = useState<string>("");
+  const [synopsis, setSynopsis] = useState<string>("");
   const [fullScript, setFullScript] = useState<string | null>(null); // New state for full script
   const [outlineBeats, setOutlineBeats] = useState<any[]>([]);
   const [chapters, setChapters] = useState<any[]>([]);
@@ -164,6 +167,8 @@ export default function EditorPageClient({
   const [savingLogline, setSavingLogline] = useState(false);
   const [generatingTreatment, setGeneratingTreatment] = useState(false);
   const [savingTreatment, setSavingTreatment] = useState(false);
+  const [generatingSynopsis, setGeneratingSynopsis] = useState(false);
+  const [savingSynopsis, setSavingSynopsis] = useState(false);
   const [generatingCharacters, setGeneratingCharacters] = useState(false);
   const [generatingScenes, setGeneratingScenes] = useState(false);
   const [savingSceneId, setSavingSceneId] = useState<string | null>(null);
@@ -178,6 +183,9 @@ export default function EditorPageClient({
   const [keyVisualMoments, setKeyVisualMoments] = useState<string>("");
   const [generatingVisualElements, setGeneratingVisualElements] = useState(false);
   const [savingVisualElements, setSavingVisualElements] = useState(false);
+  const [plotPoints, setPlotPoints] = useState<string>("");
+  const [generatingPlotPoints, setGeneratingPlotPoints] = useState(false);
+  const [savingPlotPoints, setSavingPlotPoints] = useState(false);
 
   // Function to handle character field changes
   const handleCharacterChange = (characterId: string, field: keyof Character, value: string) => {
@@ -265,6 +273,8 @@ export default function EditorPageClient({
         setIdea(projectData.idea || "");
         setLogline(projectData.logline || "");
         setTreatment(projectData.treatment || "");
+        setSynopsis(projectData.blurb || "");
+        setPlotPoints(projectData.plotPoints || "");
         setCharacters(projectData.characters || []);
         setScenes(projectData.scenes.map((s: Scene) => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false, isScriptExpanded: false })) || []);
         setFullScript(projectData.fullScript || null); // Set full script from fetched data
@@ -445,6 +455,54 @@ export default function EditorPageClient({
           </Card>
         );
       
+      case 'summary':
+      case 'synopsis':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileText className="h-5 w-5 mr-2" />
+                  <T k="labels.synopsis" ns="editor" defaultValue="Synopsis" />
+                </h2>
+                <Button
+                  onClick={generateSynopsisApiCall}
+                  disabled={generatingSynopsis || savingSynopsis || !logline}
+                  variant="ai"
+                >
+                  {generatingSynopsis ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.generating" ns="editor" defaultValue="Generating..." /></>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" /><T k="actions.generateSynopsis" ns="editor" defaultValue="Generate Synopsis" /></>
+                  )}
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <GoogleTransliterateTextarea
+                  id="synopsis-textarea"
+                  initialValue={synopsis}
+                  onValueChange={setSynopsis}
+                  className="min-h-[300px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                  placeholder={t('placeholders.enterSynopsis', { ns: 'editor', defaultValue: 'Write a compelling synopsis of your story...' })}
+                  transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                  destinationLanguage={currentLanguage}
+                />
+                <Button
+                  onClick={saveSynopsisApiCall}
+                  disabled={savingSynopsis || generatingSynopsis}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {savingSynopsis ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.saving" ns="editor" defaultValue="Saving..." /></>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" /><T k="toolbar.save" ns="editor" defaultValue="Save" /></>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
       case 'characters':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
@@ -457,7 +515,7 @@ export default function EditorPageClient({
                 <div className="flex space-x-2">
                   <Button
                     onClick={generateCharactersApiCall}
-                    disabled={generatingCharacters || !treatment}
+                    disabled={generatingCharacters || (!idea || !logline || !treatment)}
                     variant="ai"
                   >
                     {generatingCharacters ? (
@@ -524,6 +582,53 @@ export default function EditorPageClient({
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      
+      case 'plot-points':
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Icons.fileText className="h-5 w-5 mr-2" />
+                  <T k="labels.plotPoints" ns="editor" defaultValue="Plot Points" />
+                </h2>
+                <Button
+                  onClick={generatePlotPointsApiCall}
+                  disabled={generatingPlotPoints || savingPlotPoints || (!treatment && !logline)}
+                  variant="ai"
+                >
+                  {generatingPlotPoints ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.generating" ns="editor" defaultValue="Generating..." /></>
+                  ) : (
+                    <><Icons.sparkles className="h-4 w-4 mr-2" /><T k="actions.generatePlotPoints" ns="editor" defaultValue="Generate Plot Points" /></>
+                  )}
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <GoogleTransliterateTextarea
+                  id="plot-points-textarea"
+                  initialValue={plotPoints}
+                  onValueChange={setPlotPoints}
+                  className="min-h-[300px] pr-20 bg-white/10 text-white placeholder:text-gray-400 border-white/10 w-full"
+                  placeholder={t('placeholders.enterPlotPoints', { ns: 'editor', defaultValue: 'Key plot points and story structure...' })}
+                  transliterationEnabled={isTransliterationEnabled && currentLanguage !== 'English'}
+                  destinationLanguage={currentLanguage}
+                />
+                <Button
+                  onClick={savePlotPointsApiCall}
+                  disabled={savingPlotPoints || generatingPlotPoints}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {savingPlotPoints ? (
+                    <><Icons.spinner className="h-4 w-4 animate-spin mr-2" /><T k="status.saving" ns="editor" defaultValue="Saving..." /></>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" /><T k="toolbar.save" ns="editor" defaultValue="Save" /></>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -920,13 +1025,34 @@ export default function EditorPageClient({
   };
 
   const handleLanguageChange = async (newLanguage: string) => { 
-    onLanguageChange(newLanguage);
-    setProject(prev => prev ? {...prev, language: newLanguage} : null);
-    // TODO: Consider saving this change to the backend immediately or as part of a general save
-    toast({ 
-      title: t('notifications.languageUpdated', { ns: 'editor', defaultValue: 'Language Updated' }), 
-      description: t('notifications.languageChanged', { ns: 'editor', defaultValue: 'Language changed to {{language}}', interpolation: { language: newLanguage } })
-    });
+    try {
+      // Update local state immediately for better UX
+      onLanguageChange(newLanguage);
+      setProject(prev => prev ? {...prev, language: newLanguage} : null);
+      
+      // Save the language change to the backend
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: newLanguage }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save language change');
+      }
+
+      toast({ 
+        title: t('notifications.languageUpdated', { ns: 'editor', defaultValue: 'Language Updated' }), 
+        description: t('notifications.languageChanged', { ns: 'editor', defaultValue: 'Language changed to {{language}}', interpolation: { language: newLanguage } })
+      });
+    } catch (error: any) {
+      console.error('Error updating language:', error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: t('notifications.failedToUpdateLanguage', { ns: 'editor', defaultValue: 'Failed to update language.' }),
+        variant: 'destructive',
+      });
+    }
   };
   
   const generateIdeaApiCall = async () => { 
@@ -1017,45 +1143,158 @@ export default function EditorPageClient({
       setSavingIdea(false);
     }
   };
-  const generateLoglineApiCall = async () => { 
-    setGeneratingLogline(true); 
-    console.log("Generating logline..."); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    setGeneratingLogline(false);
-    toast({title: "Logline generation (Placeholder)"});
+  const generateLoglineApiCall = async () => {
+    setGeneratingLogline(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/generate-logline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea: idea, // Use the current idea from state
+          language: currentLanguage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate logline');
+      }
+
+      const data = await response.json();
+      setLogline(data.logline || "");
+      
+      toast({
+        title: t('notifications.loglineGenerated', { ns: 'editor', defaultValue: 'Logline Generated' }),
+        description: t('notifications.loglineGeneratedSuccess', { ns: 'editor', defaultValue: 'Your logline has been generated successfully.' })
+      });
+      
+      updateTokenUsage("logline", "Generate Logline");
+    } catch (error: any) {
+      console.error("Error generating logline:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToGenerateLogline', { ns: 'editor', defaultValue: 'Failed to generate logline.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingLogline(false);
+    }
   };
-  const saveLoglineApiCall = async () => { 
-    setSavingLogline(true); 
-    console.log("Saving logline...", logline); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    setSavingLogline(false);
-    toast({title: "Logline saved (Placeholder)"});
+  const saveLoglineApiCall = async () => {
+    setSavingLogline(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/logline`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: logline,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save logline');
+      }
+
+      const data = await response.json();
+      setProject(prev => prev ? { ...prev, logline: data.logline } : null);
+      
+      toast({
+        title: t('notifications.loglineSaved', { ns: 'editor', defaultValue: 'Logline Saved' }),
+        description: t('notifications.loglineSavedSuccess', { ns: 'editor', defaultValue: 'Your logline has been saved successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error saving logline:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSaveLogline', { ns: 'editor', defaultValue: 'Failed to save logline.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingLogline(false);
+    }
   };
-  const generateTreatmentApiCall = async () => { 
-    setGeneratingTreatment(true); 
-    console.log("Generating treatment..."); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    setGeneratingTreatment(false);
-    toast({title: "Treatment generation (Placeholder)"});
+  const generateTreatmentApiCall = async () => {
+    setGeneratingTreatment(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/treatment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea: idea,
+          logline: logline,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate treatment');
+      }
+
+      const data = await response.json();
+      setTreatment(data.treatment || "");
+      
+      toast({
+        title: t('notifications.treatmentGenerated', { ns: 'editor', defaultValue: 'Treatment Generated' }),
+        description: t('notifications.treatmentGeneratedSuccess', { ns: 'editor', defaultValue: 'Your treatment has been generated successfully.' })
+      });
+      
+      updateTokenUsage("treatment", "Generate Treatment");
+    } catch (error: any) {
+      console.error("Error generating treatment:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToGenerateTreatment', { ns: 'editor', defaultValue: 'Failed to generate treatment.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingTreatment(false);
+    }
   };
-  const saveTreatmentApiCall = async () => { 
-    setSavingTreatment(true); 
-    console.log("Saving treatment...", treatment); 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    setSavingTreatment(false);
-    toast({title: "Treatment saved (Placeholder)"});
+  const saveTreatmentApiCall = async () => {
+    setSavingTreatment(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/treatment`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: treatment,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save treatment');
+      }
+
+      const data = await response.json();
+      setProject(prev => prev ? { ...prev, treatment: data.treatment } : null);
+      
+      toast({
+        title: t('notifications.treatmentSaved', { ns: 'editor', defaultValue: 'Treatment Saved' }),
+        description: t('notifications.treatmentSavedSuccess', { ns: 'editor', defaultValue: 'Your treatment has been saved successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error saving treatment:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSaveTreatment', { ns: 'editor', defaultValue: 'Failed to save treatment.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingTreatment(false);
+    }
   };
    const generateCharactersApiCall = async () => {
     setGeneratingCharacters(true);
-    console.log("Generating characters...");
-    // Placeholder: Replace with actual API call
     try {
       const response = await fetch(`/api/projects/${projectId}/generate-characters`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          logline: project?.logline,
-          treatment: project?.treatment,
+          idea: idea, // Use current state value
+          logline: logline, // Use current state value
+          treatment: treatment, // Use current state value
           existingCharacters: characters.map(c => ({ name: c.name, description: c.description })),
           language: currentLanguage,
         }),
@@ -1645,6 +1884,156 @@ export default function EditorPageClient({
     }
   };
 
+  const generateSynopsisApiCall = async () => {
+    setGeneratingSynopsis(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/generate-synopsis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea: idea,
+          logline: logline,
+          treatment: treatment,
+          language: currentLanguage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate synopsis');
+      }
+
+      const data = await response.json();
+      setSynopsis(data.synopsis || "");
+      
+      toast({
+        title: t('notifications.synopsisGenerated', { ns: 'editor', defaultValue: 'Synopsis Generated' }),
+        description: t('notifications.synopsisGeneratedSuccess', { ns: 'editor', defaultValue: 'Your synopsis has been generated successfully.' })
+      });
+      
+      updateTokenUsage("synopsis", "Generate Synopsis");
+    } catch (error: any) {
+      console.error("Error generating synopsis:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToGenerateSynopsis', { ns: 'editor', defaultValue: 'Failed to generate synopsis.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingSynopsis(false);
+    }
+  };
+
+  const saveSynopsisApiCall = async () => {
+    setSavingSynopsis(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/synopsis`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          synopsis: synopsis,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save synopsis');
+      }
+
+      const data = await response.json();
+      setProject(prev => prev ? { ...prev, synopsis: data.synopsis } : null);
+      
+      toast({
+        title: t('notifications.synopsisSaved', { ns: 'editor', defaultValue: 'Synopsis Saved' }),
+        description: t('notifications.synopsisSavedSuccess', { ns: 'editor', defaultValue: 'Your synopsis has been saved successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error saving synopsis:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSaveSynopsis', { ns: 'editor', defaultValue: 'Failed to save synopsis.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingSynopsis(false);
+    }
+  };
+
+  const generatePlotPointsApiCall = async () => {
+    setGeneratingPlotPoints(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/generate-plot-points`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          logline: logline,
+          treatment: treatment,
+          synopsis: synopsis,
+          language: currentLanguage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate plot points');
+      }
+
+      const data = await response.json();
+      setPlotPoints(data.plotPoints || "");
+      
+      toast({
+        title: t('notifications.plotPointsGenerated', { ns: 'editor', defaultValue: 'Plot Points Generated' }),
+        description: t('notifications.plotPointsGeneratedSuccess', { ns: 'editor', defaultValue: 'Your plot points have been generated successfully.' })
+      });
+      
+      updateTokenUsage("plot-points", "Generate Plot Points");
+    } catch (error: any) {
+      console.error("Error generating plot points:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToGeneratePlotPoints', { ns: 'editor', defaultValue: 'Failed to generate plot points.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPlotPoints(false);
+    }
+  };
+
+  const savePlotPointsApiCall = async () => {
+    setSavingPlotPoints(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/plot-points`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plotPoints: plotPoints,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save plot points');
+      }
+
+      const data = await response.json();
+      setProject(prev => prev ? { ...prev, plotPoints: data.plotPoints } : null);
+      
+      toast({
+        title: t('notifications.plotPointsSaved', { ns: 'editor', defaultValue: 'Plot Points Saved' }),
+        description: t('notifications.plotPointsSavedSuccess', { ns: 'editor', defaultValue: 'Your plot points have been saved successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error saving plot points:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSavePlotPoints', { ns: 'editor', defaultValue: 'Failed to save plot points.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingPlotPoints(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -1671,7 +2060,7 @@ export default function EditorPageClient({
         <div className="flex items-center justify-between mb-6">
         </div>
         <AIOperationProgress
-          isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment || generatingIdea || generatingLogline || generatingCharacters || generatingScenes || !!generatingSceneScript || !!generatingSceneStoryboard || generatingFullScript || savingFullScript}
+          isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment || generatingIdea || generatingLogline || generatingCharacters || generatingScenes || !!generatingSceneScript || !!generatingSceneStoryboard || generatingFullScript || savingFullScript || generatingSynopsis || generatingPlotPoints || savingPlotPoints}
           operationType={
             generatingScript ? "script" : 
             generatingStoryboard ? "storyboard" : 
@@ -1684,6 +2073,8 @@ export default function EditorPageClient({
             generatingLogline ? "logline" :
             generatingCharacters ? "character_generation" :
             generatingScenes ? "scenes" :
+            generatingSynopsis ? "synopsis" :
+            generatingPlotPoints ? "plot-points" :
             "script" // Default
           }
           operationName={
@@ -1698,6 +2089,8 @@ export default function EditorPageClient({
             generatingLogline ? t("ai.operationProgress", { ns: "editor", defaultValue: "Logline Generation" }) :
             generatingCharacters ? t("ai.operationProgress", { ns: "editor", defaultValue: "Character Generation" }) :
             generatingScenes ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Generation" }) :
+            generatingSynopsis ? t("ai.operationProgress", { ns: "editor", defaultValue: "Synopsis Generation" }) :
+            generatingPlotPoints ? t("ai.operationProgress", { ns: "editor", defaultValue: "Plot Points Generation" }) :
             t("ai.operationProgress", { ns: "editor", defaultValue: "AI Generation" }) // Default
           }
         />
