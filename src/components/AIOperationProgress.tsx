@@ -150,7 +150,7 @@ export function AIOperationProgress({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50"
+          className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50"
         >
           <div className={`bg-black/90 backdrop-blur-lg border border-${color}-500/30 rounded-xl p-6 min-w-[400px] shadow-2xl`}>
             {/* Header */}

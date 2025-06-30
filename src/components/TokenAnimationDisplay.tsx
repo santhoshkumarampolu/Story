@@ -204,7 +204,7 @@ export function TokenAnimationDisplay({ tokenUsage, tokenUpdates }: TokenAnimati
     <div className="text-sm text-gray-400 relative">
       {/* Main Display */}
       <motion.div 
-        className="flex items-center space-x-6"
+        className="flex items-center space-x-4"
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
       >
@@ -239,34 +239,7 @@ export function TokenAnimationDisplay({ tokenUsage, tokenUpdates }: TokenAnimati
           )}
         </motion.div>
 
-        {/* Cost Counter */}
-        <motion.div 
-          className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10"
-          whileHover={{ 
-            borderColor: "rgba(34, 197, 94, 0.3)",
-            backgroundColor: "rgba(34, 197, 94, 0.1)"
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          <motion.div
-            animate={{ 
-              scale: tokenUpdates.length > 0 ? [1, 1.2, 1] : 1 
-            }}
-            transition={{ duration: 0.5 }}
-            className="text-green-400 font-bold"
-          >
-            $
-          </motion.div>
-          <span className="text-xs font-medium text-gray-500">Cost:</span>
-          <span className="font-mono font-bold text-white">
-            <AnimatedCounter 
-              value={tokenUsage.totalCost}
-              format={(num) => num.toFixed(2)}
-            />
-          </span>
-        </motion.div>
-
-        {/* Subscription Status */}
+        {/* Subscription Status (FREE left) */}
         {tokenUsage.subscription && (
           <motion.div 
             className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10"

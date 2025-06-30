@@ -41,7 +41,7 @@ export async function POST(
 
     // Parse request body to get story content
     const body = await request.json();
-    const { idea: requestIdea, logline: requestLogline, treatment: requestTreatment, language: requestLanguage } = body;
+    const { idea: requestIdea, logline: requestLogline, synopsis: requestSynopsis, language: requestLanguage } = body;
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -50,7 +50,7 @@ export async function POST(
         language: true,
         idea: true,
         logline: true,
-        treatment: true
+        blurb: true // synopsis is stored in blurb field
       },
     });
 
@@ -61,11 +61,11 @@ export async function POST(
     // Use values from request body if provided, otherwise fall back to database
     const idea = requestIdea || project.idea;
     const logline = requestLogline || project.logline;
-    const treatment = requestTreatment || project.treatment;
+    const synopsis = requestSynopsis || project.blurb; // synopsis is stored in blurb field
     const language = requestLanguage || project.language;
     
-    if (!idea || !logline || !treatment) {
-      return NextResponse.json({ error: 'Project must have an idea, logline, and treatment before generating characters' }, { status: 400 });
+    if (!idea || !logline || !synopsis) {
+      return NextResponse.json({ error: 'Project must have an idea, logline, and synopsis before generating characters' }, { status: 400 });
     }
 
     // Subscription and usage check BEFORE OpenAI call
@@ -80,7 +80,7 @@ export async function POST(
 Story Details:
 Idea: ${idea}
 Logline: ${logline}
-Treatment: ${treatment}
+Synopsis: ${synopsis}
 
 Generate 3-5 main characters that:
 1. Serve distinct narrative functions

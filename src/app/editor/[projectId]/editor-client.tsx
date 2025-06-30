@@ -173,6 +173,9 @@ export default function EditorPageClient({
   const [generatingScenes, setGeneratingScenes] = useState(false);
   const [savingSceneId, setSavingSceneId] = useState<string | null>(null);
   const [savingCharacterId, setSavingCharacterId] = useState<string | null>(null);
+  const [deletingCharacterId, setDeletingCharacterId] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
   const [activeTab, setActiveTab] = useState<string>("idea"); // Default to first workflow step
   const { t } = useTranslations();
@@ -224,7 +227,6 @@ export default function EditorPageClient({
   const [creatingShare, setCreatingShare] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState<'pdf' | 'docx'>('pdf');
-  const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -515,7 +517,7 @@ export default function EditorPageClient({
                 <div className="flex space-x-2">
                   <Button
                     onClick={generateCharactersApiCall}
-                    disabled={generatingCharacters || (!idea || !logline || !treatment)}
+                    disabled={generatingCharacters || (!idea || !logline || !synopsis)}
                     variant="ai"
                   >
                     {generatingCharacters ? (
@@ -576,6 +578,19 @@ export default function EditorPageClient({
                             <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Saving...')}</>
                           ) : (
                             <><Save className="h-4 w-4 mr-2" />{t('Save Character')}</>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => deleteCharacterApiCall(character)}
+                          disabled={deletingCharacterId === (character.clientId || character.id)}
+                          size="sm"
+                          variant="destructive"
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          {deletingCharacterId === (character.clientId || character.id) ? (
+                            <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Deleting...')}</>
+                          ) : (
+                            <><Icons.trash className="h-4 w-4 mr-2" />{t('Delete')}</>
                           )}
                         </Button>
                       </div>
@@ -1294,7 +1309,7 @@ export default function EditorPageClient({
         body: JSON.stringify({
           idea: idea, // Use current state value
           logline: logline, // Use current state value
-          treatment: treatment, // Use current state value
+          synopsis: synopsis, // Use current state value
           existingCharacters: characters.map(c => ({ name: c.name, description: c.description })),
           language: currentLanguage,
         }),
@@ -1693,57 +1708,79 @@ export default function EditorPageClient({
 
   const saveCharacterApiCall = async (characterToSave: Character) => {
     setSavingCharacterId(characterToSave.clientId || characterToSave.id);
-
-    const isNewCharacter = characterToSave.id.startsWith('temp-') || characterToSave.id.startsWith('manual-') || !!characterToSave.clientId;
-    const apiUrl = isNewCharacter
-      ? `/api/projects/${projectId}/characters`
-      : `/api/projects/${projectId}/characters/${characterToSave.id}`;
-    const httpMethod = isNewCharacter ? 'POST' : 'PATCH';
-
     try {
-      const { clientId, ...characterDataForApi } = characterToSave;
-
-      const response = await fetch(apiUrl, {
-        method: httpMethod,
+      const response = await fetch(`/api/projects/${projectId}/characters/${characterToSave.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(characterDataForApi),
+        body: JSON.stringify({
+          name: characterToSave.name,
+          description: characterToSave.description,
+          backstory: characterToSave.backstory,
+          motivation: characterToSave.motivation,
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || t('messages.failedToSaveCharacter', { ns: 'editor', defaultValue: 'Failed to save character' }));
+        throw new Error(errorData.error || 'Failed to save character');
       }
 
-      const savedCharacter = await response.json();
-
-      setCharacters(prevCharacters =>
-        prevCharacters.map(char =>
-          (char.id === characterToSave.id || char.clientId === characterToSave.clientId) 
-            ? { ...savedCharacter, id: savedCharacter.id, clientId: undefined }
-            : char
-        )
-      );
-
+      const data = await response.json();
+      setCharacters(prev => prev.map(char => 
+        char.clientId === characterToSave.clientId || char.id === characterToSave.id 
+          ? { ...char, ...data, id: data.id } 
+          : char
+      ));
+      
       toast({
-        title: t('messages.success', { ns: 'editor', defaultValue: 'Success' }),
-        description: t('notifications.characterSaved', {
-          ns: 'editor',
-          defaultValue: 'Character "{{name}}" {{action}} successfully.',
-          interpolation: {
-            name: savedCharacter.name,
-            action: isNewCharacter ? t('created', { ns: 'editor' }) : t('updated', { ns: 'editor' })
-          }
-        })
+        title: t('notifications.characterSaved', { ns: 'editor', defaultValue: 'Character Saved' }),
+        description: t('notifications.characterSavedSuccess', { ns: 'editor', defaultValue: 'Your character has been saved successfully.' })
       });
     } catch (error: any) {
-      console.error(`Error ${isNewCharacter ? 'creating' : 'updating'} character:`, error);
+      console.error("Error saving character:", error);
       toast({
-        title: t('messages.error', { ns: 'editor', defaultValue: 'Error' }),
-        description: error.message || t('messages.failedToSaveCharacter', { ns: 'editor', defaultValue: 'Failed to save character.' }),
-        variant: "destructive"
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToSaveCharacter', { ns: 'editor', defaultValue: 'Failed to save character.' }),
+        variant: "destructive",
       });
     } finally {
       setSavingCharacterId(null);
+    }
+  };
+
+  const deleteCharacterApiCall = async (characterToDelete: Character) => {
+    setDeletingCharacterId(characterToDelete.clientId || characterToDelete.id);
+    try {
+      // If character has a real ID (not a clientId), delete from database
+      if (characterToDelete.id && !characterToDelete.id.startsWith('temp-') && !characterToDelete.id.startsWith('manual-')) {
+        const response = await fetch(`/api/projects/${projectId}/characters/${characterToDelete.id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete character');
+        }
+      }
+
+      // Remove from local state
+      setCharacters(prev => prev.filter(char => 
+        char.clientId !== characterToDelete.clientId && char.id !== characterToDelete.id
+      ));
+      
+      toast({
+        title: t('notifications.characterDeleted', { ns: 'editor', defaultValue: 'Character Deleted' }),
+        description: t('notifications.characterDeletedSuccess', { ns: 'editor', defaultValue: 'Character has been deleted successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error deleting character:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToDeleteCharacter', { ns: 'editor', defaultValue: 'Failed to delete character.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingCharacterId(null);
     }
   };
 
@@ -2034,6 +2071,52 @@ export default function EditorPageClient({
     }
   };
 
+  const exportProjectApiCall = async (format: 'markdown' | 'json') => {
+    setExporting(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ format }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to export project');
+      }
+
+      // Get the filename from the response headers
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition?.split('filename=')[1]?.replace(/"/g, '') || `project-${format}.${format}`;
+
+      // Create a blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: t('notifications.projectExported', { ns: 'editor', defaultValue: 'Project Exported' }),
+        description: t('notifications.projectExportedSuccess', { ns: 'editor', defaultValue: 'Your project has been exported successfully.' })
+      });
+    } catch (error: any) {
+      console.error("Error exporting project:", error);
+      toast({
+        title: t('notifications.error', { ns: 'editor', defaultValue: 'Error' }),
+        description: error.message || t('notifications.failedToExportProject', { ns: 'editor', defaultValue: 'Failed to export project.' }),
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+      setShowExportMenu(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -2119,6 +2202,46 @@ export default function EditorPageClient({
                   tokenUsage={tokenUsage}
                   tokenUpdates={[]} // We'll implement real-time updates later
                 />
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    disabled={exporting}
+                    className="text-gray-400 hover:text-white hover:bg-white/5"
+                    title={t('toolbar.export', { ns: 'editor', defaultValue: 'Export Project' })}
+                  >
+                    {exporting ? (
+                      <><Icons.spinner className="h-4 w-4 animate-spin mr-2" />{t('Exporting...')}</>
+                    ) : (
+                      <><Download className="h-4 w-4 mr-2" />{t('Export')}</>
+                    )}
+                  </Button>
+                  
+                  {/* Export Dropdown Menu */}
+                  {showExportMenu && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-black/90 backdrop-blur-lg border border-white/20 rounded-lg shadow-2xl z-50">
+                      <div className="py-2">
+                        <button
+                          onClick={() => exportProjectApiCall('markdown')}
+                          disabled={exporting}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Icons.fileText className="h-4 w-4" />
+                          {t('Export as Markdown', { ns: 'editor', defaultValue: 'Export as Markdown' })}
+                        </button>
+                        <button
+                          onClick={() => exportProjectApiCall('json')}
+                          disabled={exporting}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Icons.fileText className="h-4 w-4" />
+                          {t('Export as JSON', { ns: 'editor', defaultValue: 'Export as JSON' })}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <LanguageSwitcher 
                   currentLanguage={currentLanguage}
                   onLanguageChange={onLanguageChange}
@@ -2181,6 +2304,14 @@ export default function EditorPageClient({
           )}
         </Tabs>
       </div>
+      
+      {/* Click outside to close export menu */}
+      {showExportMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowExportMenu(false)}
+        />
+      )}
     </ScrollArea>
   );
 }
