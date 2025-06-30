@@ -95,4 +95,48 @@ export function getImageUrl(publicId: string, options: {
     secure: true,
     transformation,
   });
+}
+
+export async function uploadBuffer(
+  buffer: Buffer,
+  options: {
+    folder?: string;
+    transformation?: any[];
+    resource_type?: 'image' | 'video' | 'raw';
+    public_id?: string;
+  } = {}
+): Promise<CloudinaryUploadResponse> {
+  try {
+    // Validate Cloudinary configuration
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 
+        !process.env.CLOUDINARY_API_KEY || 
+        !process.env.CLOUDINARY_API_SECRET) {
+      throw new Error('Cloudinary configuration is missing');
+    }
+
+    // Convert buffer to base64
+    const base64String = buffer.toString('base64');
+    const dataURI = `data:image/jpeg;base64,${base64String}`;
+
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: options.folder || 'story-studio',
+      resource_type: options.resource_type || 'auto',
+      transformation: options.transformation,
+      public_id: options.public_id,
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      max_file_size: 5 * 1024 * 1024, // 5MB
+    });
+
+    return {
+      public_id: result.public_id,
+      secure_url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      resource_type: result.resource_type,
+    };
+  } catch (error) {
+    console.error('Error uploading buffer to Cloudinary:', error);
+    throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 } 

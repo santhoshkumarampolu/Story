@@ -11,7 +11,10 @@ import {
   BookOpen,
   User,
   LogOut,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
+import { useState } from "react";
 
 interface HeaderProps {
   showAuthButtons?: boolean;
@@ -21,6 +24,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const navItems = [
     {
@@ -112,32 +116,52 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
           <nav className="flex items-center space-x-4">
             {isDashboard ? (
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  {session?.user?.image ? (
-                    <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                      <Image
-                        src={session.user.image}
-                        alt={session.user.name || "User avatar"}
-                        fill
-                        className="object-cover"
-                      />
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 hover:bg-[hsl(var(--accent))] rounded-lg px-3 py-2 transition-all"
+                  >
+                    {session?.user?.image ? (
+                      <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || "User avatar"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-[hsl(var(--accent))] flex items-center justify-center">
+                        <User className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium">{session?.user?.name}</span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))]">{session?.user?.email}</span>
                     </div>
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-[hsl(var(--accent))] flex items-center justify-center">
-                      <User className="h-4 w-4" />
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {/* User Dropdown Menu */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg shadow-lg z-50">
+                      <div className="py-2">
+                        <Link href="/dashboard/profile">
+                          <button className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-[hsl(var(--accent))] transition-colors">
+                            <User className="h-4 w-4" />
+                            Profile Settings
+                          </button>
+                        </Link>
+                        <Link href="/auth/signout">
+                          <button className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-[hsl(var(--accent))] transition-colors text-red-500 hover:text-red-400">
+                            <LogOut className="h-4 w-4" />
+                            Sign Out
+                          </button>
+                        </Link>
+                      </div>
                     </div>
                   )}
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{session?.user?.name}</span>
-                    <span className="text-xs text-[hsl(var(--muted-foreground))]">{session?.user?.email}</span>
-                  </div>
                 </div>
-                <Link href="/auth/signout">
-                  <Button variant="ghost" className="gap-2">
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </Button>
-                </Link>
               </div>
             ) : (
               showAuthButtons && (
@@ -158,6 +182,14 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
           </nav>
         </div>
       </div>
+      
+      {/* Click outside to close dropdown */}
+      {showUserMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </header>
   );
 } 

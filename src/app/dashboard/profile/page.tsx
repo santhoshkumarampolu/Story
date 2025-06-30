@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { 
   ArrowLeft, 
@@ -34,6 +34,7 @@ import {
   Zap
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 interface ProfileData {
   user: {
@@ -109,6 +110,9 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [name, setName] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Fetch profile data
   useEffect(() => {
@@ -179,6 +183,63 @@ export default function ProfilePage() {
     } finally {
       setUpdating(false);
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/user/upload-avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setProfileData(prev => prev ? { 
+          ...prev, 
+          user: { ...prev.user, image: result.imageUrl } 
+        } : null);
+        
+        // Update session
+        await update();
+        
+        toast({
+          title: "Success",
+          description: "Profile image updated successfully",
+        });
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload image');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUpgradeSuccess = () => {
+    setShowUpgradeModal(false);
+    // Refresh profile data
+    window.location.reload();
   };
 
   const formatDate = (dateString: string) => {
@@ -292,14 +353,33 @@ export default function ProfilePage() {
                       )}
                       <Button
                         size="icon"
+                        onClick={triggerFileInput}
+                        disabled={uploadingImage}
                         className="absolute bottom-0 right-0 rounded-full bg-purple-500 hover:bg-purple-600"
                       >
-                        <Camera className="h-4 w-4" />
+                        {uploadingImage ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
+                    
+                    {/* Hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    
                     <div className="text-center">
                       <h3 className="text-lg font-semibold">{profileData.user.name || "User"}</h3>
                       <p className="text-gray-400">{profileData.user.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Click the camera icon to upload a new photo
+                      </p>
                     </div>
                   </div>
                   
@@ -363,7 +443,11 @@ export default function ProfilePage() {
                   </div>
 
                   {!profileData.subscription.isPro && (
-                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                    <Button 
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
                       Upgrade to Pro
                     </Button>
                   )}
@@ -668,6 +752,15 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Subscription Upgrade Modal */}
+      {showUpgradeModal && (
+        <SubscriptionUpgrade
+          currentPlan={profileData.subscription.isPro ? 'pro' : 'free'}
+          onUpgrade={handleUpgradeSuccess}
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
     </div>
   );
 } 
