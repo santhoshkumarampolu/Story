@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://aistorystudio.com
+
+# Sitemaps
+Sitemap: https://aistorystudio.com/sitemap.xml
