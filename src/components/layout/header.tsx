@@ -45,7 +45,21 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
       <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))]/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
-            <SiteTitle />
+            <div>
+              <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+                AI Story Studio
+              </span>
+              <span className="inline sm:hidden">
+                <Image
+                  src="/favicon.png"
+                  alt="AI Story Studio"
+                  width={32}
+                  height={32}
+                  className="rounded"
+                  priority
+                />
+              </span>
+            </div>
             {isDashboard && (
               <nav className="flex items-center gap-4">
                 {navItems.map((item) => (
@@ -91,7 +105,21 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))]/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
-          <SiteTitle />
+          <div>
+            <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+              AI Story Studio
+            </span>
+            <span className="inline sm:hidden">
+              <Image
+                src="/favicon.png"
+                alt="AI Story Studio"
+                width={52}
+                height={42}
+                className="rounded"
+                priority
+              />
+            </span>
+          </div>
           {isDashboard && (
             <nav className="flex items-center gap-4">
               {navItems.map((item) => {
