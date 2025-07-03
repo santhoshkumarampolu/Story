@@ -319,7 +319,7 @@ export default function EditorPageClient({
       case 'idea':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.lightbulb className="h-5 w-5 mr-2" />
@@ -366,7 +366,7 @@ export default function EditorPageClient({
       case 'logline':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" />
@@ -413,7 +413,7 @@ export default function EditorPageClient({
       case 'treatment':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileEdit className="h-5 w-5 mr-2" />
@@ -461,7 +461,7 @@ export default function EditorPageClient({
       case 'synopsis':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" />
@@ -508,7 +508,7 @@ export default function EditorPageClient({
       case 'characters':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.users className="h-5 w-5 mr-2" />
@@ -605,7 +605,7 @@ export default function EditorPageClient({
       case 'plot-points':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" />
@@ -709,7 +709,7 @@ export default function EditorPageClient({
       case 'genre':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Tag className="h-5 w-5 mr-2" />
@@ -765,7 +765,7 @@ export default function EditorPageClient({
       case 'theme':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Heart className="h-5 w-5 mr-2" />
@@ -812,7 +812,7 @@ export default function EditorPageClient({
       case 'world-building':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Globe className="h-5 w-5 mr-2" />
@@ -837,7 +837,7 @@ export default function EditorPageClient({
       case 'visual-elements':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Camera className="h-5 w-5 mr-2" />
@@ -905,7 +905,7 @@ export default function EditorPageClient({
       case 'scenes':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.film className="h-5 w-5 mr-2" />
@@ -956,7 +956,7 @@ export default function EditorPageClient({
       case 'full-script':
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" /> 
@@ -1022,7 +1022,7 @@ export default function EditorPageClient({
       default:
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
-            <CardContent className="p-6">
+            <CardContent className="p-6 flex flex-col gap-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-purple-300 flex items-center">
                   <Icons.fileText className="h-5 w-5 mr-2" />
@@ -2139,49 +2139,13 @@ export default function EditorPageClient({
 
   return (
     <ScrollArea className="h-full bg-background text-foreground">
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-6">
-        </div>
-        <AIOperationProgress
-          isGenerating={!!generatingScript || !!generatingStoryboard || generatingTreatment || generatingIdea || generatingLogline || generatingCharacters || generatingScenes || !!generatingSceneScript || !!generatingSceneStoryboard || generatingFullScript || savingFullScript || generatingSynopsis || generatingPlotPoints || savingPlotPoints}
-          operationType={
-            generatingScript ? "script" : 
-            generatingStoryboard ? "storyboard" : 
-            generatingSceneScript ? "script" : 
-            generatingSceneStoryboard ? "storyboard" : 
-            generatingFullScript ? "script" : 
-            savingFullScript ? "save" : // Added saving full script
-            generatingTreatment ? "treatment" : 
-            generatingIdea ? "idea" : 
-            generatingLogline ? "logline" :
-            generatingCharacters ? "character_generation" :
-            generatingScenes ? "scenes" :
-            generatingSynopsis ? "synopsis" :
-            generatingPlotPoints ? "plot-points" :
-            "script" // Default
-          }
-          operationName={
-            generatingScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Script Generation" }) : 
-            generatingStoryboard ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Storyboard Generation" }) :
-            generatingSceneScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Script Generation" }) : 
-            generatingSceneStoryboard ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Storyboard Generation" }) : 
-            generatingFullScript ? t("ai.operationProgress", { ns: "editor", defaultValue: "Full Script Generation" }) : 
-            savingFullScript ? t("status.saving", { ns: "editor", defaultValue: "Saving Full Script" }) : // Added saving full script
-            generatingTreatment ? t("ai.operationProgress", { ns: "editor", defaultValue: "Treatment Generation" }) :
-            generatingIdea ? t("ai.operationProgress", { ns: "editor", defaultValue: "Idea Generation" }) : 
-            generatingLogline ? t("ai.operationProgress", { ns: "editor", defaultValue: "Logline Generation" }) :
-            generatingCharacters ? t("ai.operationProgress", { ns: "editor", defaultValue: "Character Generation" }) :
-            generatingScenes ? t("ai.operationProgress", { ns: "editor", defaultValue: "Scene Generation" }) :
-            generatingSynopsis ? t("ai.operationProgress", { ns: "editor", defaultValue: "Synopsis Generation" }) :
-            generatingPlotPoints ? t("ai.operationProgress", { ns: "editor", defaultValue: "Plot Points Generation" }) :
-            t("ai.operationProgress", { ns: "editor", defaultValue: "AI Generation" }) // Default
-          }
-        />
-        {/* Header */}
-        <div className="bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 mb-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-8">
+      <div className="container mx-auto p-2 sm:p-4 md:p-6 lg:p-8 max-w-7xl">
+        {/* Responsive Header */}
+        <div className="bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 mb-4 sm:mb-8">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 sm:px-6 lg:px-8">
+            {/* Token/Export Bar - Responsive */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 py-2 sm:py-0 w-full">
+              <div className="flex flex-row items-center space-x-2 sm:space-x-8 w-full sm:w-auto">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -2189,26 +2153,29 @@ export default function EditorPageClient({
                   className="text-gray-400 hover:text-white hover:bg-white/5"
                   title={t('toolbar.backToDashboard', { ns: 'editor', defaultValue: 'Back to Dashboard' })}
                 >
-                  <Icons.arrowLeft className="h-4 w-4" />
+                  <Icons.arrowLeft className="h-5 w-5 sm:h-4 sm:w-4" />
                 </Button>
                 {project && (
-                  <h1 className="text-lg font-semibold text-white">
+                  <h1 className="text-base sm:text-lg font-semibold text-white truncate max-w-[70vw] sm:max-w-none">
                     {project.title}
                   </h1>
                 )}
               </div>
-              <div className="flex items-center space-x-4">
-                <TokenAnimationDisplay 
-                  tokenUsage={tokenUsage}
-                  tokenUpdates={[]} // We'll implement real-time updates later
-                />
-                <div className="relative">
+              {/* Token/Export/Language - stack on mobile */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full sm:w-auto gap-2 sm:gap-4 justify-end">
+                <div className="flex flex-row gap-2 w-full sm:w-auto">
+                  <TokenAnimationDisplay 
+                    tokenUsage={tokenUsage}
+                    tokenUpdates={[]} // We'll implement real-time updates later
+                  />
+                </div>
+                <div className="relative w-full sm:w-auto">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowExportMenu(!showExportMenu)}
                     disabled={exporting}
-                    className="text-gray-400 hover:text-white hover:bg-white/5"
+                    className="text-gray-400 hover:text-white hover:bg-white/5 w-full sm:w-auto"
                     title={t('toolbar.export', { ns: 'editor', defaultValue: 'Export Project' })}
                   >
                     {exporting ? (
@@ -2217,7 +2184,6 @@ export default function EditorPageClient({
                       <><Download className="h-4 w-4 mr-2" />{t('Export')}</>
                     )}
                   </Button>
-                  
                   {/* Export Dropdown Menu */}
                   {showExportMenu && (
                     <div className="absolute right-0 top-full mt-2 w-48 bg-black/90 backdrop-blur-lg border border-white/20 rounded-lg shadow-2xl z-50">
@@ -2252,59 +2218,65 @@ export default function EditorPageClient({
         </div>
 
         {/* Main Content Area with Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-6 bg-white/5 backdrop-blur-md border border-white/10" style={{ gridTemplateColumns: `repeat(${projectConfig?.workflow?.length || 4}, 1fr)` }}>
-            {projectConfig?.workflow?.map((step: string) => (
-              <TabsTrigger 
-                key={step} 
-                value={step} 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+        <div className="relative">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="relative">
+              <TabsList
+                className="flex overflow-x-auto whitespace-nowrap scrollbar mb-4 sm:mb-6 bg-white/5 backdrop-blur-md border border-white/10"
+                style={{ minWidth: 0 }}
               >
-                {projectConfig.labels?.[step] || t(`tabs.${step}`, { ns: 'editor', defaultValue: step.charAt(0).toUpperCase() + step.slice(1) })}
-              </TabsTrigger>
+                {projectConfig?.workflow?.map((step: string) => (
+                  <TabsTrigger 
+                    key={step} 
+                    value={step} 
+                    className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap"
+                  >
+                    {projectConfig.labels?.[step] || t(`tabs.${step}`, { ns: 'editor', defaultValue: step.charAt(0).toUpperCase() + step.slice(1) })}
+                  </TabsTrigger>
+                )) || (
+                  <>
+                    <TabsTrigger value="overview" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                      <T k="tabs.overview" ns="editor" defaultValue="Overview" />
+                    </TabsTrigger>
+                    <TabsTrigger value="characters" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                      <T k="tabs.characters" ns="editor" defaultValue="Characters" />
+                    </TabsTrigger>
+                    <TabsTrigger value="scenes" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                      <T k="tabs.scenes" ns="editor" defaultValue="Scenes" />
+                    </TabsTrigger>
+                    <TabsTrigger value="full-script" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                      <T k="tabs.fullScript" ns="editor" defaultValue="Full Script" />
+                    </TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+            </div>
+
+            {projectConfig?.workflow?.map((step: string) => (
+              <TabsContent key={step} value={step} className="space-y-6 sm:space-y-8 overflow-auto">
+                {renderWorkflowStep(step)}
+              </TabsContent>
             )) || (
               <>
-                <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <T k="tabs.overview" ns="editor" defaultValue="Overview" />
-                </TabsTrigger>
-                <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <T k="tabs.characters" ns="editor" defaultValue="Characters" />
-                </TabsTrigger>
-                <TabsTrigger value="scenes" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <T k="tabs.scenes" ns="editor" defaultValue="Scenes" />
-                </TabsTrigger>
-                <TabsTrigger value="full-script" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <T k="tabs.fullScript" ns="editor" defaultValue="Full Script" />
-                </TabsTrigger>
+                <TabsContent value="overview" className="space-y-6 sm:space-y-8 overflow-auto">
+                  {renderWorkflowStep('idea')}
+                  {renderWorkflowStep('logline')}
+                  {renderWorkflowStep('treatment')}
+                </TabsContent>
+                <TabsContent value="characters" className="space-y-6 sm:space-y-8 overflow-auto">
+                  {renderWorkflowStep('characters')}
+                </TabsContent>
+                <TabsContent value="scenes" className="space-y-6 sm:space-y-8 overflow-auto">
+                  {renderWorkflowStep('scenes')}
+                </TabsContent>
+                <TabsContent value="full-script" className="space-y-6 sm:space-y-8 overflow-auto">
+                  {renderWorkflowStep('full-script')}
+                </TabsContent>
               </>
             )}
-          </TabsList>
-
-          {projectConfig?.workflow?.map((step: string) => (
-            <TabsContent key={step} value={step} className="space-y-8">
-              {renderWorkflowStep(step)}
-            </TabsContent>
-          )) || (
-            <>
-              <TabsContent value="overview" className="space-y-8">
-                {renderWorkflowStep('idea')}
-                {renderWorkflowStep('logline')}
-                {renderWorkflowStep('treatment')}
-              </TabsContent>
-              <TabsContent value="characters" className="space-y-8">
-                {renderWorkflowStep('characters')}
-              </TabsContent>
-              <TabsContent value="scenes" className="space-y-8">
-                {renderWorkflowStep('scenes')}
-              </TabsContent>
-              <TabsContent value="full-script" className="space-y-8">
-                {renderWorkflowStep('full-script')}
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
-      
       {/* Click outside to close export menu */}
       {showExportMenu && (
         <div 

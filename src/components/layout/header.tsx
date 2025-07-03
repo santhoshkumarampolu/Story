@@ -103,9 +103,9 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))]/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
-          <div>
+      <div className="container mx-auto px-2 sm:px-4 lg:px-8 flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between gap-2 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-8 w-full sm:w-auto">
+          <div className="flex items-center justify-center w-full sm:w-auto">
             <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
               AI Story Studio
             </span>
@@ -121,7 +121,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
             </span>
           </div>
           {isDashboard && (
-            <nav className="flex items-center gap-4">
+            <nav className="flex flex-row sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -140,10 +140,10 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
             </nav>
           )}
         </div>
-        <div className="flex items-center space-x-4">
-          <nav className="flex items-center space-x-4">
+        <div className="flex items-center justify-center w-full sm:w-auto mt-2 sm:mt-0 space-x-2 sm:space-x-4">
+          <nav className="flex items-center space-x-2 sm:space-x-4">
             {isDashboard ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
@@ -164,12 +164,11 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                       </div>
                     )}
                     <div className="flex flex-col items-start">
-                      <span className="text-sm font-medium">{session?.user?.name}</span>
-                      <span className="text-xs text-[hsl(var(--muted-foreground))]">{session?.user?.email}</span>
+                      <span className="text-sm font-medium truncate max-w-[100px]">{session?.user?.name}</span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[100px]">{session?.user?.email}</span>
                     </div>
                     <ChevronDown className={`h-4 w-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
-                  
                   {/* User Dropdown Menu */}
                   {showUserMenu && (
                     <div className="absolute right-0 top-full mt-2 w-48 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg shadow-lg z-50">

@@ -57,7 +57,7 @@ export async function POST(
     if (!project || project.userId !== session.user.id) {
       return NextResponse.json({ error: 'Project not found or access denied' }, { status: 404 });
     }
-
+    
     // Use values from request body if provided, otherwise fall back to database
     const idea = requestIdea || project.idea;
     const logline = requestLogline || project.logline;
