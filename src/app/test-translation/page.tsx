@@ -12,12 +12,14 @@ function TestContent({ userLanguage, setUserLanguage }: {
   const { t } = useTranslations();
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-8">
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-white">
               Multi-Language Support Test
             </h1>
             <p className="text-gray-400 mt-2">Testing the AI Story Studio translation system</p>
@@ -157,6 +159,7 @@ function TestContent({ userLanguage, setUserLanguage }: {
             </ol>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

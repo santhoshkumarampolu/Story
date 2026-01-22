@@ -111,7 +111,7 @@ export function SubscriptionUpgrade({ currentPlan, onUpgrade, onClose }: Subscri
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent mb-2">
+          <h2 className="text-3xl font-bold text-white mb-2">
             Upgrade to Pro
           </h2>
           <p className="text-gray-400">
@@ -157,9 +157,9 @@ export function SubscriptionUpgrade({ currentPlan, onUpgrade, onClose }: Subscri
           </Card>
 
           {/* Pro Plan */}
-          <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30 relative">
+          <Card className="bg-purple-500/10 border-purple-500/30 relative">
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1">
+              <Badge className="bg-purple-600 text-white px-4 py-1">
                 <Crown className="h-3 w-3 mr-1" />
                 Recommended
               </Badge>
@@ -237,7 +237,7 @@ export function SubscriptionUpgrade({ currentPlan, onUpgrade, onClose }: Subscri
             <Button
               onClick={handleUpgrade}
               disabled={loading}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />

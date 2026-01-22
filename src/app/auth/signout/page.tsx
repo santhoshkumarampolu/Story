@@ -21,15 +21,8 @@ export default function SignOutPage() {
   };
 
   return (
-    <div className="relative min-h-screen">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
-      
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/4 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-pink-500/20 blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
 
       <div className="relative">
         <Header showAuthButtons={false} />
@@ -61,7 +54,7 @@ export default function SignOutPage() {
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                     onClick={handleSignOut}
                     disabled={isLoading}
                   >

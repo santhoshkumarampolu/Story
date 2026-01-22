@@ -131,8 +131,8 @@ export default function SignUpPage() {
   // Show loading state while checking session
   if (status === "loading") {
     return (
-      <div className="relative min-h-screen">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
         <div className="relative flex min-h-screen items-center justify-center">
           <div className="text-white">Loading...</div>
         </div>
@@ -141,15 +141,8 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="relative min-h-screen">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
-      
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/4 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-pink-500/20 blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
 
       <div className="relative">
         <Header showAuthButtons={true} />

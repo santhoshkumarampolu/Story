@@ -270,26 +270,34 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+        <div className="relative flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+        </div>
       </div>
     );
   }
 
   if (!profileData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-white">Failed to load profile data</p>
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+        <div className="relative flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-white">Failed to load profile data</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="container max-w-7xl mx-auto px-4 py-8">
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative">
+        <div className="container max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
@@ -300,7 +308,7 @@ export default function ProfilePage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-white">
                 Profile Settings
               </h1>
               <p className="text-gray-400 mt-1">Manage your account and view usage statistics</p>
@@ -445,7 +453,7 @@ export default function ProfilePage() {
                   {!profileData.subscription.isPro && (
                     <Button 
                       onClick={() => setShowUpgradeModal(true)}
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       <Crown className="h-4 w-4 mr-2" />
                       Upgrade to Pro
@@ -751,16 +759,17 @@ export default function ProfilePage() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
 
-      {/* Subscription Upgrade Modal */}
-      {showUpgradeModal && (
-        <SubscriptionUpgrade
-          currentPlan={profileData.subscription.isPro ? 'pro' : 'free'}
-          onUpgrade={handleUpgradeSuccess}
-          onClose={() => setShowUpgradeModal(false)}
-        />
-      )}
+        {/* Subscription Upgrade Modal */}
+        {showUpgradeModal && (
+          <SubscriptionUpgrade
+            currentPlan={profileData.subscription.isPro ? 'pro' : 'free'}
+            onUpgrade={handleUpgradeSuccess}
+            onClose={() => setShowUpgradeModal(false)}
+          />
+        )}
+        </div>
+      </div>
     </div>
   );
 } 

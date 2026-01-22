@@ -73,8 +73,11 @@ export default function ProjectsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8B5CF6]" />
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+        <div className="relative flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+        </div>
       </div>
     );
   }
@@ -231,23 +234,25 @@ function ProjectsContent({
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">{t('projects.title', { defaultValue: 'My Projects' })}</h1>
-          <div className="flex items-center space-x-4">
-            <LanguageSwitcher
-              currentLanguage={currentLanguage}
-              onLanguageChange={setCurrentLanguage}
-            />
-            <Link href="/dashboard/projects/new">
-              <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED]">
-                <Icons.plus className="h-4 w-4 mr-2" />
-                {t('projects.newProject', { defaultValue: 'New Project' })}
-              </Button>
-            </Link>
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">{t('projects.title', { defaultValue: 'My Projects' })}</h1>
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher
+                currentLanguage={currentLanguage}
+                onLanguageChange={setCurrentLanguage}
+              />
+              <Link href="/dashboard/projects/new">
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Icons.plus className="h-4 w-4 mr-2" />
+                  {t('projects.newProject', { defaultValue: 'New Project' })}
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
               <motion.div
@@ -257,12 +262,12 @@ function ProjectsContent({
                 transition={{ duration: 0.3 }}
               >
                 <Link href={`/editor/${project.id}`}>
-                  <Card className="border border-[#1F1F1F] bg-[#0A0A0A] hover:bg-[#1F1F1F] transition-colors cursor-pointer relative group">
+                  <Card className="border border-white/10 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative group">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           {getProjectTypeIcon(project.type || project.language)}
-                          <span className="px-2 py-1 text-sm bg-[#1F1F1F] text-[#8B5CF6] rounded-full border border-[#2F2F2F]">
+                          <span className="px-2 py-1 text-sm bg-white/10 text-purple-400 rounded-full border border-white/10">
                             {getProjectTypeLabel(project.type || project.language)}
                           </span>
                         </div>
@@ -279,7 +284,7 @@ function ProjectsContent({
                           >
                             <Icons.trash className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#8B5CF6] h-8 w-8">
+                          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-purple-400 h-8 w-8">
                             <Icons.arrowLeft className="h-4 w-4" />
                           </Button>
                         </div>
@@ -299,11 +304,12 @@ function ProjectsContent({
               </motion.div>
             ))}
           </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-[#0A0A0A] border border-[#1F1F1F] text-white">
+        <DialogContent className="bg-black/95 border border-white/10 text-white">
           <DialogHeader>
             <DialogTitle className="text-red-400">
               <T k="actions.deleteProject" ns="projects" defaultValue="Delete Project" />
@@ -321,7 +327,7 @@ function ProjectsContent({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
               disabled={isDeleting}
-              className="border-[#1F1F1F] text-white hover:bg-[#1F1F1F]"
+              className="border-white/10 text-white hover:bg-white/10"
             >
               <T k="buttons.cancel" ns="common" defaultValue="Cancel" />
             </Button>

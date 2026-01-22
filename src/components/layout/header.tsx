@@ -45,8 +45,8 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
       <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))]/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
-            <div>
-              <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+            <Link href="/" className="flex items-center">
+              <span className="hidden sm:inline text-2xl font-bold text-white hover:text-purple-400 transition-colors">
                 AI Story Studio
               </span>
               <span className="inline sm:hidden">
@@ -59,7 +59,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                   priority
                 />
               </span>
-            </div>
+            </Link>
             {isDashboard && (
               <nav className="flex items-center gap-4">
                 {navItems.map((item) => (
@@ -105,8 +105,8 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/95 backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background))]/60">
       <div className="container mx-auto px-2 sm:px-4 lg:px-8 flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between gap-2 sm:gap-0">
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-8 w-full sm:w-auto">
-          <div className="flex items-center justify-center w-full sm:w-auto">
-            <span className="hidden sm:inline text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+          <Link href="/" className="flex items-center justify-center w-full sm:w-auto">
+            <span className="hidden sm:inline text-2xl font-bold text-white hover:text-purple-400 transition-colors">
               AI Story Studio
             </span>
             <span className="inline sm:hidden">
@@ -119,7 +119,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                 priority
               />
             </span>
-          </div>
+          </Link>
           {isDashboard && (
             <nav className="flex flex-row sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center">
               {navItems.map((item) => {
@@ -199,7 +199,7 @@ export function Header({ showAuthButtons = true }: HeaderProps) {
                     </Button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+                    <Button className="bg-white text-black hover:bg-white/90 font-semibold">
                       Get Started
                     </Button>
                   </Link>

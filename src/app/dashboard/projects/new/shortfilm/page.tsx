@@ -46,8 +46,10 @@ export default function NewShortFilmPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-      <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-white">Start Your Short Film</CardTitle>
           <CardDescription className="text-gray-300">
@@ -102,6 +104,7 @@ export default function NewShortFilmPage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 } 

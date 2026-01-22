@@ -12,24 +12,27 @@ export default function TestEditorTranslationPage() {
 
   return (
     <TranslationProvider targetLanguage={currentLanguage} enabled={currentLanguage !== 'English'}>
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                <T k="test.title" ns="common" defaultValue="Editor Translation Test" />
-              </h1>
-              <p className="text-gray-400 mt-2">
-                <T k="test.subtitle" ns="common" defaultValue="Testing Phase 3: Editor Interface Translations" />
-              </p>
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+        <div className="relative p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-white">
+                  <T k="test.title" ns="common" defaultValue="Editor Translation Test" />
+                </h1>
+                <p className="text-gray-400 mt-2">
+                  <T k="test.subtitle" ns="common" defaultValue="Testing Phase 3: Editor Interface Translations" />
+                </p>
+              </div>
+              <LanguageSwitcher 
+                currentLanguage={currentLanguage} 
+                onLanguageChange={setCurrentLanguage} 
+              />
             </div>
-            <LanguageSwitcher 
-              currentLanguage={currentLanguage} 
-              onLanguageChange={setCurrentLanguage} 
-            />
-          </div>
 
-          <EditorTranslationDemo />
+            <EditorTranslationDemo />
+          </div>
         </div>
       </div>
     </TranslationProvider>

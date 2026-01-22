@@ -49,16 +49,19 @@ export default async function VerifyPage({ searchParams }: VerifyPageProps) {
   const content = statusCopy[reason];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4 py-10">
-      <div className="w-full max-w-md rounded-lg border border-border bg-background p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{content.title}</h1>
-        <p className="mt-3 text-sm text-muted-foreground">{content.description}</p>
-        <Link
-          href={content.actionHref}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
-        >
-          {content.actionLabel}
-        </Link>
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md rounded-lg border border-white/10 bg-white/5 backdrop-blur-lg p-8 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-white">{content.title}</h1>
+          <p className="mt-3 text-sm text-white/60">{content.description}</p>
+          <Link
+            href={content.actionHref}
+            className="mt-6 inline-flex items-center justify-center rounded-md bg-white text-black px-5 py-2 text-sm font-medium shadow-sm transition hover:bg-white/90"
+          >
+            {content.actionLabel}
+          </Link>
+        </div>
       </div>
     </div>
   );

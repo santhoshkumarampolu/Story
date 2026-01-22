@@ -194,8 +194,10 @@ function NewProjectContent({
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-      <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -333,6 +335,7 @@ function NewProjectContent({
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 } 

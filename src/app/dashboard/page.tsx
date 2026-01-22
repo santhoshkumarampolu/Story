@@ -60,8 +60,11 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      <div className="relative min-h-screen bg-black text-white">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+        <div className="relative flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+        </div>
       </div>
     );
   }
@@ -119,11 +122,13 @@ function DashboardContent({
   const { t } = useTranslations();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="container max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+    <div className="relative min-h-screen bg-black text-white">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="relative">
+        <div className="container max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
               <T k="dashboard.title" ns="dashboard" defaultValue="Dashboard" />
             </h1>
             <p className="text-gray-400 mt-1 text-base sm:text-lg">
@@ -211,6 +216,7 @@ function DashboardContent({
             )}
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );

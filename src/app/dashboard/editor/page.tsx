@@ -65,7 +65,7 @@ export default function EditorPage() {
         <div className="container flex h-14 items-center">
           <div className="mr-4 flex">
             <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-              <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+              <span className="font-bold text-2xl text-white hover:text-purple-400 transition-colors">
                 AI Story Studio
               </span>
             </Link>
