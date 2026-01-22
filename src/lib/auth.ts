@@ -49,6 +49,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        if (!user.emailVerified) {
+          throw new Error("Please verify your email before signing in.");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -77,6 +81,12 @@ export const authOptions: NextAuthOptions = {
           where: { email: user.email! }
         });
         if (existingUser) {
+          if (!existingUser.emailVerified) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { emailVerified: new Date() }
+            });
+          }
           // Check if Google account is already linked
           const linkedAccount = await prisma.account.findFirst({
             where: {
@@ -112,6 +122,7 @@ export const authOptions: NextAuthOptions = {
               email: user.email!,
               name: user.name,
               image: user.image,
+              emailVerified: new Date(),
             }
           });
           // Update the user object with the ID
