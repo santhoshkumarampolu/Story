@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 interface VerifyPageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
     reason?: string;
-  };
+  }>;
 }
 
 const statusCopy = {
@@ -36,9 +36,10 @@ const statusCopy = {
 
 const errorReasonSet = new Set<keyof typeof statusCopy>(["missing_params", "invalid_token", "expired"]);
 
-export default function VerifyPage({ searchParams }: VerifyPageProps) {
-  const isSuccess = searchParams.status === "success";
-  const reasonParam = searchParams.reason as keyof typeof statusCopy | undefined;
+export default async function VerifyPage({ searchParams }: VerifyPageProps) {
+  const params = await searchParams;
+  const isSuccess = params.status === "success";
+  const reasonParam = params.reason as keyof typeof statusCopy | undefined;
   const reason: keyof typeof statusCopy = isSuccess
     ? "success"
     : reasonParam && errorReasonSet.has(reasonParam)
