@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://aistorystudio.com/test-editor-translation</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/auth/signout</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/test-tokens</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard/profile</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard/projects/new</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/auth/signup</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/test-translation</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard/editor</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard/projects/new/shortfilm</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/dashboard/projects</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://aistorystudio.com/auth/signin</loc><lastmod>2025-06-30T17:31:34.290Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/auth/signin</loc><lastmod>2026-01-22T06:15:40.048Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/auth/signout</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/auth/signup</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard/editor</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard/profile</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard/projects/new</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard/projects/new/shortfilm</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/dashboard/projects</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/test-editor-translation</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/test-tokens</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://aistorystudio.com/test-translation</loc><lastmod>2026-01-22T06:15:40.049Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
