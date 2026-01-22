@@ -116,10 +116,7 @@ export default function SignUpPage() {
       setName("");
       setErrors({});
 
-      // After 3 seconds, redirect to signin
-      setTimeout(() => {
-        router.push("/auth/signin");
-      }, 3000);
+      // Don't auto-redirect - let user click login button
     } catch (err: any) {
       console.error("[SignUp] Error:", err);
       setGeneralError(err.message || "An unexpected error occurred. Please try again.");
@@ -179,16 +176,23 @@ export default function SignUpPage() {
               <div className="space-y-6">
                 {/* Success Alert */}
                 {success && (
-                  <div className="flex items-start gap-3 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-green-200">
-                        {successMessage}
-                      </p>
-                      <p className="text-xs text-green-200/70 mt-1">
-                        Redirecting to sign in page...
-                      </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-green-200">
+                          {successMessage}
+                        </p>
+                        <p className="text-xs text-green-200/70">
+                          Please check your email and click the verification link to activate your account.
+                        </p>
+                      </div>
                     </div>
+                    <Link href="/auth/signin">
+                      <Button className="w-full h-12 bg-white text-black hover:bg-white/90 font-medium">
+                        Go to Login
+                      </Button>
+                    </Link>
                   </div>
                 )}
 
