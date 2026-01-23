@@ -161,6 +161,7 @@ export default function EditorPageClient({
   const [narrativeDrafts, setNarrativeDrafts] = useState<any[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [sceneNotes, setSceneNotes] = useState<string>("");
   const [savingScene, setSavingScene] = useState<string | null>(null); // DEPRECATED by savingSceneId, consider removing if not used elsewhere
   const [generatingScript, setGeneratingScript] = useState<string | null>(null); // General script generation, maybe for full project?
   const [generatingStoryboard, setGeneratingStoryboard] = useState<string | null>(null); // General storyboard generation
@@ -321,6 +322,7 @@ export default function EditorPageClient({
         setPlotPoints(projectData.plotPoints || "");
         setCharacters(projectData.characters || []);
         setScenes(projectData.scenes.map((s: Scene) => ({ ...s, isSummaryExpanded: false, isStoryboardExpanded: false, isScriptExpanded: false })) || []);
+        setSceneNotes(projectData.sceneNotes || "");
         setFullScript(projectData.fullScript || null); // Set full script from fetched data
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -2295,6 +2297,7 @@ export default function EditorPageClient({
               theme: cinematicTheme ?? undefined,
               characters,
               scenes,
+              sceneNotes: sceneNotes ?? undefined,
               fullScript: fullScript ?? undefined
             }}
             onSave={async (step, content) => {
@@ -2342,6 +2345,45 @@ export default function EditorPageClient({
                       body: JSON.stringify({ synopsis: content || '' }),
                     });
                   } catch (e) { console.error('Error saving synopsis:', e); }
+                  break;
+                case 'characters':
+                  // Characters are structured data - text edits saved to worldBuilding field as notes
+                  try {
+                    await fetch(`/api/projects/${projectId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ worldBuilding: content || '' }),
+                    });
+                    toast({
+                      title: t('notifications.characterNotesSaved', { ns: 'editor', defaultValue: 'Character Notes Saved' }),
+                      description: t('notifications.characterNotesSavedDesc', { ns: 'editor', defaultValue: 'Your character notes have been saved. Generated characters are saved automatically.' }),
+                    });
+                  } catch (e) { console.error('Error saving character notes:', e); }
+                  break;
+                case 'scenes':
+                  // Scenes/breakdown - save as scene notes to project
+                  try {
+                    await fetch(`/api/projects/${projectId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sceneNotes: content || '' }),
+                    });
+                    toast({
+                      title: t('notifications.breakdownSaved', { ns: 'editor', defaultValue: 'Breakdown Saved' }),
+                      description: t('notifications.breakdownSavedDesc', { ns: 'editor', defaultValue: 'Your scene breakdown has been saved.' }),
+                    });
+                  } catch (e) { console.error('Error saving scene breakdown:', e); }
+                  break;
+                case 'script':
+                case 'full-script':
+                  setFullScript(content);
+                  try {
+                    await fetch(`/api/projects/${projectId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ fullScript: content || '' }),
+                    });
+                  } catch (e) { console.error('Error saving script:', e); }
                   break;
                 default:
                   break;

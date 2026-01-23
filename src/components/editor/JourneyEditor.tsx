@@ -43,6 +43,7 @@ interface JourneyEditorProps {
     theme?: string;
     characters?: any[];
     scenes?: any[];
+    sceneNotes?: string;
     fullScript?: string;
   };
   onSave: (step: string, content: any) => Promise<void>;
@@ -852,7 +853,11 @@ export default function JourneyEditor({
     }
     
     // Handle scenes array - convert to readable text format
-    if (initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
+    // Prioritize sceneNotes (user-typed text) over generated scenes array
+    if (initialData.sceneNotes) {
+      content.scenes = initialData.sceneNotes;
+      if (initialData.sceneNotes.split(/\s+/).length >= 50) completed.add('scenes');
+    } else if (initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
       const scenesText = initialData.scenes.map((scene: any, index: number) => {
         let text = `## Scene ${index + 1}: ${scene.title || 'Untitled'}\n\n`;
         if (scene.location) text += `**Location:** ${scene.location}\n`;
@@ -904,9 +909,19 @@ export default function JourneyEditor({
     }
   }, [initialData.characters]);
   
-  // Watch for scene changes specifically (after generation)
+  // Watch for sceneNotes changes (user-typed breakdown text)
   useEffect(() => {
-    if (initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
+    if (initialData.sceneNotes) {
+      setStepContent(prev => ({ ...prev, scenes: initialData.sceneNotes || '' }));
+      if (initialData.sceneNotes.split(/\s+/).length >= 50) {
+        setCompletedSteps(prev => new Set([...prev, 'scenes']));
+      }
+    }
+  }, [initialData.sceneNotes]);
+  
+  // Watch for scene changes specifically (after generation) - only if no sceneNotes
+  useEffect(() => {
+    if (!initialData.sceneNotes && initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
       const scenesText = initialData.scenes.map((scene: any, index: number) => {
         let text = `## Scene ${index + 1}: ${scene.title || 'Untitled'}\n\n`;
         if (scene.location) text += `**Location:** ${scene.location}\n`;
@@ -921,7 +936,7 @@ export default function JourneyEditor({
         setCompletedSteps(prev => new Set([...prev, 'scenes']));
       }
     }
-  }, [initialData.scenes]);
+  }, [initialData.scenes, initialData.sceneNotes]);
   
   // Watch for fullScript changes specifically (after generation)
   useEffect(() => {

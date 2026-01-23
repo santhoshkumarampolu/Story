@@ -113,14 +113,17 @@ export async function PATCH(
 
     // Parse request body
     const body = await req.json();
-    const { language } = body;
+    const { language, sceneNotes, fullScript, worldBuilding, theme, visualStyle, keyVisualMoments } = body;
 
-    // Validate language field
-    if (language !== undefined && typeof language !== "string") {
-      return NextResponse.json(
-        { error: "Language must be a string" },
-        { status: 400 }
-      );
+    // Validate string fields
+    const stringFields = { language, sceneNotes, fullScript, worldBuilding, theme, visualStyle, keyVisualMoments };
+    for (const [key, value] of Object.entries(stringFields)) {
+      if (value !== undefined && typeof value !== "string") {
+        return NextResponse.json(
+          { error: `${key} must be a string` },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if project exists and user has access
@@ -138,19 +141,32 @@ export async function PATCH(
       );
     }
 
-    // Update the project
+    // Update the project - only include fields that were provided
+    const updateData: Record<string, string> = {};
+    if (language !== undefined) updateData.language = language;
+    if (sceneNotes !== undefined) updateData.sceneNotes = sceneNotes;
+    if (fullScript !== undefined) updateData.fullScript = fullScript;
+    if (worldBuilding !== undefined) updateData.worldBuilding = worldBuilding;
+    if (theme !== undefined) updateData.theme = theme;
+    if (visualStyle !== undefined) updateData.visualStyle = visualStyle;
+    if (keyVisualMoments !== undefined) updateData.keyVisualMoments = keyVisualMoments;
+
     const updatedProject = await prisma.project.update({
       where: {
         id: projectId,
       },
-      data: {
-        language,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({
       id: updatedProject.id,
       language: updatedProject.language,
+      sceneNotes: updatedProject.sceneNotes,
+      fullScript: updatedProject.fullScript,
+      worldBuilding: updatedProject.worldBuilding,
+      theme: updatedProject.theme,
+      visualStyle: updatedProject.visualStyle,
+      keyVisualMoments: updatedProject.keyVisualMoments,
       updatedAt: updatedProject.updatedAt.toISOString(),
     });
   } catch (error) {
