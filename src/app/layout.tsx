@@ -67,12 +67,14 @@ export const metadata: Metadata = {
     creator: "@aistorystudio",
   },
   verification: {
-    google: "your-google-verification-code", // Add your Google Search Console verification
+    google: "google-site-verification=uSsVy5mnT04v-Cqt1jAjGYkeDbqBySOTfHDXXtjLUsQ", // Add your Google Search Console verification
   },
   alternates: {
     canonical: "https://aistorystudio.com",
   },
 };
+
+import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 
 export default function RootLayout({
   children,
@@ -82,6 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background antialiased dark`}>
+        <GoogleAnalytics />
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
         <SessionProvider>
           {children}
