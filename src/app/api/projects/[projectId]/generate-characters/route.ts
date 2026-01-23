@@ -36,7 +36,7 @@ export async function POST(
 
     // Parse request body to get story content
     const body = await request.json();
-    const { idea: requestIdea, logline: requestLogline, synopsis: requestSynopsis, language: requestLanguage } = body;
+    const { idea: requestIdea, logline: requestLogline, synopsis: requestSynopsis, treatment: requestTreatment, language: requestLanguage } = body;
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -45,7 +45,8 @@ export async function POST(
         language: true,
         idea: true,
         logline: true,
-        blurb: true // synopsis is stored in blurb field
+        blurb: true, // synopsis is stored in blurb field
+        treatment: true
       },
     });
 
@@ -56,11 +57,12 @@ export async function POST(
     // Use values from request body if provided, otherwise fall back to database
     const idea = requestIdea || project.idea;
     const logline = requestLogline || project.logline;
-    const synopsis = requestSynopsis || project.blurb; // synopsis is stored in blurb field
+    // Accept synopsis or treatment - they serve similar purposes for character generation
+    const synopsis = requestSynopsis || requestTreatment || project.blurb || project.treatment;
     const language = requestLanguage || project.language;
     
     if (!idea || !logline || !synopsis) {
-      return NextResponse.json({ error: 'Project must have an idea, logline, and synopsis before generating characters' }, { status: 400 });
+      return NextResponse.json({ error: 'Project must have an idea, logline, and synopsis/treatment before generating characters' }, { status: 400 });
     }
 
     // Subscription and usage check BEFORE OpenAI call
@@ -112,13 +114,13 @@ Format the response as a JSON array of character objects:
   }
 ]`;
 
-    const systemPrompt = "You are a professional screenwriter who creates well-developed, compelling characters. Always respond with valid JSON.";
+    const systemPrompt = "You are a professional screenwriter who creates well-developed, compelling characters. Always respond with valid JSON. Keep character descriptions concise but impactful.";
 
     const result = await generateContent({
       model: 'flash',
       systemPrompt,
       userPrompt: prompt,
-      maxTokens: 2000,
+      maxTokens: 4000, // Increased to handle detailed character profiles
       temperature: 0.7,
     });
 
@@ -141,7 +143,38 @@ Format the response as a JSON array of character objects:
       }
       cleanedText = cleanedText.trim();
 
-      const parsedJson = JSON.parse(cleanedText);
+      // Try to fix truncated JSON by finding complete character objects
+      let parsedJson;
+      try {
+        parsedJson = JSON.parse(cleanedText);
+      } catch (parseError) {
+        // JSON is truncated, try to recover what we can
+        console.log('Initial JSON parse failed, attempting to recover truncated response...');
+        
+        // Find the last complete character object (ends with })
+        // Look for pattern: }, { or }, ] which indicates end of a character object
+        const lastCompleteIndex = cleanedText.lastIndexOf('},');
+        if (lastCompleteIndex > 0) {
+          // Try to close the array after the last complete object
+          cleanedText = cleanedText.substring(0, lastCompleteIndex + 1) + ']';
+          try {
+            parsedJson = JSON.parse(cleanedText);
+            console.log('Successfully recovered truncated JSON with', Array.isArray(parsedJson) ? parsedJson.length : 0, 'characters');
+          } catch (e) {
+            // Still failed, try another approach - find last complete }
+            const lastBrace = cleanedText.lastIndexOf('}');
+            if (lastBrace > 0) {
+              cleanedText = cleanedText.substring(0, lastBrace + 1) + ']';
+              parsedJson = JSON.parse(cleanedText);
+            }
+          }
+        }
+        
+        if (!parsedJson) {
+          throw parseError;
+        }
+      }
+
       if (Array.isArray(parsedJson)) {
         characters = parsedJson;
       } else if (parsedJson.characters && Array.isArray(parsedJson.characters)) {
@@ -149,24 +182,45 @@ Format the response as a JSON array of character objects:
       } else {
         throw new Error('Generated content is not in the expected format (array of characters)');
       }
+      
+      // Filter out any incomplete character entries
+      characters = characters.filter(char => char && char.name && char.description);
+      
+      if (characters.length === 0) {
+        throw new Error('No valid characters found in response');
+      }
     } catch (e) {
       console.error('Error parsing Gemini response:', e);
       console.error('Raw Gemini response:', generatedContent);
       throw new Error('Failed to parse characters from Gemini response');
     }
 
-    // Transform snake_case keys to camelCase for consistency
+    // Helper function to convert any value to string
+    const stringify = (value: any): string | null => {
+      if (value === null || value === undefined) return null;
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.join(', ');
+      if (typeof value === 'object') {
+        // For objects like relationships: { Ananya: "...", Priya: "..." }
+        return Object.entries(value)
+          .map(([key, val]) => `${key}: ${val}`)
+          .join('\n');
+      }
+      return String(value);
+    };
+
+    // Transform snake_case keys to camelCase for consistency and ensure all fields are strings
     const transformedCharacters = characters.map((char: any) => ({
       name: char.name,
       description: char.description,
-      motivation: char.motivation,
-      backstory: char.backstory || char.back_story,
-      arc: char.arc || char.character_arc,
-      relationships: char.relationships,
-      goals: char.goals,
-      conflicts: char.conflicts,
-      personality: char.personality,
-      traits: char.traits || [],
+      motivation: stringify(char.motivation),
+      backstory: stringify(char.backstory || char.back_story),
+      arc: stringify(char.arc || char.character_arc),
+      relationships: stringify(char.relationships),
+      goals: stringify(char.goals),
+      conflicts: stringify(char.conflicts),
+      personality: stringify(char.personality),
+      traits: Array.isArray(char.traits) ? char.traits : (char.traits ? [char.traits] : []),
     }));
 
     // Validate character data

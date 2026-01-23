@@ -24,6 +24,7 @@ interface QuickPrompt {
 
 interface AIWritingAssistantProps {
   projectId: string;
+  projectType?: string;
   currentStep: string;
   currentContent: string;
   onInsertText: (text: string) => void;
@@ -60,11 +61,67 @@ const QUICK_PROMPTS: Record<string, QuickPrompt[]> = {
     { icon: Sparkles, label: "Subtext", prompt: "Add subtext to this dialogue - what are they NOT saying?" },
     { icon: HelpCircle, label: "Action lines", prompt: "Make my action lines more cinematic" },
     { icon: RefreshCw, label: "Dialogue polish", prompt: "Polish this dialogue to sound more natural" }
+  ],
+  // Podcast-specific steps
+  format: [
+    { icon: Lightbulb, label: "Format ideas", prompt: "What podcast format would work best for my concept?" },
+    { icon: HelpCircle, label: "Episode structure", prompt: "Help me design a compelling episode structure" },
+    { icon: RefreshCw, label: "Unique angle", prompt: "What unique format elements could set my podcast apart?" }
+  ],
+  'season-arc': [
+    { icon: Sparkles, label: "Arc ideas", prompt: "How should my season's narrative build over episodes?" },
+    { icon: HelpCircle, label: "Pacing", prompt: "How do I maintain listener interest across the season?" },
+    { icon: RefreshCw, label: "Cliffhangers", prompt: "Suggest episode endings that keep listeners coming back" }
+  ],
+  episodes: [
+    { icon: Lightbulb, label: "Episode hooks", prompt: "Give me compelling cold open ideas for my episodes" },
+    { icon: HelpCircle, label: "Segment ideas", prompt: "What recurring segments could strengthen my podcast?" },
+    { icon: RefreshCw, label: "Transitions", prompt: "Help me write smooth transitions between segments" }
+  ],
+  // Documentary-specific steps
+  structure: [
+    { icon: Sparkles, label: "Structure type", prompt: "What narrative structure would work best for my documentary?" },
+    { icon: HelpCircle, label: "Story threads", prompt: "How do I weave multiple storylines effectively?" },
+    { icon: RefreshCw, label: "Reveal timing", prompt: "When should I reveal key information for maximum impact?" }
+  ],
+  questions: [
+    { icon: Lightbulb, label: "Deep questions", prompt: "What questions will draw out the most compelling responses?" },
+    { icon: HelpCircle, label: "Follow-ups", prompt: "How do I dig deeper when subjects give surface answers?" },
+    { icon: RefreshCw, label: "Emotional moments", prompt: "What questions might unlock emotional breakthroughs?" }
+  ],
+  // Novel/Story-specific steps
+  premise: [
+    { icon: Sparkles, label: "Deepen premise", prompt: "How can I make my premise more unique and compelling?" },
+    { icon: HelpCircle, label: "Theme", prompt: "What deeper themes could I explore in this story?" },
+    { icon: RefreshCw, label: "Hook", prompt: "Give me a stronger opening hook for this premise" }
+  ],
+  outline: [
+    { icon: Lightbulb, label: "Plot points", prompt: "What key plot points should I include in my outline?" },
+    { icon: HelpCircle, label: "Subplots", prompt: "What subplots would enrich my main story?" },
+    { icon: RefreshCw, label: "Pacing", prompt: "How should I pace my story across chapters?" }
+  ],
+  chapters: [
+    { icon: Sparkles, label: "Chapter hooks", prompt: "How do I make each chapter ending irresistible?" },
+    { icon: HelpCircle, label: "Scene breaks", prompt: "Where should I place scene breaks for best effect?" },
+    { icon: RefreshCw, label: "Transitions", prompt: "Help me write smooth chapter transitions" }
+  ],
+  // Web series specific
+  'episode-outlines': [
+    { icon: Lightbulb, label: "Episode arcs", prompt: "How should each episode's mini-arc work?" },
+    { icon: HelpCircle, label: "Cliffhangers", prompt: "What cliffhangers would keep viewers watching?" },
+    { icon: RefreshCw, label: "Pacing", prompt: "How do I pace episodes for binge-watching?" }
+  ],
+  // General fallback
+  synopsis: [
+    { icon: Sparkles, label: "Strengthen", prompt: "How can I make my synopsis more compelling?" },
+    { icon: HelpCircle, label: "Key moments", prompt: "What key moments should my synopsis highlight?" },
+    { icon: RefreshCw, label: "Tighten", prompt: "Help me tighten my synopsis to its essential elements" }
   ]
 };
 
 export default function AIWritingAssistant({
   projectId,
+  projectType,
   currentStep,
   currentContent,
   onInsertText,
@@ -99,7 +156,8 @@ export default function AIWritingAssistant({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId,
-          step: currentStep,
+          projectType,
+          currentStep,
           context: currentContent,
           message: content
         })
@@ -160,6 +218,59 @@ export default function AIWritingAssistant({
         "🔄 Your midpoint should spin the story in a new direction. What reversal could change everything?",
         "💫 Make sure your protagonist is ACTIVE, not reactive. They should drive the plot."
       ],
+      scenes: [
+        "📍 Every scene needs a clear location and time. INT./EXT. - DAY/NIGHT format helps you visualize.",
+        "⏩ Enter each scene late and leave early. Cut the fat - audiences don't need to see characters arrive and leave.",
+        "🎯 Ask yourself: What's the purpose of this scene? It should advance plot, reveal character, or both."
+      ],
+      script: [
+        "📝 Action lines should be short, punchy, and visual. Write what we SEE and HEAR only.",
+        "💬 Great dialogue has subtext - what characters don't say is as important as what they do.",
+        "🎭 Each character should have a distinct voice. Cover the names - can you tell who's speaking?"
+      ],
+      // Podcast-specific
+      format: [
+        "🎙️ Consider your listener's journey - how do they feel at the start vs end of each episode?",
+        "⏱️ The sweet spot for podcasts is 20-45 minutes. What's the ideal length for your content?",
+        "🎧 Think about recurring elements that listeners will anticipate and enjoy."
+      ],
+      'season-arc': [
+        "📈 Build tension across your season - each episode should raise the stakes slightly.",
+        "🎣 End early episodes with hooks that pay off later. Plant seeds now, harvest later.",
+        "💫 Your season finale should feel inevitable yet surprising. What's the emotional climax?"
+      ],
+      episodes: [
+        "🎬 Strong cold opens hook listeners in the first 30 seconds. What's your attention grabber?",
+        "🔄 Vary your episode structure to keep things fresh while maintaining familiar elements.",
+        "🎯 Each episode needs its own mini-arc with setup, conflict, and resolution."
+      ],
+      // Documentary-specific
+      structure: [
+        "📐 Consider if chronological, thematic, or character-driven structure serves your story best.",
+        "🔀 Weaving multiple timelines or perspectives can create compelling documentary tension.",
+        "🎯 Your structure should reveal information at exactly the right moment for maximum impact."
+      ],
+      questions: [
+        "❓ The best interview questions are open-ended and specific. 'How did that make you feel?' beats 'Were you sad?'",
+        "🎤 Follow-up questions often yield the best material. Don't rush to your next prepared question.",
+        "💭 Sometimes silence after an answer prompts subjects to reveal more."
+      ],
+      // Novel/Story-specific
+      premise: [
+        "🌟 Your premise should contain the seed of your theme. What truth are you exploring?",
+        "🎭 Strong premises have built-in conflict. What opposing forces exist in your concept?",
+        "💡 Can you explain your premise in one breath? Complexity comes later - start simple."
+      ],
+      outline: [
+        "📊 Your outline is a roadmap, not a prison. Leave room for discovery as you write.",
+        "🔮 Know your ending before you begin. It helps every scene point toward something.",
+        "⚖️ Balance plot points with character moments. Action without emotion is hollow."
+      ],
+      chapters: [
+        "📖 Each chapter should have its own mini-arc and reason for existing.",
+        "🎣 Chapter endings are promises to your reader. Make them want to turn the page.",
+        "🌊 Vary your chapter lengths and pacing to create rhythm in your story."
+      ],
       default: [
         "✍️ Keep writing! The first draft is about getting the story out. Polish comes later.",
         "🎯 Focus on what your character WANTS in every scene. Desire drives drama.",
@@ -188,7 +299,7 @@ export default function AIWritingAssistant({
       <motion.button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-24 right-6 z-40 p-4 rounded-full",
+          "fixed bottom-28 right-6 z-[60] p-4 rounded-full",
           "bg-gradient-to-r from-purple-600 to-pink-600",
           "text-white shadow-lg shadow-purple-500/30",
           "hover:shadow-xl hover:shadow-purple-500/40 transition-shadow",
@@ -208,7 +319,7 @@ export default function AIWritingAssistant({
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 w-96 max-h-[600px] bg-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden flex flex-col"
+            className="fixed bottom-6 right-6 z-[70] w-96 max-h-[600px] bg-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-white/10">

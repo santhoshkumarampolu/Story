@@ -13,9 +13,11 @@ import {
   Lightbulb, FileText, Users, Clapperboard, PenTool, Sparkles, 
   ChevronRight, ChevronLeft, Check, Lock, Trophy, Flame, 
   MessageCircle, Zap, Target, Star, ArrowRight, Play,
-  Pause, RotateCcw, Clock, BookOpen, Volume2, Mic, Home, ArrowLeft
+  Pause, RotateCcw, Clock, BookOpen, Volume2, Mic, Home, ArrowLeft,
+  Download, FileDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import AIWritingAssistant from './AIWritingAssistant';
 
 interface WorkflowStep {
   id: string;
@@ -41,10 +43,12 @@ interface JourneyEditorProps {
     theme?: string;
     characters?: any[];
     scenes?: any[];
+    fullScript?: string;
   };
   onSave: (step: string, content: any) => Promise<void>;
   onGenerate: (step: string) => Promise<string>;
   onModeChange?: (mode: 'classic' | 'journey') => void;
+  onExport?: (format: 'pdf' | 'fountain' | 'txt' | 'fdx') => void;
 }
 
 const WORKFLOW_STEPS: Record<string, WorkflowStep[]> = {
@@ -776,7 +780,8 @@ export default function JourneyEditor({
   initialData,
   onSave,
   onGenerate,
-  onModeChange
+  onModeChange,
+  onExport
 }: JourneyEditorProps) {
   const steps = WORKFLOW_STEPS[projectType] || WORKFLOW_STEPS.shortfilm;
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -792,12 +797,15 @@ export default function JourneyEditor({
   const [showAIChat, setShowAIChat] = useState(false);
   const [stuckPrompt, setStuckPrompt] = useState('');
   const [focusMode, setFocusMode] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const currentStep = steps[currentStepIndex];
   const currentContent = stepContent[currentStep.id] || '';
   const progress = (completedSteps.size / steps.length) * 100;
+  const isJourneyComplete = completedSteps.size === steps.length;
+  const isOnFinalStep = currentStepIndex === steps.length - 1;
   
   // Initialize with existing data
   useEffect(() => {
@@ -824,6 +832,46 @@ export default function JourneyEditor({
       content.theme = initialData.theme;
     }
     
+    // Handle characters array - convert to readable text format
+    if (initialData.characters && Array.isArray(initialData.characters) && initialData.characters.length > 0) {
+      const charactersText = initialData.characters.map((char: any) => {
+        let text = `## ${char.name}\n\n`;
+        if (char.description) text += `**Description:** ${char.description}\n\n`;
+        if (char.motivation) text += `**Motivation:** ${char.motivation}\n\n`;
+        if (char.backstory) text += `**Backstory:** ${char.backstory}\n\n`;
+        if (char.arc) text += `**Character Arc:** ${char.arc}\n\n`;
+        if (char.relationships) text += `**Relationships:** ${char.relationships}\n\n`;
+        if (char.goals) text += `**Goals:** ${char.goals}\n\n`;
+        if (char.conflicts) text += `**Conflicts:** ${char.conflicts}\n\n`;
+        if (char.personality) text += `**Personality:** ${char.personality}\n\n`;
+        if (char.traits && Array.isArray(char.traits)) text += `**Traits:** ${char.traits.join(', ')}\n`;
+        return text;
+      }).join('\n---\n\n');
+      content.characters = charactersText;
+      if (initialData.characters.length >= 2) completed.add('characters');
+    }
+    
+    // Handle scenes array - convert to readable text format
+    if (initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
+      const scenesText = initialData.scenes.map((scene: any, index: number) => {
+        let text = `## Scene ${index + 1}: ${scene.title || 'Untitled'}\n\n`;
+        if (scene.location) text += `**Location:** ${scene.location}\n`;
+        if (scene.timeOfDay) text += `**Time:** ${scene.timeOfDay}\n`;
+        if (scene.summary) text += `\n${scene.summary}\n`;
+        if (scene.script) text += `\n**Script:**\n${scene.script}\n`;
+        return text;
+      }).join('\n---\n\n');
+      content.scenes = scenesText;
+      if (initialData.scenes.length >= 3) completed.add('scenes');
+    }
+    
+    // Handle fullScript
+    if (initialData.fullScript) {
+      content.script = initialData.fullScript;
+      content['full-script'] = initialData.fullScript;
+      if (initialData.fullScript.split(/\s+/).length >= 500) completed.add('script');
+    }
+    
     setStepContent(content);
     setCompletedSteps(completed);
     
@@ -831,6 +879,63 @@ export default function JourneyEditor({
     const firstIncomplete = steps.findIndex(s => !completed.has(s.id));
     if (firstIncomplete !== -1) setCurrentStepIndex(firstIncomplete);
   }, [initialData, steps]);
+  
+  // Watch for character changes specifically (after generation)
+  useEffect(() => {
+    if (initialData.characters && Array.isArray(initialData.characters) && initialData.characters.length > 0) {
+      const charactersText = initialData.characters.map((char: any) => {
+        let text = `## ${char.name}\n\n`;
+        if (char.description) text += `**Description:** ${char.description}\n\n`;
+        if (char.motivation) text += `**Motivation:** ${char.motivation}\n\n`;
+        if (char.backstory) text += `**Backstory:** ${char.backstory}\n\n`;
+        if (char.arc) text += `**Character Arc:** ${char.arc}\n\n`;
+        if (char.relationships) text += `**Relationships:** ${char.relationships}\n\n`;
+        if (char.goals) text += `**Goals:** ${char.goals}\n\n`;
+        if (char.conflicts) text += `**Conflicts:** ${char.conflicts}\n\n`;
+        if (char.personality) text += `**Personality:** ${char.personality}\n\n`;
+        if (char.traits && Array.isArray(char.traits)) text += `**Traits:** ${char.traits.join(', ')}\n`;
+        return text;
+      }).join('\n---\n\n');
+      
+      setStepContent(prev => ({ ...prev, characters: charactersText }));
+      if (initialData.characters.length >= 2) {
+        setCompletedSteps(prev => new Set([...prev, 'characters']));
+      }
+    }
+  }, [initialData.characters]);
+  
+  // Watch for scene changes specifically (after generation)
+  useEffect(() => {
+    if (initialData.scenes && Array.isArray(initialData.scenes) && initialData.scenes.length > 0) {
+      const scenesText = initialData.scenes.map((scene: any, index: number) => {
+        let text = `## Scene ${index + 1}: ${scene.title || 'Untitled'}\n\n`;
+        if (scene.location) text += `**Location:** ${scene.location}\n`;
+        if (scene.timeOfDay) text += `**Time:** ${scene.timeOfDay}\n`;
+        if (scene.summary) text += `\n${scene.summary}\n`;
+        if (scene.script) text += `\n**Script:**\n${scene.script}\n`;
+        return text;
+      }).join('\n---\n\n');
+      
+      setStepContent(prev => ({ ...prev, scenes: scenesText }));
+      if (initialData.scenes.length >= 3) {
+        setCompletedSteps(prev => new Set([...prev, 'scenes']));
+      }
+    }
+  }, [initialData.scenes]);
+  
+  // Watch for fullScript changes specifically (after generation)
+  useEffect(() => {
+    if (initialData.fullScript) {
+      setStepContent(prev => ({ 
+        ...prev, 
+        script: initialData.fullScript || '',
+        'full-script': initialData.fullScript || ''
+      }));
+      if (initialData.fullScript.split(/\s+/).length >= 500) {
+        setCompletedSteps(prev => new Set([...prev, 'script']));
+      }
+    }
+  }, [initialData.fullScript]);
   
   // Word count calculation
   useEffect(() => {
@@ -896,8 +1001,17 @@ export default function JourneyEditor({
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
+      // Save all step content first to ensure the API has the latest data
+      for (const [stepId, content] of Object.entries(stepContent)) {
+        if (content && content.trim()) {
+          await onSave(stepId, content);
+        }
+      }
+      
       const generated = await onGenerate(currentStep.id);
-      setStepContent(prev => ({ ...prev, [currentStep.id]: generated }));
+      if (generated) {
+        setStepContent(prev => ({ ...prev, [currentStep.id]: generated }));
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -1175,7 +1289,7 @@ export default function JourneyEditor({
       </div>
       
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-lg border-t border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -1220,6 +1334,18 @@ export default function JourneyEditor({
               >
                 {isSaving ? 'Saving...' : 'Save Progress'}
               </Button>
+              
+              {/* Export Button - Show on final step or when journey complete */}
+              {(isOnFinalStep || isJourneyComplete) && (
+                <Button
+                  onClick={() => setShowExportModal(true)}
+                  variant="outline"
+                  className="border-green-500/50 text-green-400 hover:bg-green-500/20"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Script
+                </Button>
+              )}
             </div>
             
             <Button
@@ -1242,6 +1368,139 @@ export default function JourneyEditor({
           </div>
         </div>
       </div>
+
+      {/* Export Modal */}
+      <AnimatePresence>
+        {showExportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowExportModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-900 rounded-2xl p-6 max-w-md w-full mx-4 border border-white/10 shadow-2xl"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {isJourneyComplete ? "Journey Complete! 🎉" : "Export Your Script"}
+                </h3>
+                <p className="text-gray-400">
+                  {isJourneyComplete 
+                    ? "Congratulations! Your script is ready to share with the world."
+                    : "Download your work in progress in your preferred format."}
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-400 mb-2">Choose Export Format:</h4>
+                
+                <button
+                  onClick={() => {
+                    onExport?.('fountain');
+                    setShowExportModal(false);
+                  }}
+                  className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-white group-hover:text-purple-400">Fountain (.fountain)</div>
+                      <div className="text-sm text-gray-500">Industry-standard plain text screenplay format</div>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onExport?.('pdf');
+                    setShowExportModal(false);
+                  }}
+                  className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-red-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                      <FileDown className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-white group-hover:text-red-400">PDF Document (.pdf)</div>
+                      <div className="text-sm text-gray-500">Formatted for reading and sharing</div>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onExport?.('fdx');
+                    setShowExportModal(false);
+                  }}
+                  className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <Clapperboard className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-white group-hover:text-blue-400">Final Draft (.fdx)</div>
+                      <div className="text-sm text-gray-500">Compatible with Final Draft software</div>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onExport?.('txt');
+                    setShowExportModal(false);
+                  }}
+                  className="w-full p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-gray-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-white group-hover:text-gray-300">Plain Text (.txt)</div>
+                      <div className="text-sm text-gray-500">Simple text format for any editor</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowExportModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Writing Assistant - Floating */}
+      <AIWritingAssistant
+        projectId={projectId}
+        projectType={projectType}
+        currentStep={currentStep.id}
+        currentContent={currentContent}
+        onInsertText={(text) => {
+          // Insert AI-generated text into the current content
+          handleContentChange(currentContent + '\n\n' + text);
+        }}
+      />
     </div>
   );
 }

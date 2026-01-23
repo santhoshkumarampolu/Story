@@ -26,6 +26,7 @@ import { OutlineEditor } from '@/components/story/outline-editor';
 import { ChapterManager } from '@/components/story/chapter-manager';
 import { NarrativeDraftEditor } from '@/components/story/narrative-draft-editor';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { exportScript } from '@/lib/script-export';
 
 // Journey Editor Components
 import {
@@ -198,33 +199,20 @@ export default function EditorPageClient({
   const [generatingPlotPoints, setGeneratingPlotPoints] = useState(false);
   const [savingPlotPoints, setSavingPlotPoints] = useState(false);
 
-  // Journey Editor State - default will be set after project loads
+  // Journey Editor State - Journey mode is now the default for all projects
   const [editorMode, setEditorMode] = useState<'classic' | 'journey' | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
-  // Determine default editor mode based on project content
-  // New projects (empty) default to Journey mode, existing projects to Classic
+  // Set Journey mode as default for all projects
   useEffect(() => {
     if (project && editorMode === null) {
-      const hasContent = !!(
-        project.idea || 
-        project.logline || 
-        project.treatment || 
-        project.blurb ||
-        (project.characters && project.characters.length > 0) ||
-        (project.scenes && project.scenes.length > 0)
-      );
+      // Journey mode is now the default for everyone
+      setEditorMode('journey');
       
-      // New projects get Journey mode, existing projects get Classic
-      const defaultMode = hasContent ? 'classic' : 'journey';
-      setEditorMode(defaultMode);
-      
-      // Show onboarding for new projects in Journey mode
-      if (!hasContent) {
-        const hasSeenOnboarding = localStorage.getItem('journey-onboarding-seen');
-        if (!hasSeenOnboarding) {
-          setShowOnboarding(true);
-        }
+      // Show onboarding for first-time Journey mode users
+      const hasSeenOnboarding = localStorage.getItem('journey-onboarding-seen');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
       }
     }
   }, [project, editorMode]);
@@ -1364,6 +1352,7 @@ export default function EditorPageClient({
           idea: idea, // Use current state value
           logline: logline, // Use current state value
           synopsis: synopsis, // Use current state value
+          treatment: treatment, // Also send treatment as alternative to synopsis
           existingCharacters: characters.map(c => ({ name: c.name, description: c.description })),
           language: currentLanguage,
         }),
@@ -2299,32 +2288,60 @@ export default function EditorPageClient({
             projectTitle={project.title}
             currentLanguage={currentLanguage}
             initialData={{
-              idea,
-              logline,
-              treatment,
-              synopsis,
-              theme: cinematicTheme,
+              idea: idea ?? undefined,
+              logline: logline ?? undefined,
+              treatment: treatment ?? undefined,
+              synopsis: synopsis ?? undefined,
+              theme: cinematicTheme ?? undefined,
               characters,
-              scenes
+              scenes,
+              fullScript: fullScript ?? undefined
             }}
             onSave={async (step, content) => {
-              // Handle save for each step
+              // Handle save for each step - update state AND save to DB with the new content
               switch (step) {
                 case 'idea':
                   setIdea(content);
-                  await saveIdeaApiCall();
+                  // Save directly with the content (don't rely on state which updates async)
+                  try {
+                    await fetch(`/api/projects/${projectId}/ideas`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ content: content || '' }),
+                    });
+                  } catch (e) { console.error('Error saving idea:', e); }
                   break;
                 case 'logline':
                   setLogline(content);
-                  await saveLoglineApiCall();
+                  try {
+                    await fetch(`/api/projects/${projectId}/logline`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ content: content || '' }),
+                    });
+                  } catch (e) { console.error('Error saving logline:', e); }
                   break;
                 case 'treatment':
                   setTreatment(content);
-                  await saveTreatmentApiCall();
+                  try {
+                    await fetch(`/api/projects/${projectId}/treatment`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ content: content || '' }),
+                    });
+                  } catch (e) { console.error('Error saving treatment:', e); }
                   break;
                 case 'synopsis':
+                case 'premise':
                   setSynopsis(content);
-                  await saveSynopsisApiCall();
+                  try {
+                    // Synopsis endpoint expects 'synopsis' not 'content'
+                    await fetch(`/api/projects/${projectId}/synopsis`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ synopsis: content || '' }),
+                    });
+                  } catch (e) { console.error('Error saving synopsis:', e); }
                   break;
                 default:
                   break;
@@ -2332,24 +2349,89 @@ export default function EditorPageClient({
             }}
             onGenerate={async (step) => {
               // Handle AI generation for each step
+              // Note: For steps that generate complex data (characters, scenes), 
+              // we return a placeholder message since they populate arrays, not text fields
+              
+              // For steps that depend on previous content, refresh project data first
+              if (['characters', 'scenes', 'script', 'full-script'].includes(step)) {
+                try {
+                  const res = await fetch(`/api/projects/${projectId}`);
+                  if (res.ok) {
+                    const freshProject = await res.json();
+                    // Update state with fresh data from DB
+                    if (freshProject.idea) setIdea(freshProject.idea);
+                    if (freshProject.logline) setLogline(freshProject.logline);
+                    if (freshProject.treatment) setTreatment(freshProject.treatment);
+                    if (freshProject.synopsis) setSynopsis(freshProject.synopsis);
+                  }
+                } catch (e) {
+                  console.error('Error refreshing project data:', e);
+                }
+                // Small delay to let state update
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+              
               switch (step) {
                 case 'idea':
                   await generateIdeaApiCall();
-                  return idea;
+                  return idea || "Your idea has been generated. Check the content above.";
                 case 'logline':
                   await generateLoglineApiCall();
-                  return logline;
+                  return logline || "Your logline has been generated.";
                 case 'treatment':
                   await generateTreatmentApiCall();
-                  return treatment;
+                  return treatment || "Your treatment has been generated.";
                 case 'synopsis':
+                case 'premise':
                   await generateSynopsisApiCall();
-                  return synopsis;
+                  return synopsis || "Your synopsis has been generated.";
+                case 'characters':
+                  await generateCharactersApiCall();
+                  return "Characters have been generated! Check the Characters section to see them.";
+                case 'scenes':
+                  await generateScenesApiCall();
+                  return "Scenes have been generated! Check the Scenes section to view and edit them.";
+                case 'script':
+                case 'full-script':
+                  await generateFullScriptApiCall();
+                  return fullScript || "Your script has been generated.";
+                case 'plot-points':
+                  await generatePlotPointsApiCall();
+                  return plotPoints || "Plot points have been generated.";
                 default:
-                  return '';
+                  // For steps without specific generators, provide helpful guidance
+                  toast({
+                    title: "AI Assist",
+                    description: `Use the writing prompts and tips to help you with the "${step}" step. The AI Assistant chat (floating button) can also help!`,
+                  });
+                  return "";
               }
             }}
             onModeChange={handleEditorModeChange}
+            onExport={(format) => {
+              // Export the script in the selected format
+              exportScript(
+                {
+                  title: project?.title || 'Untitled Script',
+                  author: session?.user?.name ?? undefined,
+                  idea: idea ?? undefined,
+                  logline: logline ?? undefined,
+                  treatment: treatment ?? undefined,
+                  synopsis: synopsis ?? undefined,
+                  characters,
+                  scenes,
+                  fullScript: fullScript ?? undefined,
+                },
+                format
+              );
+              toast({
+                title: t('messages.success', { ns: 'editor', defaultValue: 'Export Started' }),
+                description: t('notifications.exportStarted', { 
+                  ns: 'editor', 
+                  defaultValue: `Your script is being exported as ${format.toUpperCase()}.` 
+                }),
+              });
+            }}
           />
         ) : (
           /* Classic Tab-based Editor */
@@ -2417,12 +2499,16 @@ export default function EditorPageClient({
         {project && (
           <AIWritingAssistant
             projectId={projectId}
-            currentStep={activeTab}
+            projectType={project.type}
+            currentStep={activeTab === 'full-script' ? 'script' : activeTab}
             currentContent={
               activeTab === 'idea' ? idea :
               activeTab === 'logline' ? logline :
               activeTab === 'treatment' ? treatment :
-              activeTab === 'synopsis' ? synopsis : ''
+              activeTab === 'synopsis' ? synopsis :
+              activeTab === 'characters' ? characters.map(c => `${c.name}: ${c.description || ''}`).join('\n') :
+              activeTab === 'scenes' ? scenes.map(s => `Scene ${s.order || ''}: ${s.location || ''} - ${s.summary || ''}`).join('\n') :
+              activeTab === 'full-script' ? (fullScript || '') : ''
             }
             onInsertText={(text) => {
               // Insert AI-generated text into the current field
@@ -2439,6 +2525,11 @@ export default function EditorPageClient({
                 case 'synopsis':
                   setSynopsis(prev => prev + '\n\n' + text);
                   break;
+                case 'full-script':
+                  setFullScript(prev => (prev || '') + '\n\n' + text);
+                  break;
+                // For characters and scenes, we can't directly insert text as they are structured
+                // The user can copy and use the suggestion
               }
             }}
           />
