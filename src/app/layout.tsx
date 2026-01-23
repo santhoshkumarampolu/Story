@@ -67,7 +67,10 @@ export const metadata: Metadata = {
     creator: "@aistorystudio",
   },
   verification: {
-    google: "google-site-verification=uSsVy5mnT04v-Cqt1jAjGYkeDbqBySOTfHDXXtjLUsQ", // Add your Google Search Console verification
+    google: [
+      "uSsVy5mnT04v-Cqt1jAjGYkeDbqBySOTfHDXXtjLUsQ", // Domain 1 verification
+      "D8EHaG9dGlSAJm6dY_R3Y5Ip4il4Mi0yiMb9V1gVjQA",        // Domain 2 verification - replace this
+    ],
   },
   alternates: {
     canonical: "https://aistorystudio.com",
