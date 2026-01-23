@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { OpenAI } from 'openai'; // Import OpenAI
-import { trackTokenUsage } from '@/lib/openai'; // Import trackTokenUsage
-import { getServerSession } from "next-auth/next" // Import getServerSession
-import { authOptions } from '@/lib/auth'; // Import authOptions
+import { generateContent, trackTokenUsage } from '@/lib/gemini';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from '@/lib/auth';
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // Initialize OpenAI client
 
 async function getProjectDetails(projectId: string) {
   try {
@@ -77,7 +75,7 @@ export async function POST(
       );
     }
 
-    const prompt = `Create a compelling one-sentence logline for a story based on the following idea.
+    const userPrompt = `Create a compelling one-sentence logline for a story based on the following idea.
 The logline should be in ${language || 'English'} and follow these guidelines:
 
 1. Structure: [Protagonist] must [goal] before [stakes]
@@ -95,33 +93,27 @@ Story Idea: "${idea}"
 
 Please provide only the logline, no additional text or explanation.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4', // Upgraded to GPT-4 for better quality
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a professional screenwriter specializing in crafting compelling loglines. You understand story structure, character motivation, and how to create engaging hooks that capture the essence of a story in a single sentence."
-        },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 100,
+    const systemPrompt = "You are a professional screenwriter specializing in crafting compelling loglines. You understand story structure, character motivation, and how to create engaging hooks that capture the essence of a story in a single sentence.";
+
+    const result = await generateContent({
+      model: 'flash',
+      systemPrompt,
+      userPrompt,
+      maxTokens: 100,
       temperature: 0.7,
     });
 
-    const logline = completion.choices[0]?.message?.content?.trim() || '';
-    const promptTokens = completion.usage?.prompt_tokens || 0;
-    const completionTokens = completion.usage?.completion_tokens || 0;
-    const totalTokens = completion.usage?.total_tokens || (promptTokens + completionTokens);
+    const logline = result.text.trim() || '';
 
     // Track token usage
     await trackTokenUsage({
       userId: projectDetails.userId, 
       projectId,
       type: 'logline',
-      model: 'gpt-4',
-      promptTokens,
-      completionTokens,
-      totalTokens,
+      model: result.model,
+      promptTokens: result.usage.promptTokens,
+      completionTokens: result.usage.completionTokens,
+      totalTokens: result.usage.totalTokens,
     });
 
     return NextResponse.json({ logline });

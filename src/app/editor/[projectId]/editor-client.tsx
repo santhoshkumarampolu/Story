@@ -27,6 +27,14 @@ import { ChapterManager } from '@/components/story/chapter-manager';
 import { NarrativeDraftEditor } from '@/components/story/narrative-draft-editor';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
+// Journey Editor Components
+import {
+  JourneyEditor,
+  AIWritingAssistant,
+  EditorModeToggle,
+  JourneyOnboarding
+} from '@/components/editor';
+
 // Define types based on enhanced schema
 type CardType = "story" | "scene" | "act" | "dialogue" | "shortfilm" | "advertisement" | "novel" | "synopsis" | "film-story" | "short-story";
 
@@ -121,12 +129,12 @@ interface ShareLink {
 }
 
 interface GeneratedIdea {
-  Title: string;
-  Concept: string;
-  Conflict?: string;
-  EmotionalHook?: string;
-  VisualStyle?: string;
-  UniqueElement?: string;
+  title?: string;
+  concept: string;
+  conflict?: string;
+  emotionalHook?: string;
+  visualStyle?: string;
+  uniqueElement?: string;
 }
 
 interface EditorPageClientProps {
@@ -189,6 +197,52 @@ export default function EditorPageClient({
   const [plotPoints, setPlotPoints] = useState<string>("");
   const [generatingPlotPoints, setGeneratingPlotPoints] = useState(false);
   const [savingPlotPoints, setSavingPlotPoints] = useState(false);
+
+  // Journey Editor State - default will be set after project loads
+  const [editorMode, setEditorMode] = useState<'classic' | 'journey' | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Determine default editor mode based on project content
+  // New projects (empty) default to Journey mode, existing projects to Classic
+  useEffect(() => {
+    if (project && editorMode === null) {
+      const hasContent = !!(
+        project.idea || 
+        project.logline || 
+        project.treatment || 
+        project.blurb ||
+        (project.characters && project.characters.length > 0) ||
+        (project.scenes && project.scenes.length > 0)
+      );
+      
+      // New projects get Journey mode, existing projects get Classic
+      const defaultMode = hasContent ? 'classic' : 'journey';
+      setEditorMode(defaultMode);
+      
+      // Show onboarding for new projects in Journey mode
+      if (!hasContent) {
+        const hasSeenOnboarding = localStorage.getItem('journey-onboarding-seen');
+        if (!hasSeenOnboarding) {
+          setShowOnboarding(true);
+        }
+      }
+    }
+  }, [project, editorMode]);
+  
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('journey-onboarding-seen', 'true');
+    setShowOnboarding(false);
+  };
+  
+  const handleEditorModeChange = (mode: 'classic' | 'journey') => {
+    setEditorMode(mode);
+    if (mode === 'journey') {
+      const hasSeenOnboarding = localStorage.getItem('journey-onboarding-seen');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      }
+    }
+  };
 
   // Function to handle character field changes
   const handleCharacterChange = (characterId: string, field: keyof Character, value: string) => {
@@ -1096,7 +1150,7 @@ export default function EditorPageClient({
         // For now, we'll show the first idea in the textarea
         // In the future, you might want to show a modal with all 3 ideas for selection
         const firstIdea = data.generatedIdeas[0];
-        const ideaText = `${firstIdea.Concept}\n\nConflict: ${firstIdea.Conflict}\nEmotional Hook: ${firstIdea.EmotionalHook}\nVisual Style: ${firstIdea.VisualStyle}\nUnique Element: ${firstIdea.UniqueElement}`;
+        const ideaText = `${firstIdea.concept}\n\nConflict: ${firstIdea.conflict}\nEmotional Hook: ${firstIdea.emotionalHook}\nVisual Style: ${firstIdea.visualStyle}\nUnique Element: ${firstIdea.uniqueElement}`;
         
         setIdea(ideaText);
         
@@ -2139,8 +2193,12 @@ export default function EditorPageClient({
 
   return (
     <ScrollArea className="h-full bg-background text-foreground">
-      <div className="container mx-auto p-2 sm:p-4 md:p-6 lg:p-8 max-w-7xl">
-        {/* Responsive Header */}
+      <div className={cn(
+        "container mx-auto max-w-7xl",
+        editorMode === 'journey' ? "p-0" : "p-2 sm:p-4 md:p-6 lg:p-8"
+      )}>
+        {/* Responsive Header - Hidden in Journey Mode (JourneyEditor has its own) */}
+        {editorMode !== 'journey' && (
         <div className="bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 mb-4 sm:mb-8">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 sm:px-6 lg:px-8">
             {/* Token/Export Bar - Responsive */}
@@ -2212,70 +2270,179 @@ export default function EditorPageClient({
                   currentLanguage={currentLanguage}
                   onLanguageChange={onLanguageChange}
                 />
+                {/* Editor Mode Toggle */}
+                {editorMode && (
+                  <EditorModeToggle
+                    mode={editorMode}
+                    onModeChange={handleEditorModeChange}
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
+        )}
 
-        {/* Main Content Area with Tabs */}
-        <div className="relative">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="relative">
-              <TabsList
-                className="flex overflow-x-auto whitespace-nowrap scrollbar mb-4 sm:mb-6 bg-white/5 backdrop-blur-md border border-white/10"
-                style={{ minWidth: 0 }}
-              >
-                {projectConfig?.workflow?.map((step: string) => (
-                  <TabsTrigger 
-                    key={step} 
-                    value={step} 
-                    className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap"
-                  >
-                    {projectConfig.labels?.[step] || t(`tabs.${step}`, { ns: 'editor', defaultValue: step.charAt(0).toUpperCase() + step.slice(1) })}
-                  </TabsTrigger>
-                )) || (
-                  <>
-                    <TabsTrigger value="overview" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                      <T k="tabs.overview" ns="editor" defaultValue="Overview" />
-                    </TabsTrigger>
-                    <TabsTrigger value="characters" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                      <T k="tabs.characters" ns="editor" defaultValue="Characters" />
-                    </TabsTrigger>
-                    <TabsTrigger value="scenes" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                      <T k="tabs.scenes" ns="editor" defaultValue="Scenes" />
-                    </TabsTrigger>
-                    <TabsTrigger value="full-script" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                      <T k="tabs.fullScript" ns="editor" defaultValue="Full Script" />
-                    </TabsTrigger>
-                  </>
-                )}
-              </TabsList>
-            </div>
+        {/* Journey Onboarding */}
+        {showOnboarding && project && (
+          <JourneyOnboarding
+            projectType={project.type}
+            onComplete={handleOnboardingComplete}
+          />
+        )}
 
-            {projectConfig?.workflow?.map((step: string) => (
-              <TabsContent key={step} value={step} className="space-y-6 sm:space-y-8 overflow-auto">
-                {renderWorkflowStep(step)}
-              </TabsContent>
-            )) || (
-              <>
-                <TabsContent value="overview" className="space-y-6 sm:space-y-8 overflow-auto">
-                  {renderWorkflowStep('idea')}
-                  {renderWorkflowStep('logline')}
-                  {renderWorkflowStep('treatment')}
+        {/* Main Content Area - Conditional based on editor mode */}
+        {editorMode === 'journey' && project ? (
+          <JourneyEditor
+            projectId={projectId}
+            projectType={project.type}
+            projectTitle={project.title}
+            currentLanguage={currentLanguage}
+            initialData={{
+              idea,
+              logline,
+              treatment,
+              synopsis,
+              theme: cinematicTheme,
+              characters,
+              scenes
+            }}
+            onSave={async (step, content) => {
+              // Handle save for each step
+              switch (step) {
+                case 'idea':
+                  setIdea(content);
+                  await saveIdeaApiCall();
+                  break;
+                case 'logline':
+                  setLogline(content);
+                  await saveLoglineApiCall();
+                  break;
+                case 'treatment':
+                  setTreatment(content);
+                  await saveTreatmentApiCall();
+                  break;
+                case 'synopsis':
+                  setSynopsis(content);
+                  await saveSynopsisApiCall();
+                  break;
+                default:
+                  break;
+              }
+            }}
+            onGenerate={async (step) => {
+              // Handle AI generation for each step
+              switch (step) {
+                case 'idea':
+                  await generateIdeaApiCall();
+                  return idea;
+                case 'logline':
+                  await generateLoglineApiCall();
+                  return logline;
+                case 'treatment':
+                  await generateTreatmentApiCall();
+                  return treatment;
+                case 'synopsis':
+                  await generateSynopsisApiCall();
+                  return synopsis;
+                default:
+                  return '';
+              }
+            }}
+            onModeChange={handleEditorModeChange}
+          />
+        ) : (
+          /* Classic Tab-based Editor */
+          <div className="relative">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="relative">
+                <TabsList
+                  className="flex overflow-x-auto whitespace-nowrap scrollbar mb-4 sm:mb-6 bg-white/5 backdrop-blur-md border border-white/10"
+                  style={{ minWidth: 0 }}
+                >
+                  {projectConfig?.workflow?.map((step: string) => (
+                    <TabsTrigger 
+                      key={step} 
+                      value={step} 
+                      className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap"
+                    >
+                      {projectConfig.labels?.[step] || t(`tabs.${step}`, { ns: 'editor', defaultValue: step.charAt(0).toUpperCase() + step.slice(1) })}
+                    </TabsTrigger>
+                  )) || (
+                    <>
+                      <TabsTrigger value="overview" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <T k="tabs.overview" ns="editor" defaultValue="Overview" />
+                      </TabsTrigger>
+                      <TabsTrigger value="characters" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <T k="tabs.characters" ns="editor" defaultValue="Characters" />
+                      </TabsTrigger>
+                      <TabsTrigger value="scenes" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <T k="tabs.scenes" ns="editor" defaultValue="Scenes" />
+                      </TabsTrigger>
+                      <TabsTrigger value="full-script" className="flex-1 min-w-[140px] sm:min-w-0 text-xs sm:text-base data-[state=active]:bg-purple-600 data-[state=active]:text-white px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <T k="tabs.fullScript" ns="editor" defaultValue="Full Script" />
+                      </TabsTrigger>
+                    </>
+                  )}
+                </TabsList>
+              </div>
+
+              {projectConfig?.workflow?.map((step: string) => (
+                <TabsContent key={step} value={step} className="space-y-6 sm:space-y-8 overflow-auto">
+                  {renderWorkflowStep(step)}
                 </TabsContent>
-                <TabsContent value="characters" className="space-y-6 sm:space-y-8 overflow-auto">
-                  {renderWorkflowStep('characters')}
-                </TabsContent>
-                <TabsContent value="scenes" className="space-y-6 sm:space-y-8 overflow-auto">
-                  {renderWorkflowStep('scenes')}
-                </TabsContent>
-                <TabsContent value="full-script" className="space-y-6 sm:space-y-8 overflow-auto">
-                  {renderWorkflowStep('full-script')}
-                </TabsContent>
-              </>
-            )}
-          </Tabs>
-        </div>
+              )) || (
+                <>
+                  <TabsContent value="overview" className="space-y-6 sm:space-y-8 overflow-auto">
+                    {renderWorkflowStep('idea')}
+                    {renderWorkflowStep('logline')}
+                    {renderWorkflowStep('treatment')}
+                  </TabsContent>
+                  <TabsContent value="characters" className="space-y-6 sm:space-y-8 overflow-auto">
+                    {renderWorkflowStep('characters')}
+                  </TabsContent>
+                  <TabsContent value="scenes" className="space-y-6 sm:space-y-8 overflow-auto">
+                    {renderWorkflowStep('scenes')}
+                  </TabsContent>
+                  <TabsContent value="full-script" className="space-y-6 sm:space-y-8 overflow-auto">
+                    {renderWorkflowStep('full-script')}
+                  </TabsContent>
+                </>
+              )}
+            </Tabs>
+          </div>
+        )}
+
+        {/* AI Writing Assistant - Floating */}
+        {project && (
+          <AIWritingAssistant
+            projectId={projectId}
+            currentStep={activeTab}
+            currentContent={
+              activeTab === 'idea' ? idea :
+              activeTab === 'logline' ? logline :
+              activeTab === 'treatment' ? treatment :
+              activeTab === 'synopsis' ? synopsis : ''
+            }
+            onInsertText={(text) => {
+              // Insert AI-generated text into the current field
+              switch (activeTab) {
+                case 'idea':
+                  setIdea(prev => prev + '\n\n' + text);
+                  break;
+                case 'logline':
+                  setLogline(prev => prev + '\n\n' + text);
+                  break;
+                case 'treatment':
+                  setTreatment(prev => prev + '\n\n' + text);
+                  break;
+                case 'synopsis':
+                  setSynopsis(prev => prev + '\n\n' + text);
+                  break;
+              }
+            }}
+          />
+        )}
       </div>
       {/* Click outside to close export menu */}
       {showExportMenu && (

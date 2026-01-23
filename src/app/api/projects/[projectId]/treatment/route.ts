@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai, trackTokenUsage } from "@/lib/openai";
+import { generateContent, trackTokenUsage } from "@/lib/gemini";
 
 export async function POST(req: NextRequest, context: { params: Promise<{ projectId: string }> }) {
   try {
@@ -83,33 +83,30 @@ Please ensure the treatment:
 - Sets up clear story progression
 
 Treatment:`;
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        { 
-          role: "system", 
-          content: "You are a professional screenwriter and story consultant specializing in Indian cinema. You excel at creating detailed treatments that balance narrative structure, character development, and cultural authenticity. You understand both traditional storytelling and contemporary filmmaking techniques."
-        },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: 2000,
+
+    const systemPrompt = "You are a professional screenwriter and story consultant specializing in Indian cinema. You excel at creating detailed treatments that balance narrative structure, character development, and cultural authenticity. You understand both traditional storytelling and contemporary filmmaking techniques.";
+
+    const result = await generateContent({
+      model: 'flash',
+      systemPrompt,
+      userPrompt: prompt,
+      maxTokens: 2000,
       temperature: 0.7,
     });
-    const treatment = completion.choices[0].message.content?.trim() || "";
+
+    const treatment = result.text.trim() || "";
 
     // Track token usage
-    if (completion.usage) {
-      await trackTokenUsage({
-        userId: session.user.id,
-        projectId,
-        type: "treatment",
-        model: "gpt-4",
-        promptTokens: completion.usage.prompt_tokens,
-        completionTokens: completion.usage.completion_tokens,
-        totalTokens: completion.usage.total_tokens,
-        operationName: "Treatment Generation"
-      });
-    }
+    await trackTokenUsage({
+      userId: session.user.id,
+      projectId,
+      type: "treatment",
+      model: result.model,
+      promptTokens: result.usage.promptTokens,
+      completionTokens: result.usage.completionTokens,
+      totalTokens: result.usage.totalTokens,
+      operationName: "Treatment Generation"
+    });
 
     // Save treatment to project
     await prisma.project.update({

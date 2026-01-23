@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai } from "@/lib/openai";
+import { generateContent } from "@/lib/gemini";
 import { checkUserSubscriptionAndUsage } from "@/lib/subscription";
 
 export async function POST(
@@ -95,32 +95,26 @@ Please create a structured plot points breakdown that includes:
 
 Focus on making each plot point clear, dramatic, and essential to the story's progression.`;
 
-    // Generate plot points using OpenAI
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a story structure expert with deep understanding of narrative arcs, character development, and dramatic pacing. You excel at identifying key plot points that drive stories forward and create compelling narrative momentum."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 800,
+    const systemPrompt = "You are a story structure expert with deep understanding of narrative arcs, character development, and dramatic pacing. You excel at identifying key plot points that drive stories forward and create compelling narrative momentum.";
+
+    // Generate plot points using Gemini
+    const result = await generateContent({
+      model: 'flash',
+      systemPrompt,
+      userPrompt: prompt,
+      maxTokens: 800,
       temperature: 0.7,
     });
 
-    const generatedPlotPoints = completion.choices[0]?.message?.content?.trim();
+    const generatedPlotPoints = result.text.trim();
 
     if (!generatedPlotPoints) {
       throw new Error("Failed to generate plot points");
     }
 
     // Log token usage
-    const tokensUsed = completion.usage?.total_tokens || 0;
-    const cost = (tokensUsed / 1000) * 0.00015; // GPT-4o-mini pricing
+    const tokensUsed = result.usage.totalTokens;
+    const cost = (tokensUsed / 1000) * 0.000075; // Gemini Flash pricing
 
     await prisma.tokenUsage.create({
       data: {

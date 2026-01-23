@@ -11,46 +11,83 @@ import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { PROJECT_CONFIGURATIONS, ProjectType } from '@/lib/project-templates';
-import { Check, Clock, FileText, Film, Video, Book } from 'lucide-react';
+import { Check, Clock, FileText, Film, Video, Book, Tv, Mic, Camera, Users, Target, Sparkles } from 'lucide-react';
 import { TranslationProvider, useTranslations, T } from '@/components/TranslationProvider';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-const projectTypes: { value: ProjectType; label: string; description: string; icon: string }[] = [
+interface ProjectTypeOption {
+  value: ProjectType;
+  label: string;
+  description: string;
+  tagline: string;
+  icon: string;
+  bestFor: string[];
+  targetLength: { min: number; max: number; unit: string };
+}
+
+const projectTypes: ProjectTypeOption[] = [
   {
     value: 'shortfilm',
     label: 'Short Film',
-    description: 'Create a compelling short film from concept to screen-ready script',
-    icon: '🎬'
-  },
-  {
-    value: 'short-story',
-    label: 'Short Story',
-    description: 'Craft a compelling short story with rich characters and themes',
-    icon: '📖'
-  },
-  {
-    value: 'novel',
-    label: 'Novel',
-    description: 'Develop a full-length novel with complex plot and character development',
-    icon: '📚'
+    description: 'Create a production-ready short film from concept to final screenplay with scene breakdowns',
+    tagline: 'From idea to action! 🎬',
+    icon: '🎬',
+    bestFor: ['Film students', 'Independent filmmakers', 'Film festivals'],
+    targetLength: { min: 5, max: 30, unit: 'minutes' }
   },
   {
     value: 'screenplay',
     label: 'Feature Screenplay',
-    description: 'Write a full-length feature film screenplay with professional formatting',
-    icon: '🎭'
+    description: 'Write a professional feature-length screenplay ready for studio submission',
+    tagline: 'Your feature film starts here 🎭',
+    icon: '🎭',
+    bestFor: ['Aspiring screenwriters', 'Film competitions', 'Spec scripts'],
+    targetLength: { min: 90, max: 120, unit: 'pages' }
   },
   {
-    value: 'film-story',
-    label: 'Film Story',
-    description: 'Develop a story specifically crafted for film adaptation',
-    icon: '🎥'
+    value: 'shortstory',
+    label: 'Short Story',
+    description: 'Craft a literary short story with rich prose and meaningful themes for publication',
+    tagline: 'Every word counts ✍️',
+    icon: '📖',
+    bestFor: ['Literary magazines', 'Writing contests', 'MFA portfolios'],
+    targetLength: { min: 1500, max: 7500, unit: 'words' }
   },
   {
-    value: 'synopsis',
-    label: 'Synopsis',
-    description: 'Create a compelling synopsis for pitching your story or screenplay',
-    icon: '📋'
+    value: 'novel',
+    label: 'Novel',
+    description: 'Develop a full-length novel with complex plotting and rich world-building',
+    tagline: 'Your epic story awaits 📚',
+    icon: '📚',
+    bestFor: ['Traditional publishing', 'Self-publishing', 'NaNoWriMo'],
+    targetLength: { min: 60000, max: 120000, unit: 'words' }
+  },
+  {
+    value: 'webseries',
+    label: 'Web Series',
+    description: 'Create a binge-worthy web series with episodic structure and cliffhangers',
+    tagline: 'Make them binge! 📺',
+    icon: '📺',
+    bestFor: ['YouTube creators', 'Streaming pitches', 'Digital content'],
+    targetLength: { min: 6, max: 12, unit: 'episodes' }
+  },
+  {
+    value: 'documentary',
+    label: 'Documentary',
+    description: 'Develop a compelling documentary with research, interviews, and narrative structure',
+    tagline: 'Tell the real story 🎥',
+    icon: '🎥',
+    bestFor: ['Documentary filmmakers', 'Journalists', 'Grant applications'],
+    targetLength: { min: 30, max: 120, unit: 'minutes' }
+  },
+  {
+    value: 'podcast',
+    label: 'Podcast Script',
+    description: 'Create engaging podcast episodes with scripts, research, and show notes',
+    tagline: 'Be heard 🎙️',
+    icon: '🎙️',
+    bestFor: ['Podcasters', 'Audio storytellers', 'Content creators'],
+    targetLength: { min: 20, max: 60, unit: 'minutes' }
   }
 ];
 
@@ -59,7 +96,7 @@ export default function NewProjectPage() {
   const { data: session, status } = useSession();
   const { toast } = useToast();
   const [title, setTitle] = useState('');
-  const [projectType, setProjectType] = useState<ProjectType>('short-story');
+  const [projectType, setProjectType] = useState<ProjectType>('shortfilm');
   const [isLoading, setIsLoading] = useState(false);
   const [userLanguage, setUserLanguage] = useState('English'); // Default language
 
@@ -154,58 +191,109 @@ function NewProjectContent({
 }) {
   const { t } = useTranslations();
 
-  const projectTypes: { value: ProjectType; label: string; description: string; icon: string }[] = [
+  const localizedProjectTypes: ProjectTypeOption[] = [
     {
       value: 'shortfilm',
       label: t('projectTypes.shortfilm', { ns: 'projects', defaultValue: 'Short Film' }),
-      description: t('projectTypeDescriptions.shortfilm', { ns: 'projects', defaultValue: 'Create a compelling short film from concept to screen-ready script' }),
-      icon: '🎬'
-    },
-    {
-      value: 'short-story',
-      label: t('projectTypes.shortStory', { ns: 'projects', defaultValue: 'Short Story' }),
-      description: t('projectTypeDescriptions.shortStory', { ns: 'projects', defaultValue: 'Craft a compelling short story with rich characters and themes' }),
-      icon: '📖'
-    },
-    {
-      value: 'novel',
-      label: t('projectTypes.novel', { ns: 'projects', defaultValue: 'Novel' }),
-      description: t('projectTypeDescriptions.novel', { ns: 'projects', defaultValue: 'Develop a full-length novel with complex plot and character development' }),
-      icon: '📚'
+      description: t('projectTypeDescriptions.shortfilm', { ns: 'projects', defaultValue: 'Create a production-ready short film from concept to final screenplay with scene breakdowns' }),
+      tagline: 'From idea to action! 🎬',
+      icon: '🎬',
+      bestFor: ['Film students', 'Independent filmmakers', 'Film festivals'],
+      targetLength: { min: 5, max: 30, unit: 'minutes' }
     },
     {
       value: 'screenplay',
       label: t('projectTypes.screenplay', { ns: 'projects', defaultValue: 'Feature Screenplay' }),
-      description: t('projectTypeDescriptions.screenplay', { ns: 'projects', defaultValue: 'Write a full-length feature film screenplay with professional formatting' }),
-      icon: '🎭'
+      description: t('projectTypeDescriptions.screenplay', { ns: 'projects', defaultValue: 'Write a professional feature-length screenplay ready for studio submission' }),
+      tagline: 'Your feature film starts here 🎭',
+      icon: '🎭',
+      bestFor: ['Aspiring screenwriters', 'Film competitions', 'Spec scripts'],
+      targetLength: { min: 90, max: 120, unit: 'pages' }
     },
     {
-      value: 'film-story',
-      label: t('projectTypes.filmStory', { ns: 'projects', defaultValue: 'Film Story' }),
-      description: t('projectTypeDescriptions.filmStory', { ns: 'projects', defaultValue: 'Develop a story specifically crafted for film adaptation' }),
-      icon: '🎥'
+      value: 'shortstory',
+      label: t('projectTypes.shortStory', { ns: 'projects', defaultValue: 'Short Story' }),
+      description: t('projectTypeDescriptions.shortStory', { ns: 'projects', defaultValue: 'Craft a literary short story with rich prose and meaningful themes for publication' }),
+      tagline: 'Every word counts ✍️',
+      icon: '📖',
+      bestFor: ['Literary magazines', 'Writing contests', 'MFA portfolios'],
+      targetLength: { min: 1500, max: 7500, unit: 'words' }
     },
     {
-      value: 'synopsis',
-      label: t('projectTypes.synopsis', { ns: 'projects', defaultValue: 'Synopsis' }),
-      description: t('projectTypeDescriptions.synopsis', { ns: 'projects', defaultValue: 'Create a compelling synopsis for pitching your story or screenplay' }),
-      icon: '📋'
+      value: 'novel',
+      label: t('projectTypes.novel', { ns: 'projects', defaultValue: 'Novel' }),
+      description: t('projectTypeDescriptions.novel', { ns: 'projects', defaultValue: 'Develop a full-length novel with complex plotting and rich world-building' }),
+      tagline: 'Your epic story awaits 📚',
+      icon: '📚',
+      bestFor: ['Traditional publishing', 'Self-publishing', 'NaNoWriMo'],
+      targetLength: { min: 60000, max: 120000, unit: 'words' }
+    },
+    {
+      value: 'webseries',
+      label: t('projectTypes.webseries', { ns: 'projects', defaultValue: 'Web Series' }),
+      description: t('projectTypeDescriptions.webseries', { ns: 'projects', defaultValue: 'Create a binge-worthy web series with episodic structure and cliffhangers' }),
+      tagline: 'Make them binge! 📺',
+      icon: '📺',
+      bestFor: ['YouTube creators', 'Streaming pitches', 'Digital content'],
+      targetLength: { min: 6, max: 12, unit: 'episodes' }
+    },
+    {
+      value: 'documentary',
+      label: t('projectTypes.documentary', { ns: 'projects', defaultValue: 'Documentary' }),
+      description: t('projectTypeDescriptions.documentary', { ns: 'projects', defaultValue: 'Develop a compelling documentary with research, interviews, and narrative structure' }),
+      tagline: 'Tell the real story 🎥',
+      icon: '🎥',
+      bestFor: ['Documentary filmmakers', 'Journalists', 'Grant applications'],
+      targetLength: { min: 30, max: 120, unit: 'minutes' }
+    },
+    {
+      value: 'podcast',
+      label: t('projectTypes.podcast', { ns: 'projects', defaultValue: 'Podcast Script' }),
+      description: t('projectTypeDescriptions.podcast', { ns: 'projects', defaultValue: 'Create engaging podcast episodes with scripts, research, and show notes' }),
+      tagline: 'Be heard 🎙️',
+      icon: '🎙️',
+      bestFor: ['Podcasters', 'Audio storytellers', 'Content creators'],
+      targetLength: { min: 20, max: 60, unit: 'minutes' }
     }
   ];
+
+  const getUnitLabel = (unit: string) => {
+    switch (unit) {
+      case 'minutes': return t('labels.minuteCount', { ns: 'projects', defaultValue: 'minutes' });
+      case 'pages': return t('labels.pageCount', { ns: 'projects', defaultValue: 'pages' });
+      case 'words': return t('labels.wordCount', { ns: 'projects', defaultValue: 'words' });
+      case 'episodes': return t('labels.episodeCount', { ns: 'projects', defaultValue: 'episodes' });
+      default: return unit;
+    }
+  };
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'shortfilm': return <Film className="w-4 h-4" />;
+      case 'screenplay': return <Film className="w-4 h-4" />;
+      case 'shortstory': return <FileText className="w-4 h-4" />;
+      case 'novel': return <Book className="w-4 h-4" />;
+      case 'webseries': return <Tv className="w-4 h-4" />;
+      case 'documentary': return <Camera className="w-4 h-4" />;
+      case 'podcast': return <Mic className="w-4 h-4" />;
+      default: return <FileText className="w-4 h-4" />;
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-black text-white">
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
       <div className="relative flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
+        <Card className="w-full max-w-3xl border-none shadow-lg bg-white/5 backdrop-blur-lg border border-white/10">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-bold text-white">
+              <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-400" />
                 <T k="headers.createProject" ns="projects" defaultValue="Create New Project" />
               </CardTitle>
-              <CardDescription className="text-gray-300">
-                <T k="actions.chooseProjectType" ns="projects" defaultValue="Choose your project type and give it a title" />
+              <CardDescription className="text-gray-300 mt-1">
+                <T k="actions.chooseProjectType" ns="projects" defaultValue="Choose your project type and start creating" />
               </CardDescription>
             </div>
             <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
@@ -215,77 +303,58 @@ function NewProjectContent({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-6">
               <div className="space-y-4">
-                <Label className="text-gray-300 text-lg font-medium">
-                  <T k="actions.chooseProjectType" ns="projects" defaultValue="Choose Your Project Type" />
+                <Label className="text-gray-300 text-lg font-medium flex items-center gap-2">
+                  <Target className="w-5 h-5 text-purple-400" />
+                  <T k="labels.whatAreYouCreating" ns="projects" defaultValue="What are you creating?" />
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {projectTypes.map((type) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {localizedProjectTypes.map((type) => (
                     <div
                       key={type.value}
                       onClick={() => setProjectType(type.value)}
                       className={`
-                        relative p-6 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-[1.02]
+                        relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:scale-[1.02] group
                         ${projectType === type.value 
-                          ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20' 
-                          : 'border-white/10 bg-white/5 hover:border-purple-300/50 hover:bg-white/10'
+                          ? 'border-purple-500 bg-purple-500/15 shadow-lg shadow-purple-500/20' 
+                          : 'border-white/10 bg-white/5 hover:border-purple-400/50 hover:bg-white/10'
                         }
                       `}
                     >
                       {projectType === type.value && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
                           <Check className="w-4 h-4 text-white" />
                         </div>
                       )}
                       
-                      <div className="flex items-start space-x-4">
-                        <div className="text-3xl flex-shrink-0 mt-1">
-                          {type.icon}
+                      <div className="flex flex-col h-full">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-3xl">{type.icon}</span>
+                          <div>
+                            <h3 className="text-base font-semibold text-white">
+                              {type.label}
+                            </h3>
+                            <p className="text-xs text-purple-300 italic">
+                              {type.tagline}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-white mb-2">
-                            {type.label}
-                          </h3>
-                          <p className="text-sm text-gray-400 leading-relaxed">
-                            {type.description}
-                          </p>
-                          
-                          {/* Additional details based on project type */}
-                          {type.value === 'shortfilm' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <Clock className="w-3 h-3 mr-1" />
-                              <span>5-30 {t('labels.minuteCount', { ns: 'projects', defaultValue: 'minutes', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
-                          {type.value === 'short-story' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <FileText className="w-3 h-3 mr-1" />
-                              <span>1,000-7,500 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
-                          {type.value === 'novel' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <Book className="w-3 h-3 mr-1" />
-                              <span>50,000-120,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
-                          {type.value === 'screenplay' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <Film className="w-3 h-3 mr-1" />
-                              <span>90-120 {t('labels.pageCount', { ns: 'projects', defaultValue: 'pages', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
-                          {type.value === 'film-story' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <Video className="w-3 h-3 mr-1" />
-                              <span>15,000-40,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
-                          {type.value === 'synopsis' && (
-                            <div className="mt-3 flex items-center text-xs text-purple-300">
-                              <FileText className="w-3 h-3 mr-1" />
-                              <span>500-2,000 {t('labels.wordCount', { ns: 'projects', defaultValue: 'words', interpolation: { count: '' } })}</span>
-                            </div>
-                          )}
+                        
+                        <p className="text-sm text-gray-400 leading-relaxed mb-3 flex-grow">
+                          {type.description}
+                        </p>
+                        
+                        {/* Target length badge */}
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/10">
+                          <div className="flex items-center text-xs text-gray-500">
+                            {getIcon(type.value)}
+                            <span className="ml-1">
+                              {type.targetLength.min.toLocaleString()}-{type.targetLength.max.toLocaleString()} {getUnitLabel(type.targetLength.unit)}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-xs text-purple-400">
+                            <Users className="w-3 h-3 mr-1" />
+                            {type.bestFor[0]}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -308,7 +377,7 @@ function NewProjectContent({
                 />
               </div>
             </div>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-4 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -319,8 +388,8 @@ function NewProjectContent({
               </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={isLoading || !title.trim()}
+                className="bg-purple-600 hover:bg-purple-700 text-white min-w-[140px]"
               >
                 {isLoading ? (
                   <>
@@ -328,7 +397,10 @@ function NewProjectContent({
                     <T k="states.loading" ns="common" defaultValue="Creating..." />
                   </>
                 ) : (
-                  <T k="buttons.create" ns="common" defaultValue="Create Project" />
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    <T k="buttons.create" ns="common" defaultValue="Create Project" />
+                  </>
                 )}
               </Button>
             </div>

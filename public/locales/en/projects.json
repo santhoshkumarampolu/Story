@@ -10,28 +10,32 @@
     "createFirstProject": "Create your first project to get started",
     "wordCount": "words",
     "pageCount": "pages",
-    "minuteCount": "minutes"
+    "minuteCount": "minutes",
+    "episodeCount": "episodes",
+    "whatAreYouCreating": "What are you creating?"
   },
   "actions": {
     "createNewProject": "Create New Project",
     "deleteProject": "Delete Project",
-    "chooseProjectType": "Choose your project type and give it a title"
+    "chooseProjectType": "Choose your project type and start creating"
   },
   "projectTypes": {
     "shortfilm": "Short Film",
     "shortStory": "Short Story", 
     "novel": "Novel",
     "screenplay": "Feature Screenplay",
-    "filmStory": "Film Story",
-    "synopsis": "Synopsis"
+    "webseries": "Web Series",
+    "documentary": "Documentary",
+    "podcast": "Podcast Script"
   },
   "projectTypeDescriptions": {
-    "shortfilm": "Create a compelling short film from concept to screen-ready script",
-    "shortStory": "Craft a compelling short story with rich characters and themes",
-    "novel": "Develop a full-length novel with complex plot and character development",
-    "screenplay": "Write a full-length feature film screenplay with professional formatting",
-    "filmStory": "Develop a story specifically crafted for film adaptation",
-    "synopsis": "Create a compelling synopsis for pitching your story or screenplay"
+    "shortfilm": "Create a production-ready short film from concept to final screenplay with scene breakdowns",
+    "shortStory": "Craft a literary short story with rich prose and meaningful themes for publication",
+    "novel": "Develop a full-length novel with complex plotting and rich world-building",
+    "screenplay": "Write a professional feature-length screenplay ready for studio submission",
+    "webseries": "Create a binge-worthy web series with episodic structure and cliffhangers",
+    "documentary": "Develop a compelling documentary with research, interviews, and narrative structure",
+    "podcast": "Create engaging podcast episodes with scripts, research, and show notes"
   },
   "placeholders": {
     "projectTitle": "Enter your project title..."

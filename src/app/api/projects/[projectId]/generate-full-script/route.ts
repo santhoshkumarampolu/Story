@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai, trackTokenUsage } from "@/lib/openai";
+import { generateContent, trackTokenUsage } from "@/lib/gemini";
 
 export async function POST(
   request: NextRequest,
@@ -102,42 +102,35 @@ ${scene.script}
       promptContent += `\nGenerate the full script in English, using standard screenplay format.`;
     }
     
-    const model = "gpt-4o"; // Or your preferred model for long-form generation
     let generatedFullScript = "";
     let tokensUsed = 0;
     let cost = 0;
-    let promptTokens = 0;
-    let completionTokens = 0;
 
     try {
-      const aiCompletion = await openai.chat.completions.create({
-        model: model,
-        messages: [{ role: "user", content: promptContent }],
-        // Consider increasing max_tokens if scripts are very long
-        // max_tokens: 4000, 
+      const systemPrompt = "You are a professional screenwriter who creates complete, well-formatted screenplays. Follow standard screenplay format with proper scene headings, action lines, character names, and dialogue.";
+
+      const result = await generateContent({
+        model: 'pro', // Use pro model for long-form generation
+        systemPrompt,
+        userPrompt: promptContent,
+        maxTokens: 8192,
+        temperature: 0.7,
       });
 
-      if (aiCompletion.choices[0].message.content) {
-        generatedFullScript = aiCompletion.choices[0].message.content;
-        promptTokens = aiCompletion.usage?.prompt_tokens || 0;
-        completionTokens = aiCompletion.usage?.completion_tokens || 0;
-        tokensUsed = aiCompletion.usage?.total_tokens || 0;
+      generatedFullScript = result.text;
+      tokensUsed = result.usage.totalTokens;
 
-        const usageTrackingResult = await trackTokenUsage({
-          userId: session.user.id,
-          projectId,
-          type: "script", // Using "script" type, could be "full_script" if you add it
-          model,
-          promptTokens,
-          completionTokens,
-          totalTokens: tokensUsed,
-          operationName: `Full Script Generation: ${project.title}`,
-        });
-        cost = usageTrackingResult.cost || 0;
-
-      } else {
-        throw new Error("AI response for full script generation was empty or invalid.");
-      }
+      const usageTrackingResult = await trackTokenUsage({
+        userId: session.user.id,
+        projectId,
+        type: "script",
+        model: result.model,
+        promptTokens: result.usage.promptTokens,
+        completionTokens: result.usage.completionTokens,
+        totalTokens: tokensUsed,
+        operationName: `Full Script Generation: ${project.title}`,
+      });
+      cost = usageTrackingResult.cost || 0;
 
     } catch (aiError: any) {
       console.error("[AI_FULL_SCRIPT_GENERATION_ERROR]", aiError);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai } from "@/lib/openai";
+import { generateContent } from "@/lib/gemini";
 import { checkUserSubscriptionAndUsage } from "@/lib/subscription";
 
 export async function POST(
@@ -86,32 +86,26 @@ Please create a synopsis that is approximately 300-500 words and follows this st
 
 Focus on making the synopsis as compelling and marketable as possible while staying true to the story's core elements.`;
 
-    // Generate synopsis using OpenAI
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a professional synopsis writer with expertise in film and literature. Create compelling, marketable synopses that capture the essence of stories while highlighting their commercial potential."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 800,
+    const systemPrompt = "You are a professional synopsis writer with expertise in film and literature. Create compelling, marketable synopses that capture the essence of stories while highlighting their commercial potential.";
+
+    // Generate synopsis using Gemini
+    const result = await generateContent({
+      model: 'flash',
+      systemPrompt,
+      userPrompt: prompt,
+      maxTokens: 800,
       temperature: 0.7,
     });
 
-    const generatedSynopsis = completion.choices[0]?.message?.content?.trim();
+    const generatedSynopsis = result.text.trim();
 
     if (!generatedSynopsis) {
       throw new Error("Failed to generate synopsis");
     }
 
     // Log token usage
-    const tokensUsed = completion.usage?.total_tokens || 0;
-    const cost = (tokensUsed / 1000) * 0.00015; // GPT-4o-mini pricing
+    const tokensUsed = result.usage.totalTokens;
+    const cost = (tokensUsed / 1000) * 0.000075; // Gemini Flash pricing
 
     await prisma.tokenUsage.create({
       data: {

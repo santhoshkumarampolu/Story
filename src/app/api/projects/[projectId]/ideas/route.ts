@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai, trackTokenUsage } from "@/lib/openai";
+import { generateContent, trackTokenUsage } from "@/lib/gemini";
 import type { NextRequest as NextRequestType } from "next/server";
 
 export async function POST(req: NextRequestType, context: { params: Promise<{ projectId: string }> }) {
@@ -42,43 +42,56 @@ export async function POST(req: NextRequestType, context: { params: Promise<{ pr
       languageSpecificPromptSegment = `Use Indian names (like Arjun, Priya, Kiran, Meera, Rajesh, Ananya, etc.), Indian locations (Mumbai streets, Delhi metro, Chennai beaches, Bangalore tech parks, Goa coastline, Kerala backwaters, Rajasthan palaces, Punjab fields, etc.), and Indian cultural contexts. Consider Indian festivals, family traditions, regional diversity, languages, food culture, or contemporary issues relevant to Indian society.`;
     }
 
-    // Generate ideas using OpenAI
-    const prompt = generateRandom
+    // Generate ideas using Gemini
+    const userPrompt = generateRandom
       ? `Generate 3 unique short film ideas. Each idea should include a concept, conflict, emotional hook, visual style, and unique element. ${languageSpecificPromptSegment} Format as JSON array.`
       : `Generate 3 unique short film ideas based on this concept: "${idea}". Each idea should include a concept, conflict, emotional hook, visual style, and unique element. ${languageSpecificPromptSegment} Format as JSON array.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You are a creative writing assistant specializing in short film concepts for Indian cinema. You understand Indian culture, traditions, regional diversity, contemporary social issues, and storytelling that resonates with Indian audiences. You're familiar with Indian names, locations, festivals, family dynamics, and cultural nuances across different regions of India.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+    const systemPrompt = "You are a creative writing assistant specializing in short film concepts for Indian cinema. You understand Indian culture, traditions, regional diversity, contemporary social issues, and storytelling that resonates with Indian audiences. You're familiar with Indian names, locations, festivals, family dynamics, and cultural nuances across different regions of India. Always respond with valid JSON.";
+
+    const result = await generateContent({
+      model: "flash",
+      systemPrompt,
+      userPrompt,
     });
 
     // Track token usage
-    if (completion.usage) {
-      await trackTokenUsage({
-        userId: session.user.id,
-        projectId,
-        type: "idea",
-        model: "gpt-4",
-        promptTokens: completion.usage.prompt_tokens,
-        completionTokens: completion.usage.completion_tokens,
-        totalTokens: completion.usage.total_tokens,
-      });
-    }
+    await trackTokenUsage({
+      userId: session.user.id,
+      projectId,
+      type: "idea",
+      model: result.model,
+      promptTokens: result.usage.promptTokens,
+      completionTokens: result.usage.completionTokens,
+      totalTokens: result.usage.totalTokens,
+    });
 
     let aiGeneratedIdeas: any[] = [];
     try {
-      const parsed = JSON.parse(completion.choices[0].message.content || "[]");
+      // Clean the response - remove markdown code blocks if present
+      let cleanedText = result.text.trim();
+      if (cleanedText.startsWith("```json")) {
+        cleanedText = cleanedText.slice(7);
+      } else if (cleanedText.startsWith("```")) {
+        cleanedText = cleanedText.slice(3);
+      }
+      if (cleanedText.endsWith("```")) {
+        cleanedText = cleanedText.slice(0, -3);
+      }
+      cleanedText = cleanedText.trim();
+      
+      const parsed = JSON.parse(cleanedText);
       console.log(parsed);
-      aiGeneratedIdeas = Array.isArray(parsed) ? parsed : parsed.ideas || [];
+      const rawIdeas = Array.isArray(parsed) ? parsed : parsed.ideas || [];
+      
+      // Transform snake_case keys to camelCase for UI compatibility
+      aiGeneratedIdeas = rawIdeas.map((idea: any) => ({
+        concept: idea.concept,
+        conflict: idea.conflict,
+        emotionalHook: idea.emotional_hook || idea.emotionalHook,
+        visualStyle: idea.visual_style || idea.visualStyle,
+        uniqueElement: idea.unique_element || idea.uniqueElement,
+      }));
     } catch {
       aiGeneratedIdeas = [];
     }

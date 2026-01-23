@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { OpenAI } from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { generateContent, trackTokenUsage } from "@/lib/gemini";
 
 export async function POST(
   request: NextRequest,
@@ -87,34 +83,18 @@ export async function POST(
 
     console.log("Generating script with prompt:", prompt);
 
-    // // Replace with your actual OpenAI call using generateResponse
-    // const { text: generatedScript, tokens: tokensUsed } = await generateResponse(
-    //   session.user.id,
-    //   projectId,
-    //   prompt,
-    //   "scene_script_generation"
-    // );
+    const systemPrompt = "You are a professional screenwriter. Write compelling, well-formatted scene scripts with natural dialogue and clear action descriptions.";
 
-    // Placeholder for OpenAI API call simulation
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
-    const generatedScript = `
-[SCENE START]
+    const result = await generateContent({
+      model: 'flash',
+      systemPrompt,
+      userPrompt: prompt,
+      maxTokens: 1500,
+      temperature: 0.7,
+    });
 
-**INT. ${scene.location || 'LOCATION'} - ${scene.timeOfDay || 'TIME'}**
-
-${scene.summary}
-
-CHARACTER A
-(Dialogue reflecting scene goals: ${scene.goals || '[goal]'})
-Some dialogue here.
-
-CHARACTER B
-(Dialogue reflecting scene conflicts: ${scene.conflicts || '[conflict]'})
-Some counter-dialogue here.
-
-[SCENE END]
-        `.trim();
-    const tokensUsed = Math.floor(Math.random() * 500) + 100; // Placeholder for tokens
+    const generatedScript = result.text.trim();
+    const tokensUsed = result.usage.totalTokens;
 
     if (!generatedScript) {
       return NextResponse.json(
@@ -123,10 +103,19 @@ Some counter-dialogue here.
       );
     }
 
-    // Token usage is handled by generateResponse, so direct recording might be redundant if using it.
-    // If not using generateResponse, you would call recordTokenUsage here.
-    // await recordTokenUsage(session.user.id, projectId, tokensUsed, "scene_script_generation");
-    console.log(`Tokens used (placeholder): ${tokensUsed}`);
+    // Track token usage
+    await trackTokenUsage({
+      userId: session.user.id,
+      projectId,
+      type: "script",
+      model: result.model,
+      promptTokens: result.usage.promptTokens,
+      completionTokens: result.usage.completionTokens,
+      totalTokens: tokensUsed,
+      operationName: `Scene Script: ${scene.title || 'Untitled Scene'}`,
+    });
+
+    console.log(`Tokens used: ${tokensUsed}`);
 
     // 4. Update the scene in the database
     const updatedScene = await prisma.scene.update({

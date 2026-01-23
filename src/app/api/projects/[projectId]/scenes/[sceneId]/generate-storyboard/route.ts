@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { openai, trackTokenUsage } from "@/lib/openai";
+import { generateContent, trackTokenUsage } from "@/lib/gemini";
 
 export async function POST(
   request: NextRequest,
@@ -76,42 +76,36 @@ export async function POST(
       promptContent += `\nGenerate the storyboard in ${effectiveLanguage}.`;
     }
 
-    const model = "gpt-4o"; // Or your preferred model for text generation
     let generatedStoryboardText = "";
     let tokensUsed = 0;
     let cost = 0;
-    let promptTokens = 0;
-    let completionTokens = 0;
 
     try {
-      const aiCompletion = await openai.chat.completions.create({
-        model: model,
-        messages: [{ role: "user", content: promptContent }],
-        // max_tokens: 1500, // Optional: Adjust as needed
+      const systemPrompt = "You are a professional storyboard artist and cinematographer. Create detailed visual shot descriptions with camera angles, character positions, and key visual elements.";
+
+      const result = await generateContent({
+        model: 'flash',
+        systemPrompt,
+        userPrompt: promptContent,
+        maxTokens: 1500,
+        temperature: 0.7,
       });
 
-      if (aiCompletion.choices[0].message.content) {
-        generatedStoryboardText = aiCompletion.choices[0].message.content;
-        promptTokens = aiCompletion.usage?.prompt_tokens || 0;
-        completionTokens = aiCompletion.usage?.completion_tokens || 0;
-        tokensUsed = aiCompletion.usage?.total_tokens || 0;
+      generatedStoryboardText = result.text;
+      tokensUsed = result.usage.totalTokens;
 
-        // Track token usage
-        const usageTrackingResult = await trackTokenUsage({
-          userId: session.user.id,
-          projectId,
-          type: "storyboard", // Ensure this type is valid in your enum/function
-          model,
-          promptTokens,
-          completionTokens,
-          totalTokens: tokensUsed,
-          operationName: `Scene Storyboard: ${scene.title || 'Untitled Scene'}`,
-        });
-        cost = usageTrackingResult.cost || 0; // trackTokenUsage calculates and returns cost
-
-      } else {
-        throw new Error("AI response for storyboard generation was empty or invalid.");
-      }
+      // Track token usage
+      const usageTrackingResult = await trackTokenUsage({
+        userId: session.user.id,
+        projectId,
+        type: "storyboard",
+        model: result.model,
+        promptTokens: result.usage.promptTokens,
+        completionTokens: result.usage.completionTokens,
+        totalTokens: tokensUsed,
+        operationName: `Scene Storyboard: ${scene.title || 'Untitled Scene'}`,
+      });
+      cost = usageTrackingResult.cost || 0;
 
     } catch (aiError: any) {
       console.error("[AI_STORYBOARD_GENERATION_ERROR]", aiError);
