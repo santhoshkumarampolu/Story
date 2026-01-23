@@ -8,8 +8,70 @@ import MobileWarning from "@/components/MobileWarning";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Story Studio",
-  description: "Create amazing stories with AI",
+  metadataBase: new URL('https://aistorystudio.com'),
+  title: {
+    default: "AI Story Studio - Create Stories, Screenplays & Scripts with AI",
+    template: "%s | AI Story Studio"
+  },
+  description: "Transform your ideas into compelling stories, screenplays, and scripts with AI assistance. Write in 6 Indian languages including Hindi, Telugu, Tamil, Kannada, and Malayalam. Free to start.",
+  keywords: [
+    "AI story writer",
+    "screenplay writing software",
+    "script generator",
+    "AI writing assistant",
+    "story creator",
+    "Hindi screenplay",
+    "Telugu script writing",
+    "Tamil story writing",
+    "Indian language storytelling",
+    "film script generator",
+    "short film writing",
+    "novel writing AI",
+    "creative writing tool"
+  ],
+  authors: [{ name: "AI Story Studio" }],
+  creator: "AI Story Studio",
+  publisher: "AI Story Studio",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://aistorystudio.com",
+    siteName: "AI Story Studio",
+    title: "AI Story Studio - Create Stories & Screenplays with AI",
+    description: "Transform your ideas into compelling stories and screenplays with AI assistance. Write in 6 Indian languages. Free to start.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AI Story Studio - AI-Powered Storytelling Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Story Studio - Create Stories & Screenplays with AI",
+    description: "Transform your ideas into compelling stories with AI assistance. Write in Hindi, Telugu, Tamil & more.",
+    images: ["/og-image.png"],
+    creator: "@aistorystudio",
+  },
+  verification: {
+    google: "your-google-verification-code", // Add your Google Search Console verification
+  },
+  alternates: {
+    canonical: "https://aistorystudio.com",
+  },
 };
 
 export default function RootLayout({

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, Variants } from "framer-motion";
 import { Header } from "@/components/layout/header";
 import { Sparkles, Languages, Users, Zap, ChevronRight, Play, Check, Trophy, Flame, Target, PartyPopper, MessageCircle, Rocket } from "lucide-react";
+import { WebsiteStructuredData, OrganizationStructuredData, FAQStructuredData } from "@/components/seo/StructuredData";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -31,6 +32,11 @@ const staggerContainer: Variants = {
 export default function Home() {
   return (
     <div className="relative min-h-screen bg-black text-white">
+      {/* SEO Structured Data */}
+      <WebsiteStructuredData />
+      <OrganizationStructuredData />
+      <FAQStructuredData />
+      
       {/* Subtle background */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
       
