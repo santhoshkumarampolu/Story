@@ -8,10 +8,15 @@ module.exports = {
   sitemapSize: 5000,
   exclude: [
     '/api/*',
+    '/auth',
     '/auth/*',
+    '/dashboard',
     '/dashboard/*',
+    '/editor',
     '/editor/*',
     '/test-*',
+    '/admin',
+    '/admin/*',
   ],
   robotsTxtOptions: {
     policies: [
