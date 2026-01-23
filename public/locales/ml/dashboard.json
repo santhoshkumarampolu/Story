@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "title": "ഡാഷ്ബോർഡ്",
+    "welcome": "തിരികെ സ്വാഗതം",
+    "recentProjects": "സമീപകാല പ്രോജക്ടുകൾ",
+    "noProjectsYet": "ഇതുവരെ പ്രോജക്ടുകളില്ല",
+    "createFirstProject": "ആരംഭിക്കാൻ നിങ്ങളുടെ ആദ്യ പ്രോജക്ട് സൃഷ്ടിക്കുക",
+    "lastUpdated": "അവസാനം അപ്ഡേറ്റ് ചെയ്തത്",
+    "quickActions": "ദ്രുത പ്രവർത്തനങ്ങൾ"
+  },
+  "actions": {
+    "newProject": "പുതിയ പ്രോജക്ട്", 
+    "allProjects": "എല്ലാ പ്രോജക്ടുകളും",
+    "viewProject": "പ്രോജക്ട് കാണുക",
+    "editProject": "പ്രോജക്ട് എഡിറ്റ് ചെയ്യുക"
+  }
+}

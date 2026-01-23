@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "title": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "welcome": "ಮರಳಿ ಸ್ವಾಗತ",
+    "recentProjects": "ಇತ್ತೀಚಿನ ಯೋಜನೆಗಳು",
+    "noProjectsYet": "ಇನ್ನೂ ಯೋಜನೆಗಳಿಲ್ಲ",
+    "createFirstProject": "ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಮೊದಲ ಯೋಜನೆಯನ್ನು ರಚಿಸಿ",
+    "lastUpdated": "ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+    "quickActions": "ತ್ವರಿತ ಕ್ರಿಯೆಗಳು"
+  },
+  "actions": {
+    "newProject": "ಹೊಸ ಯೋಜನೆ", 
+    "allProjects": "ಎಲ್ಲಾ ಯೋಜನೆಗಳು",
+    "viewProject": "ಯೋಜನೆ ನೋಡಿ",
+    "editProject": "ಯೋಜನೆ ಎಡಿಟ್ ಮಾಡಿ"
+  }
+}

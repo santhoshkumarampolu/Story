@@ -41,12 +41,13 @@ export function useI18n({
   const loadedNamespaces = useRef<Set<string>>(new Set());
   const pendingLoads = useRef<Set<string>>(new Set());
 
-  // Update current language when prop changes
+  // Update current language when prop changes and clear loaded namespaces
   useEffect(() => {
-    if (targetLanguage) {
+    if (targetLanguage && targetLanguage !== currentLanguage) {
+      loadedNamespaces.current.clear();
       setCurrentLanguage(targetLanguage);
     }
-  }, [targetLanguage]);
+  }, [targetLanguage, currentLanguage]);
 
   const loadNamespace = useCallback(async (namespace: string) => {
     const cacheKey = `${currentLanguage}:${namespace}`;
@@ -64,7 +65,10 @@ export function useI18n({
       const langCode =
         currentLanguage === 'English' || currentLanguage === 'en' ? 'en' :
         currentLanguage === 'Telugu'  || currentLanguage === 'te' ? 'te' :
-        currentLanguage === 'Hindi'   || currentLanguage === 'hi' ? 'hi' : 'en';
+        currentLanguage === 'Hindi'   || currentLanguage === 'hi' ? 'hi' :
+        currentLanguage === 'Tamil'   || currentLanguage === 'ta' ? 'ta' :
+        currentLanguage === 'Kannada' || currentLanguage === 'kn' ? 'kn' :
+        currentLanguage === 'Malayalam' || currentLanguage === 'ml' ? 'ml' : 'en';
 
       // Try to load the translation file
       const response = await fetch(`/locales/${langCode}/${namespace}.json`);
@@ -111,10 +115,8 @@ export function useI18n({
     const translations = translationCache[cacheKey];
     
     if (!translations) {
-      // Queue namespace loading but don't wait for it
-      if (!pendingLoads.current.has(cacheKey)) {
-        loadNamespace(ns).catch(console.error);
-      }
+      // Don't call loadNamespace here as it triggers setState during render
+      // Namespaces should be preloaded via TranslationProvider or loadNamespace calls in useEffect
       return defaultValue;
     }
 
@@ -131,7 +133,7 @@ export function useI18n({
     }
 
     return defaultValue;
-  }, [enabled, currentLanguage, loadNamespace]);
+  }, [enabled, currentLanguage]);
 
   const setLanguage = useCallback((language: string) => {
     setCurrentLanguage(language);

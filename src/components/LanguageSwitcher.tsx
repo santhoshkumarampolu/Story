@@ -11,8 +11,11 @@ interface LanguageSwitcherProps {
 
 const supportedLanguages = [
   { code: 'English', label: 'English', nativeLabel: 'English' },
-  { code: 'Telugu', label: 'Telugu', nativeLabel: 'తెలుగు' },
   { code: 'Hindi', label: 'Hindi', nativeLabel: 'हिंदी' },
+  { code: 'Telugu', label: 'Telugu', nativeLabel: 'తెలుగు' },
+  { code: 'Tamil', label: 'Tamil', nativeLabel: 'தமிழ்' },
+  { code: 'Kannada', label: 'Kannada', nativeLabel: 'ಕನ್ನಡ' },
+  { code: 'Malayalam', label: 'Malayalam', nativeLabel: 'മലയാളം' },
 ];
 
 export function LanguageSwitcher({ currentLanguage, onLanguageChange }: LanguageSwitcherProps) {

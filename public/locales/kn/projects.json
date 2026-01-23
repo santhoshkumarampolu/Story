@@ -1,0 +1,50 @@
+{
+  "projectTypes": {
+    "shortfilm": "ಕಿರುಚಿತ್ರ",
+    "shortStory": "ಕಿರುಕಥೆ",
+    "novel": "ಕಾದಂಬರಿ",
+    "screenplay": "ಚಿತ್ರಕಥೆ",
+    "filmStory": "ಚಲನಚಿತ್ರ ಕಥೆ",
+    "synopsis": "ಸಾರಾಂಶ"
+  },
+  "projectTypeDescriptions": {
+    "shortfilm": "ಪರಿಕಲ್ಪನೆಯಿಂದ ಪರದೆ-ಸಿದ್ಧ ಸ್ಕ್ರಿಪ್ಟ್‌ವರೆಗೆ ಆಕರ್ಷಕ ಕಿರುಚಿತ್ರವನ್ನು ರಚಿಸಿ",
+    "shortStory": "ಶ್ರೀಮಂತ ಪಾತ್ರಗಳು ಮತ್ತು ವಿಷಯಗಳೊಂದಿಗೆ ಆಕರ್ಷಕ ಕಿರುಕಥೆ ಬರೆಯಿರಿ",
+    "novel": "ಸಂಕೀರ್ಣ ಕಥಾವಸ್ತು ಮತ್ತು ಪಾತ್ರ ವಿಕಾಸದೊಂದಿಗೆ ಪೂರ್ಣ ಕಾದಂಬರಿ ಅಭಿವೃದ್ಧಿಪಡಿಸಿ",
+    "screenplay": "ವೃತ್ತಿಪರ ಫಾರ್ಮ್ಯಾಟಿಂಗ್‌ನೊಂದಿಗೆ ಪೂರ್ಣ ಚಲನಚಿತ್ರ ಚಿತ್ರಕಥೆ ಬರೆಯಿರಿ",
+    "filmStory": "ಚಲನಚಿತ್ರ ರೂಪಾಂತರಕ್ಕಾಗಿ ವಿಶೇಷವಾಗಿ ವಿನ್ಯಾಸಗೊಳಿಸಿದ ಕಥೆಯನ್ನು ಅಭಿವೃದ್ಧಿಪಡಿಸಿ",
+    "synopsis": "ನಿಮ್ಮ ಕಥೆ ಅಥವಾ ಚಿತ್ರಕಥೆಯನ್ನು ಪ್ರಸ್ತುತಪಡಿಸಲು ಆಕರ್ಷಕ ಸಾರಾಂಶ ರಚಿಸಿ"
+  },
+  "actions": {
+    "createNewProject": "ಹೊಸ ಯೋಜನೆ ರಚಿಸಿ",
+    "chooseProjectType": "ನಿಮ್ಮ ಯೋಜನೆ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "enterTitle": "ನಿಮ್ಮ ಯೋಜನೆ ಶೀರ್ಷಿಕೆ ನಮೂದಿಸಿ...",
+    "deleteProject": "ಯೋಜನೆ ಅಳಿಸಿ",
+    "duplicateProject": "ಯೋಜನೆ ನಕಲಿಸಿ",
+    "exportProject": "ಯೋಜನೆ ರಫ್ತು ಮಾಡಿ",
+    "shareProject": "ಯೋಜನೆ ಹಂಚಿಕೊಳ್ಳಿ"
+  },
+  "headers": {
+    "myProjects": "ನನ್ನ ಯೋಜನೆಗಳು",
+    "createProject": "ಹೊಸ ಯೋಜನೆ ರಚಿಸಿ",
+    "manageProjects": "ನಿಮ್ಮ ಬರವಣಿಗೆ ಯೋಜನೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ಎಡಿಟ್ ಮಾಡಿ",
+    "projectDetails": "ಯೋಜನೆ ವಿವರಗಳು",
+    "recentProjects": "ಇತ್ತೀಚಿನ ಯೋಜನೆಗಳು"
+  },
+  "labels": {
+    "projectTitle": "ಯೋಜನೆ ಶೀರ್ಷಿಕೆ",
+    "projectType": "ಯೋಜನೆ ಪ್ರಕಾರ",
+    "noProjectsYet": "ಇನ್ನೂ ಯೋಜನೆಗಳಿಲ್ಲ",
+    "createFirstProject": "ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಮೊದಲ ಯೋಜನೆಯನ್ನು ರಚಿಸಿ",
+    "projectsFound": "{{count}} ಯೋಜನೆಗಳು ಕಂಡುಬಂದಿವೆ",
+    "lastModified": "ಕೊನೆಯದಾಗಿ ಮಾರ್ಪಡಿಸಲಾಗಿದೆ",
+    "wordCount": "{{count}} ಪದಗಳು",
+    "pageCount": "{{count}} ಪುಟಗಳು",
+    "minuteCount": "{{count}} ನಿಮಿಷಗಳು"
+  },
+  "placeholders": {
+    "searchProjects": "ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ...",
+    "projectTitle": "ಯೋಜನೆ ಶೀರ್ಷಿಕೆ ನಮೂದಿಸಿ...",
+    "filterByType": "ಪ್ರಕಾರದ ಮೂಲಕ ಫಿಲ್ಟರ್ ಮಾಡಿ..."
+  }
+}

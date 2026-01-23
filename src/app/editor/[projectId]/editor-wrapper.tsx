@@ -50,7 +50,7 @@ export function EditorWrapper({ projectId }: { projectId: string }) {
   }
 
   return (
-    <TranslationProvider targetLanguage={currentLanguage} enabled={true}>
+    <TranslationProvider key={currentLanguage} targetLanguage={currentLanguage} enabled={true}>
       <EditorPageClient 
         projectId={projectId} 
         currentLanguage={currentLanguage}

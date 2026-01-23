@@ -173,7 +173,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <TranslationProvider targetLanguage={currentLanguage} enabled={true}>
+    <TranslationProvider key={currentLanguage} targetLanguage={currentLanguage} enabled={true}>
       <ProjectsContent
         projects={projects}
         deleteDialogOpen={deleteDialogOpen}

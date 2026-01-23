@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import AIWritingAssistant from './AIWritingAssistant';
+import { ContentTranslator } from '@/components/ContentTranslator';
 
 interface WorkflowStep {
   id: string;
@@ -1341,6 +1342,16 @@ export default function JourneyEditor({
                   </>
                 )}
               </Button>
+              
+              {/* Translate Content Button */}
+              <ContentTranslator
+                content={currentContent}
+                contentType={currentStep.id as any}
+                currentLanguage={currentLanguage}
+                onTranslated={(translatedContent) => {
+                  handleContentChange(translatedContent);
+                }}
+              />
               
               <Button
                 onClick={handleSave}

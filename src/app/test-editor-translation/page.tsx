@@ -11,7 +11,7 @@ export default function TestEditorTranslationPage() {
   const [currentLanguage, setCurrentLanguage] = useState('English');
 
   return (
-    <TranslationProvider targetLanguage={currentLanguage} enabled={currentLanguage !== 'English'}>
+    <TranslationProvider key={currentLanguage} targetLanguage={currentLanguage} enabled={currentLanguage !== 'English'}>
       <div className="relative min-h-screen bg-black text-white">
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
         <div className="relative p-8">

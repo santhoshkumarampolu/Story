@@ -37,6 +37,7 @@ export function TranslationProvider({
         try {
           await Promise.all([
             loadNamespace('common'),
+            loadNamespace('dashboard'),
             loadNamespace('projects'),
             loadNamespace('editor')
           ]);

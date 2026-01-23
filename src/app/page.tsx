@@ -223,7 +223,7 @@ export default function Home() {
                     without losing context, tone, or cultural nuance. Perfect for global audiences.
                   </p>
                   <ul className="space-y-3">
-                    {["Context-aware translation", "Preserve emotional tone", "6+ languages supported"].map((item) => (
+                    {["Context-aware translation", "Preserve emotional tone", "6 languages supported"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-white/70">
                         <div className="h-1.5 w-1.5 rounded-full bg-blue-400" />
                         {item}

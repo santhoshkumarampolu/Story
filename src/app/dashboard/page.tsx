@@ -91,7 +91,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <TranslationProvider targetLanguage={userLanguage} enabled={userLanguage !== 'English'}>
+    <TranslationProvider key={userLanguage} targetLanguage={userLanguage} enabled={userLanguage !== 'English'}>
       <DashboardContent 
         projects={projects}
         session={session}

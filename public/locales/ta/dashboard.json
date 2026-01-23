@@ -1,0 +1,17 @@
+{
+  "dashboard": {
+    "title": "டாஷ்போர்ட்",
+    "welcome": "மீண்டும் வரவேற்கிறோம்",
+    "recentProjects": "சமீபத்திய திட்டங்கள்",
+    "noProjectsYet": "இன்னும் திட்டங்கள் இல்லை",
+    "createFirstProject": "தொடங்க உங்கள் முதல் திட்டத்தை உருவாக்குங்கள்",
+    "lastUpdated": "கடைசியாக புதுப்பிக்கப்பட்டது",
+    "quickActions": "விரைவு செயல்கள்"
+  },
+  "actions": {
+    "newProject": "புதிய திட்டம்", 
+    "allProjects": "அனைத்து திட்டங்கள்",
+    "viewProject": "திட்டத்தைப் பார்",
+    "editProject": "திட்டத்தைத் திருத்து"
+  }
+}
