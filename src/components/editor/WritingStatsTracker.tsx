@@ -36,6 +36,7 @@ interface WritingStatsTrackerProps {
   stats: WritingStats;
   onClose?: () => void;
   className?: string;
+  unlockedAchievements?: string[]; // List of achievement IDs that are unlocked
 }
 
 const ACHIEVEMENTS: Achievement[] = [
@@ -152,61 +153,53 @@ const ACHIEVEMENTS: Achievement[] = [
 export default function WritingStatsTracker({
   stats,
   onClose,
-  className
+  className,
+  unlockedAchievements = []
 }: WritingStatsTrackerProps) {
   const [achievements, setAchievements] = useState<Achievement[]>(ACHIEVEMENTS);
   const [showNewAchievement, setShowNewAchievement] = useState<Achievement | null>(null);
   
-  // Check achievements based on stats
+  // Check achievements based on stats and passed unlocked list
   useEffect(() => {
+    const unlockedSet = new Set(unlockedAchievements);
     const updatedAchievements = ACHIEVEMENTS.map(achievement => {
       let progress = 0;
-      let unlocked = false;
+      // Use the passed unlocked list as the source of truth
+      const unlocked = unlockedSet.has(achievement.id);
       
       switch (achievement.id) {
         case 'first_words':
           progress = Math.min(stats.totalWords, achievement.target!);
-          unlocked = stats.totalWords >= achievement.target!;
           break;
         case 'getting_started':
           progress = Math.min(stats.stepsCompleted, achievement.target!);
-          unlocked = stats.stepsCompleted >= achievement.target!;
           break;
         case 'on_fire':
           progress = Math.min(stats.currentStreak, achievement.target!);
-          unlocked = stats.currentStreak >= achievement.target!;
           break;
         case 'wordsmith':
           progress = Math.min(stats.averageWordsPerSession, achievement.target!);
-          unlocked = stats.averageWordsPerSession >= achievement.target!;
           break;
         case 'dedicated':
           progress = Math.min(stats.totalMinutes / stats.sessionsCompleted || 0, achievement.target!);
-          unlocked = (stats.totalMinutes / stats.sessionsCompleted) >= achievement.target!;
           break;
         case 'storyteller':
           progress = Math.min(stats.stepsCompleted, achievement.target!);
-          unlocked = stats.stepsCompleted >= achievement.target!;
           break;
         case 'prolific':
           progress = Math.min(stats.totalWords, achievement.target!);
-          unlocked = stats.totalWords >= achievement.target!;
           break;
         case 'unstoppable':
           progress = Math.min(stats.longestStreak, achievement.target!);
-          unlocked = stats.longestStreak >= achievement.target!;
           break;
         case 'novelist':
           progress = Math.min(stats.totalWords, achievement.target!);
-          unlocked = stats.totalWords >= achievement.target!;
           break;
         case 'marathon':
           progress = Math.min(stats.sessionsCompleted, achievement.target!);
-          unlocked = stats.sessionsCompleted >= achievement.target!;
           break;
         case 'master':
           progress = Math.min(stats.projectsCreated, achievement.target!);
-          unlocked = stats.projectsCreated >= achievement.target!;
           break;
         default:
           break;
@@ -216,7 +209,7 @@ export default function WritingStatsTracker({
     });
     
     setAchievements(updatedAchievements);
-  }, [stats]);
+  }, [stats, unlockedAchievements]);
   
   const unlockedCount = achievements.filter(a => a.unlocked).length;
   const totalAchievements = achievements.length;

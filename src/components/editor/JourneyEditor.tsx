@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -14,11 +14,12 @@ import {
   ChevronRight, ChevronLeft, Check, Lock, Trophy, Flame, 
   MessageCircle, Zap, Target, Star, ArrowRight, Play,
   Pause, RotateCcw, Clock, BookOpen, Volume2, Mic, Home, ArrowLeft,
-  Download, FileDown
+  Download, FileDown, X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import AIWritingAssistant from './AIWritingAssistant';
 import { ContentTranslator } from '@/components/ContentTranslator';
+import WritingStatsTracker from './WritingStatsTracker';
 
 interface WorkflowStep {
   id: string;
@@ -829,8 +830,22 @@ export default function JourneyEditor({
   const [stuckPrompt, setStuckPrompt] = useState('');
   const [focusMode, setFocusMode] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [globalStats, setGlobalStats] = useState({
+    totalWords: 0,
+    totalMinutes: 0,
+    sessionsCompleted: 0,
+    stepsCompleted: 0,
+    projectsCreated: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    averageWordsPerSession: 0,
+  });
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
+  const [newAchievement, setNewAchievement] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const sessionWordsRef = useRef(0); // Track words written this session
   
   const currentStep = steps[currentStepIndex];
   const currentContent = stepContent[currentStep.id] || '';
@@ -1018,6 +1033,83 @@ export default function JourneyEditor({
     }
   }, [currentStreak, projectId]);
 
+  // Fetch global stats on mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/user/stats');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setGlobalStats(data.stats);
+            setUnlockedAchievements(data.achievements.map((a: any) => a.id));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  // Sync stats to server periodically and on unmount
+  const syncStatsToServer = useCallback(async (stepsJustCompleted = 0) => {
+    const sessionWords = sessionWordsRef.current;
+    const sessionMinutes = Math.floor(writingTime / 60);
+    
+    if (sessionWords === 0 && sessionMinutes === 0 && stepsJustCompleted === 0) return;
+    
+    try {
+      const res = await fetch('/api/user/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          words: sessionWords,
+          minutes: sessionMinutes,
+          stepsCompleted: stepsJustCompleted,
+          projectId,
+        }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setGlobalStats(data.stats);
+          // Check for new achievements
+          if (data.newAchievements && data.newAchievements.length > 0) {
+            setUnlockedAchievements(prev => [...prev, ...data.newAchievements]);
+            // Show achievement notification for the first new one
+            setNewAchievement(data.newAchievements[0]);
+            setTimeout(() => setNewAchievement(null), 5000);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing stats:', error);
+    }
+  }, [writingTime, projectId]);
+
+  // Sync stats every 5 minutes while writing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isTimerRunning && sessionWordsRef.current > 0) {
+        syncStatsToServer();
+        sessionWordsRef.current = 0; // Reset session counter after sync
+      }
+    }, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [isTimerRunning, syncStatsToServer]);
+
+  // Sync stats on page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      syncStatsToServer();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [syncStatsToServer]);
+
   // Toggle timer
   const toggleTimer = () => {
     setIsTimerRunning(prev => !prev);
@@ -1030,6 +1122,15 @@ export default function JourneyEditor({
   };
   
   const handleContentChange = (value: string) => {
+    const prevContent = stepContent[currentStep.id] || '';
+    const prevWordCount = prevContent.split(/\s+/).filter(w => w.length > 0).length;
+    const newWordCount = value.split(/\s+/).filter(w => w.length > 0).length;
+    
+    // Track words written this session
+    if (newWordCount > prevWordCount) {
+      sessionWordsRef.current += (newWordCount - prevWordCount);
+    }
+    
     setStepContent(prev => ({ ...prev, [currentStep.id]: value }));
     setIsWriting(true);
     // Auto-start timer when typing
@@ -1038,8 +1139,7 @@ export default function JourneyEditor({
     }
     
     // Check if step is now complete
-    const wordCount = value.split(/\s+/).filter(w => w.length > 0).length;
-    if (currentStep.minWords && wordCount >= currentStep.minWords && !completedSteps.has(currentStep.id)) {
+    if (currentStep.minWords && newWordCount >= currentStep.minWords && !completedSteps.has(currentStep.id)) {
       markStepComplete();
     }
     
@@ -1061,6 +1161,9 @@ export default function JourneyEditor({
       spread: 70,
       origin: { y: 0.6 }
     });
+    
+    // Sync stats to server with the completed step
+    syncStatsToServer(1);
     
     setTimeout(() => setShowCelebration(false), 3000);
   };
@@ -1155,12 +1258,22 @@ export default function JourneyEditor({
             <div className="flex items-center gap-6">
               {/* Stats */}
               <div className="flex items-center gap-4 text-sm">
+                {/* Achievements/Stats Button */}
+                <button
+                  onClick={() => setShowStatsModal(true)}
+                  className="flex items-center gap-1 text-yellow-400 hover:text-yellow-300 transition-colors"
+                  title="View achievements & stats"
+                >
+                  <Trophy className="w-4 h-4" />
+                  <span className="hidden sm:inline">{unlockedAchievements.length}/12</span>
+                </button>
+                
                 <div 
                   className="flex items-center gap-1 text-orange-400 cursor-help"
-                  title={`Steps completed this session. Saved across sessions!`}
+                  title={`Global writing streak: ${globalStats.currentStreak} days`}
                 >
                   <Flame className="w-4 h-4" />
-                  <span>{currentStreak} streak</span>
+                  <span>{globalStats.currentStreak} day{globalStats.currentStreak !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="flex items-center gap-1 text-blue-400">
                   <FileText className="w-4 h-4" />
@@ -1680,6 +1793,69 @@ export default function JourneyEditor({
           handleContentChange(currentContent + '\n\n' + text);
         }}
       />
+
+      {/* Stats Modal */}
+      <AnimatePresence>
+        {showStatsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setShowStatsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-3xl w-full max-h-[90vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white"
+                onClick={() => setShowStatsModal(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+              <WritingStatsTracker
+                stats={{
+                  ...globalStats,
+                  projectsCreated: globalStats.projectsCreated || 0,
+                }}
+                unlockedAchievements={unlockedAchievements}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Achievement Unlock Notification */}
+      <AnimatePresence>
+        {newAchievement && (
+          <motion.div
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 300, opacity: 0 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-xl border border-yellow-500/30 rounded-xl p-4 shadow-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-yellow-400 font-medium">Achievement Unlocked!</p>
+                  <p className="text-white font-semibold capitalize">
+                    {newAchievement.replace(/_/g, ' ')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -25,6 +25,7 @@ model User {
   projects      Project[]
   tokenUsages   TokenUsage[] // Added relation for TokenUsage
   payments      Payment[]    // Payment history
+  userStats     UserStats?   // Gamification stats
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   
@@ -285,4 +286,52 @@ model Payment {
   @@index([userId])
   @@index([status])
   @@index([razorpayOrderId])
+}
+
+// Gamification: User writing stats and achievements
+model UserStats {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Writing stats
+  totalWords         Int      @default(0)
+  totalMinutes       Int      @default(0)
+  sessionsCompleted  Int      @default(0)
+  stepsCompleted     Int      @default(0)
+  projectsCompleted  Int      @default(0)
+  
+  // Streak tracking
+  currentStreak      Int      @default(0)
+  longestStreak      Int      @default(0)
+  lastWritingDate    DateTime?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String   // e.g., 'first_words', 'on_fire', 'wordsmith'
+  unlockedAt    DateTime @default(now())
+  
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model WritingSession {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  words       Int      @default(0)
+  minutes     Int      @default(0)
+  stepsCompleted Int   @default(0)
+  date        DateTime @default(now()) // The calendar day of the session
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([userId, date])
 }

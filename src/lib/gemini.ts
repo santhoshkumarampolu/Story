@@ -3,29 +3,29 @@ import { prisma } from "@/lib/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Model mapping - Gemini 3.x models (latest)
+// Model mapping - Gemini models
 export const GEMINI_MODELS = {
-  // Fast, cost-effective model (Gemini 3 Flash - latest)
-  flash: "gemini-3.0-flash",
+  // Fast, cost-effective model (Gemini 2.5 Flash - stable)
+  flash: "gemini-2.5-flash",
   // Pro model for complex tasks
   pro: "gemini-2.5-pro",
-  // Previous stable version (backup)
-  flash25: "gemini-2.5-flash",
+  // Next generation preview
+  flash3: "gemini-3-flash-preview",
 } as const;
 
-// Token costs per 1K tokens (Gemini pricing - estimated for 3.0)
+// Token costs per 1K tokens (Gemini pricing)
 const TOKEN_COSTS = {
-  "gemini-3.0-flash": {
-    input: 0.0001,    // Estimated - update when official pricing released
-    output: 0.0004,
+  "gemini-2.5-flash": {
+    input: 0.000075,
+    output: 0.0003,
   },
   "gemini-2.5-pro": {
     input: 0.00125,
     output: 0.005,
   },
-  "gemini-2.5-flash": {
-    input: 0.000075,
-    output: 0.0003,
+  "gemini-3-flash-preview": {
+    input: 0.0001,
+    output: 0.0004,
   },
   // Legacy pricing for tracking old records
   "models/gemini-2.0-flash": {
