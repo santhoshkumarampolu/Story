@@ -49,7 +49,9 @@ interface ProfileData {
   };
   subscription: {
     status: string;
+    tierName: string;
     isPro: boolean;
+    isHobby: boolean;
     limits: {
       tokens: number;
       images: number;
@@ -250,13 +252,6 @@ export default function ProfilePage() {
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const getOperationIcon = (type: string) => {
     switch (type) {
       case 'script': return <FileText className="h-4 w-4" />;
@@ -338,8 +333,8 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <User className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <User className="h-5 w-5 text-purple-400" />
                     <span>Profile Information</span>
                   </CardTitle>
                 </CardHeader>
@@ -383,7 +378,7 @@ export default function ProfilePage() {
                     />
                     
                     <div className="text-center">
-                      <h3 className="text-lg font-semibold">{profileData.user.name || "User"}</h3>
+                      <h3 className="text-lg font-semibold text-white">{profileData.user.name || "User"}</h3>
                       <p className="text-gray-400">{profileData.user.email}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         Click the camera icon to upload a new photo
@@ -396,12 +391,15 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-400">Member since</span>
-                      <span className="text-sm">{formatDate(profileData.user.createdAt)}</span>
+                      <span className="text-sm text-white">{formatDate(profileData.user.createdAt)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-400">Account type</span>
-                      <Badge variant={profileData.subscription.isPro ? "default" : "secondary"}>
-                        {profileData.subscription.isPro ? "Pro" : "Free"}
+                      <Badge 
+                        variant={profileData.subscription.isPro || profileData.subscription.isHobby ? "default" : "secondary"}
+                        className={profileData.subscription.isHobby ? 'bg-blue-600' : profileData.subscription.isPro ? 'bg-purple-600' : ''}
+                      >
+                        {profileData.subscription.tierName || 'Free'}
                       </Badge>
                     </div>
                   </div>
@@ -411,46 +409,46 @@ export default function ProfilePage() {
               {/* Subscription Card */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Crown className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Crown className="h-5 w-5 text-yellow-500" />
                     <span>Subscription</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
                     <Badge 
-                      variant={profileData.subscription.isPro ? "default" : "secondary"}
-                      className="text-lg px-4 py-2"
+                      variant={profileData.subscription.isPro ? "default" : profileData.subscription.isHobby ? "default" : "secondary"}
+                      className={`text-lg px-4 py-2 ${profileData.subscription.isHobby ? 'bg-blue-600' : profileData.subscription.isPro ? 'bg-purple-600' : ''}`}
                     >
-                      {profileData.subscription.isPro ? "Pro Plan" : "Free Plan"}
+                      {profileData.subscription.tierName || 'Free'} Plan
                     </Badge>
                   </div>
                   
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span>Token Usage</span>
-                        <span>{profileData.subscription.currentUsage.tokens.toLocaleString()} / {profileData.subscription.limits.tokens.toLocaleString()}</span>
+                        <span className="text-gray-300">Token Usage</span>
+                        <span className="text-white">{profileData.subscription.currentUsage.tokens.toLocaleString()} / {profileData.subscription.limits.tokens.toLocaleString()}</span>
                       </div>
                       <Progress 
                         value={profileData.subscription.usagePercentage.tokens} 
-                        className="h-2"
+                        className="h-2 bg-white/10"
                       />
                     </div>
                     
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span>Image Usage</span>
-                        <span>{profileData.subscription.currentUsage.images} / {profileData.subscription.limits.images}</span>
+                        <span className="text-gray-300">Image Usage</span>
+                        <span className="text-white">{profileData.subscription.currentUsage.images} / {profileData.subscription.limits.images}</span>
                       </div>
                       <Progress 
                         value={profileData.subscription.usagePercentage.images} 
-                        className="h-2"
+                        className="h-2 bg-white/10"
                       />
                     </div>
                   </div>
 
-                  {!profileData.subscription.isPro && (
+                  {!profileData.subscription.isPro && !profileData.subscription.isHobby && (
                     <Button 
                       onClick={() => setShowUpgradeModal(true)}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white"
@@ -465,8 +463,8 @@ export default function ProfilePage() {
               {/* Statistics Card */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <TrendingUp className="h-5 w-5 text-purple-400" />
                     <span>Statistics</span>
                   </CardTitle>
                 </CardHeader>
@@ -487,15 +485,7 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Total tokens used</span>
-                      <span className="text-sm">{profileData.statistics.totalTokensUsed.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Total cost</span>
-                      <span className="text-sm">{formatCurrency(profileData.statistics.totalCost)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">This month</span>
-                      <span className="text-sm">{formatCurrency(profileData.statistics.monthlyCost)}</span>
+                      <span className="text-sm text-white">{profileData.statistics.totalTokensUsed.toLocaleString()}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -509,8 +499,8 @@ export default function ProfilePage() {
               {/* Token Usage Details */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Sparkles className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Sparkles className="h-5 w-5 text-purple-400" />
                     <span>Token Usage</span>
                   </CardTitle>
                 </CardHeader>
@@ -518,12 +508,12 @@ export default function ProfilePage() {
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span>Monthly Usage</span>
-                        <span>{profileData.subscription.currentUsage.tokens.toLocaleString()} / {profileData.subscription.limits.tokens.toLocaleString()}</span>
+                        <span className="text-gray-300">Monthly Usage</span>
+                        <span className="text-white">{profileData.subscription.currentUsage.tokens.toLocaleString()} / {profileData.subscription.limits.tokens.toLocaleString()}</span>
                       </div>
                       <Progress 
                         value={profileData.subscription.usagePercentage.tokens} 
-                        className="h-2"
+                        className="h-2 bg-white/10"
                       />
                       <div className="flex justify-between text-xs text-gray-400 mt-1">
                         <span>{profileData.subscription.remaining.tokens.toLocaleString()} tokens remaining</span>
@@ -537,15 +527,11 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">This month</span>
-                      <span className="text-sm">{profileData.statistics.monthlyTokensUsed.toLocaleString()} tokens</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Monthly cost</span>
-                      <span className="text-sm">{formatCurrency(profileData.statistics.monthlyCost)}</span>
+                      <span className="text-sm text-white">{profileData.statistics.monthlyTokensUsed.toLocaleString()} tokens</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-400">Total lifetime</span>
-                      <span className="text-sm">{profileData.statistics.totalTokensUsed.toLocaleString()} tokens</span>
+                      <span className="text-sm text-white">{profileData.statistics.totalTokensUsed.toLocaleString()} tokens</span>
                     </div>
                   </div>
                 </CardContent>
@@ -554,8 +540,8 @@ export default function ProfilePage() {
               {/* Image Usage Details */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Activity className="h-5 w-5 text-purple-400" />
                     <span>Image Generation</span>
                   </CardTitle>
                 </CardHeader>
@@ -563,12 +549,12 @@ export default function ProfilePage() {
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span>Monthly Usage</span>
-                        <span>{profileData.subscription.currentUsage.images} / {profileData.subscription.limits.images}</span>
+                        <span className="text-gray-300">Monthly Usage</span>
+                        <span className="text-white">{profileData.subscription.currentUsage.images} / {profileData.subscription.limits.images}</span>
                       </div>
                       <Progress 
                         value={profileData.subscription.usagePercentage.images} 
-                        className="h-2"
+                        className="h-2 bg-white/10"
                       />
                       <div className="flex justify-between text-xs text-gray-400 mt-1">
                         <span>{profileData.subscription.remaining.images} images remaining</span>
@@ -579,11 +565,16 @@ export default function ProfilePage() {
                   
                   <Separator className="bg-white/10" />
                   
-                  <div className="text-center">
-                    <p className="text-sm text-gray-400 mb-2">Image generation coming soon!</p>
-                    <Badge variant="outline" className="text-xs">
-                      Feature Preview
-                    </Badge>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-400">Feature</span>
+                      <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                        Active
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      AI storyboard images available for Short Film, Screenplay, Web Series, and Documentary projects.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -596,8 +587,8 @@ export default function ProfilePage() {
               {/* Recent Projects */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <FileText className="h-5 w-5 text-purple-400" />
                     <span>Recent Projects</span>
                   </CardTitle>
                 </CardHeader>
@@ -638,8 +629,8 @@ export default function ProfilePage() {
               {/* Recent Token Usage */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Zap className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Zap className="h-5 w-5 text-yellow-400" />
                     <span>Recent AI Operations</span>
                   </CardTitle>
                 </CardHeader>
@@ -652,13 +643,12 @@ export default function ProfilePage() {
                             <div className="flex items-center space-x-2">
                               {getOperationIcon(usage.type)}
                               <div>
-                                <p className="text-sm font-medium">{usage.operationName || usage.type}</p>
+                                <p className="text-sm font-medium text-white">{usage.operationName || usage.type}</p>
                                 <p className="text-xs text-gray-400">{usage.project.title}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm">{usage.tokens.toLocaleString()} tokens</p>
-                              <p className="text-xs text-gray-400">{formatCurrency(usage.cost)}</p>
+                              <p className="text-sm text-white">{usage.tokens.toLocaleString()} tokens</p>
                             </div>
                           </div>
                         </div>
@@ -681,15 +671,15 @@ export default function ProfilePage() {
               {/* Profile Settings */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Settings className="h-5 w-5 text-purple-400" />
                     <span>Profile Settings</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Display Name</Label>
+                      <Label htmlFor="name" className="text-gray-300">Display Name</Label>
                       <Input
                         id="name"
                         value={name}
@@ -700,7 +690,7 @@ export default function ProfilePage() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label>Email Address</Label>
+                      <Label className="text-gray-300">Email Address</Label>
                       <Input
                         value={profileData.user.email}
                         disabled
@@ -723,26 +713,44 @@ export default function ProfilePage() {
               {/* Account Management */}
               <Card className="bg-white/5 backdrop-blur-lg border border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Shield className="h-5 w-5 text-purple-400" />
                     <span>Account Management</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full border-orange-500/20 bg-orange-500/5 text-orange-500 hover:bg-orange-500/10">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-orange-500/20 bg-orange-500/5 text-orange-500 hover:bg-orange-500/10 opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Coming soon"
+                    >
                       <Edit3 className="h-4 w-4 mr-2" />
                       Change Password
+                      <Badge variant="outline" className="ml-2 text-xs">Soon</Badge>
                     </Button>
                     
-                    <Button variant="outline" className="w-full border-blue-500/20 bg-blue-500/5 text-blue-500 hover:bg-blue-500/10">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-blue-500/20 bg-blue-500/5 text-blue-500 hover:bg-blue-500/10 opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Coming soon"
+                    >
                       <Shield className="h-4 w-4 mr-2" />
                       Two-Factor Authentication
+                      <Badge variant="outline" className="ml-2 text-xs">Soon</Badge>
                     </Button>
                     
-                    <Button variant="outline" className="w-full border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10 opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Coming soon"
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete Account
+                      <Badge variant="outline" className="ml-2 text-xs">Soon</Badge>
                     </Button>
                   </div>
                   
@@ -750,9 +758,11 @@ export default function ProfilePage() {
                   
                   <div className="text-center">
                     <p className="text-sm text-gray-400 mb-2">Need help?</p>
-                    <Button variant="ghost" className="text-purple-400 hover:text-purple-300">
-                      Contact Support
-                    </Button>
+                    <Link href="/contact">
+                      <Button variant="ghost" className="text-purple-400 hover:text-purple-300">
+                        Contact Support
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

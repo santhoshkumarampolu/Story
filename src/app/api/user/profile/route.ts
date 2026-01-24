@@ -90,10 +90,21 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Determine subscription limits
-    const isPro = user.subscriptionStatus === 'pro';
-    const tokenLimit = isPro ? 100000 : 10000;
-    const imageLimit = isPro ? 100 : 10;
+    // Determine subscription limits based on tier
+    const subscriptionStatus = user.subscriptionStatus || 'free';
+    const isPro = subscriptionStatus === 'pro' || subscriptionStatus === 'admin';
+    const isHobby = subscriptionStatus === 'hobby';
+    
+    // Token limits: Free: 5K, Hobby: 25K, Pro: 100K
+    let tokenLimit = 5000; // Free tier
+    if (isHobby) tokenLimit = 25000;
+    if (isPro) tokenLimit = 100000;
+    
+    // Image limits: Free: 5, Hobby: 25, Pro: 100
+    let imageLimit = 5; // Free tier
+    if (isHobby) imageLimit = 25;
+    if (isPro) imageLimit = 100;
+    
     const remainingTokens = Math.max(0, tokenLimit - user.tokenUsageThisMonth);
     const remainingImages = Math.max(0, imageLimit - user.imageUsageThisMonth);
 
@@ -114,7 +125,9 @@ export async function GET(req: NextRequest) {
       },
       subscription: {
         status: user.subscriptionStatus,
+        tierName: isPro ? 'Pro' : isHobby ? 'Hobby' : 'Free',
         isPro,
+        isHobby,
         limits: {
           tokens: tokenLimit,
           images: imageLimit,
