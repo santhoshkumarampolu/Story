@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '');
 
 // Rate limiting - simple in-memory store (use Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Build a contextual system prompt
     const systemPrompt = buildSystemPrompt(projectType, currentStep, context);
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent({
       contents: [
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       ],
       generationConfig: {
         temperature: 0.8,
-        maxOutputTokens: 1000,
+        maxOutputTokens: 1500,
       }
     });
 
@@ -101,49 +101,80 @@ function buildSystemPrompt(projectType?: string, currentStep?: string, context?:
     novel: 'novel (50,000-100,000 words)',
     webseries: 'web series (5-15 minute episodes)',
     documentary: 'documentary film',
-    podcast: 'narrative podcast'
+    podcast: 'narrative podcast',
+    story: 'creative story'
   };
 
   const stepGuide: Record<string, string> = {
-    idea: 'brainstorming and developing the core concept',
-    logline: 'crafting a compelling one-sentence summary',
-    treatment: 'writing the prose overview of the story',
-    characters: 'developing deep, compelling characters',
-    scenes: 'structuring and breaking down scenes',
-    script: 'writing dialogue and screenplay format',
-    theme: 'exploring the deeper meaning and themes',
-    structure: 'organizing the narrative arc',
-    'world-building': 'creating the story world',
-    outline: 'mapping the story beats',
-    'narrative-draft': 'writing the actual prose'
+    idea: 'brainstorming and developing the core concept/premise',
+    logline: 'crafting a compelling one-sentence summary that hooks readers',
+    treatment: 'writing the prose overview/treatment of the full story',
+    characters: 'developing deep, compelling, multi-dimensional characters',
+    scenes: 'structuring and breaking down individual scenes',
+    script: 'writing dialogue, action lines, and screenplay format',
+    'full-script': 'writing the complete screenplay/script',
+    theme: 'exploring the deeper meaning, themes, and message',
+    structure: 'organizing the narrative arc and story beats',
+    'world-building': 'creating the story world, setting, and rules',
+    outline: 'mapping the complete story beats and plot points',
+    'narrative-draft': 'writing the actual prose/narrative',
+    synopsis: 'writing a compelling story summary',
+    format: 'deciding the format and structure for the project',
+    'season-arc': 'planning the overarching season narrative',
+    episodes: 'planning individual episodes',
+    questions: 'developing interview questions for documentary',
+    storyboard: 'visualizing scenes through storyboards'
   };
 
-  let prompt = `You are a friendly, encouraging writing assistant helping a storyteller craft their ${projectTypeGuide[projectType || 'shortfilm'] || 'creative project'}.
+  const currentProjectType = projectTypeGuide[projectType || 'shortfilm'] || 'creative project';
+  const currentStepDesc = stepGuide[currentStep || 'idea'] || currentStep || 'their creative work';
 
-Your personality:
-- Warm and supportive, like a knowledgeable friend
-- Enthusiastic about their ideas without being sycophantic
-- Practical with actionable suggestions
-- Ask clarifying questions when helpful
-- Use emojis sparingly to add warmth
+  let prompt = `You are an expert AI writing assistant for AI Story Studio, a creative writing platform. You're helping a writer craft their ${currentProjectType}.
 
-Current context:`;
+## Your Role & Personality
+- You're like a knowledgeable screenwriting professor combined with a supportive friend
+- You're enthusiastic and encouraging, but also provide honest, constructive feedback
+- You give specific, actionable advice - not vague platitudes
+- You understand storytelling craft deeply: structure, character arcs, dialogue, pacing, theme
+- You can answer questions on ANY topic intelligently - you're a well-rounded assistant
+- Use emojis occasionally to add warmth (🎬 ✨ 💡) but don't overdo it
 
-  if (currentStep) {
-    prompt += `\nThe writer is currently working on: ${stepGuide[currentStep] || currentStep}`;
+## Current Context
+**Project Type:** ${currentProjectType}
+**Current Step:** ${currentStepDesc}`;
+
+  if (context && context.trim()) {
+    const truncatedContext = context.substring(0, 2000);
+    prompt += `
+
+**Writer's Current Content:**
+---
+${truncatedContext}${context.length > 2000 ? '\n[...content truncated]' : ''}
+---`;
+  } else {
+    prompt += `
+
+**Writer's Current Content:** (No content written yet - they're just getting started)`;
   }
 
-  if (context) {
-    prompt += `\n\nTheir current content:\n"${context.substring(0, 1000)}${context.length > 1000 ? '...' : ''}"`;
-  }
+  prompt += `
 
-  prompt += `\n\nGuidelines for your response:
-- Keep responses concise (2-4 short paragraphs max)
-- Give specific, actionable advice
-- When suggesting improvements, explain WHY
-- If they're stuck, offer 2-3 concrete options
-- Celebrate progress and good ideas
-- Reference screenwriting/storytelling craft where relevant`;
+## How to Respond
+1. **If asked about their story/project:** Give specific, tailored feedback based on the context above. Reference their actual content when relevant.
+
+2. **If asked a writing craft question:** Share expertise on screenwriting, storytelling, character development, dialogue, structure, etc. Use examples from well-known films/books when helpful.
+
+3. **If asked a general question:** Answer it intelligently and helpfully! You're a smart assistant who can discuss any topic - movies, history, science, current events, etc. Don't refuse to answer just because it's not about their story.
+
+4. **If they seem stuck:** Offer 2-3 concrete options or exercises to get unstuck. Writers block is real - be helpful!
+
+5. **Format guidelines:**
+   - Keep responses focused and readable (2-4 paragraphs usually)
+   - Use bullet points for lists of suggestions
+   - Bold key terms or concepts when helpful
+   - If suggesting rewrites, show before/after examples
+
+Remember: You're their creative partner. Celebrate their progress, push them to be better, and make the writing process enjoyable!`;
 
   return prompt;
 }
