@@ -144,6 +144,21 @@ const WORKFLOW_STEPS: Record<string, WorkflowStep[]> = {
       ],
       celebration: "Your screenplay is complete! 🏆",
       minWords: 500
+    },
+    {
+      id: 'storyboard',
+      label: 'The Vision',
+      icon: Clapperboard,
+      description: "Visualize your scenes with AI-generated storyboard images.",
+      prompt: "Generate storyboard images to visualize key moments in your script.",
+      tips: [
+        "🎨 AI will create cinematic frames for each scene",
+        "📸 Add scene descriptions for better results",
+        "🎬 Use storyboards to plan camera angles",
+        "✨ You can regenerate or upload your own images"
+      ],
+      celebration: "Your vision is captured! 🎥",
+      minWords: 0
     }
   ],
   shortstory: [
@@ -792,10 +807,24 @@ export default function JourneyEditor({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [currentStreak, setCurrentStreak] = useState(0);
+  // Load streak and writing time from localStorage
+  const [currentStreak, setCurrentStreak] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`journey-streak-${projectId}`);
+      return saved ? parseInt(saved, 10) : 0;
+    }
+    return 0;
+  });
   const [totalWordCount, setTotalWordCount] = useState(0);
-  const [writingTime, setWritingTime] = useState(0);
+  const [writingTime, setWritingTime] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`journey-time-${projectId}`);
+      return saved ? parseInt(saved, 10) : 0;
+    }
+    return 0;
+  });
   const [isWriting, setIsWriting] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [stuckPrompt, setStuckPrompt] = useState('');
   const [focusMode, setFocusMode] = useState(false);
@@ -959,23 +988,54 @@ export default function JourneyEditor({
     setTotalWordCount(words);
   }, [stepContent]);
   
-  // Writing timer
+  // Writing timer - now controllable with isTimerRunning
   useEffect(() => {
-    if (isWriting) {
+    if (isTimerRunning) {
       timerRef.current = setInterval(() => {
-        setWritingTime(prev => prev + 1);
+        setWritingTime(prev => {
+          const newTime = prev + 1;
+          // Save to localStorage every 10 seconds
+          if (newTime % 10 === 0) {
+            localStorage.setItem(`journey-time-${projectId}`, newTime.toString());
+          }
+          return newTime;
+        });
       }, 1000);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
+      // Save final time to localStorage
+      localStorage.setItem(`journey-time-${projectId}`, writingTime.toString());
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isWriting]);
+  }, [isTimerRunning, projectId]);
+
+  // Save streak to localStorage when it changes
+  useEffect(() => {
+    if (currentStreak > 0) {
+      localStorage.setItem(`journey-streak-${projectId}`, currentStreak.toString());
+    }
+  }, [currentStreak, projectId]);
+
+  // Toggle timer
+  const toggleTimer = () => {
+    setIsTimerRunning(prev => !prev);
+  };
+
+  // Reset timer
+  const resetTimer = () => {
+    setWritingTime(0);
+    localStorage.setItem(`journey-time-${projectId}`, '0');
+  };
   
   const handleContentChange = (value: string) => {
     setStepContent(prev => ({ ...prev, [currentStep.id]: value }));
     setIsWriting(true);
+    // Auto-start timer when typing
+    if (!isTimerRunning) {
+      setIsTimerRunning(true);
+    }
     
     // Check if step is now complete
     const wordCount = value.split(/\s+/).filter(w => w.length > 0).length;
@@ -1095,7 +1155,10 @@ export default function JourneyEditor({
             <div className="flex items-center gap-6">
               {/* Stats */}
               <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1 text-orange-400">
+                <div 
+                  className="flex items-center gap-1 text-orange-400 cursor-help"
+                  title={`Steps completed this session. Saved across sessions!`}
+                >
                   <Flame className="w-4 h-4" />
                   <span>{currentStreak} streak</span>
                 </div>
@@ -1103,10 +1166,28 @@ export default function JourneyEditor({
                   <FileText className="w-4 h-4" />
                   <span>{totalWordCount.toLocaleString()} words</span>
                 </div>
-                <div className="flex items-center gap-1 text-green-400">
-                  <Clock className="w-4 h-4" />
+                <button
+                  onClick={toggleTimer}
+                  className={cn(
+                    "flex items-center gap-1 transition-colors",
+                    isTimerRunning ? "text-green-400 hover:text-green-300" : "text-gray-400 hover:text-green-400"
+                  )}
+                  title={isTimerRunning ? "Click to pause timer" : "Click to start timer"}
+                >
+                  {isTimerRunning ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
                   <span>{formatTime(writingTime)}</span>
-                </div>
+                </button>
+                <button
+                  onClick={resetTimer}
+                  className="text-gray-500 hover:text-gray-300 transition-colors"
+                  title="Reset timer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                </button>
               </div>
               
               {/* Focus Mode Toggle */}
@@ -1209,37 +1290,109 @@ export default function JourneyEditor({
                 </div>
               </Card>
               
-              {/* Main Textarea */}
-              <div className="relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={currentContent}
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  placeholder="Start writing here..."
-                  className={cn(
-                    "min-h-[300px] text-lg leading-relaxed bg-white/5 border-white/10 text-white placeholder:text-gray-500 resize-none",
-                    "focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50",
-                    focusMode && "min-h-[500px] text-xl"
-                  )}
-                />
-                
-                {/* Word count indicator */}
-                <div className="absolute bottom-4 right-4 flex items-center gap-2 text-sm">
-                  {currentStep.minWords && (
-                    <span className={cn(
-                      "transition-colors",
-                      currentContent.split(/\s+/).filter(w => w).length >= currentStep.minWords
-                        ? "text-green-400"
-                        : "text-gray-500"
-                    )}>
-                      {currentContent.split(/\s+/).filter(w => w).length} / {currentStep.minWords} words
-                    </span>
-                  )}
+              {/* Main Content Area - Special handling for storyboard */}
+              {currentStep.id === 'storyboard' ? (
+                /* Storyboard Step - Special UI */
+                <div className="relative">
+                  <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-8 text-center">
+                    <div className="mb-6">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-500/20 border border-purple-500/30 mb-4">
+                        <Clapperboard className="w-10 h-10 text-purple-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">
+                        🎬 AI Storyboard Generation
+                      </h3>
+                      <p className="text-gray-400 max-w-md mx-auto">
+                        Generate cinematic storyboard images for your scenes using AI. 
+                        This feature works best in Classic Mode where you can manage individual scenes.
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-4">
+                      <Button
+                        onClick={() => onModeChange?.('classic')}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+                      >
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Switch to Classic Mode for Storyboards
+                      </Button>
+                      <p className="text-sm text-gray-500">
+                        Classic Mode gives you full control over scene-by-scene storyboard generation
+                      </p>
+                    </div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                      <h4 className="text-sm font-medium text-gray-400 mb-3">What you can do in Classic Mode:</h4>
+                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-400" />
+                          <span>Generate AI storyboard images</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-400" />
+                          <span>Create shot lists</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-400" />
+                          <span>Upload custom images</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-400" />
+                          <span>View full-size storyboards</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                  
+                  {/* Mark as complete button */}
+                  <div className="mt-6 text-center">
+                    {!completedSteps.has('storyboard') && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCompletedSteps(prev => new Set([...prev, 'storyboard']));
+                          setCurrentStreak(prev => prev + 1);
+                        }}
+                        className="text-gray-400 border-gray-600 hover:border-purple-500 hover:text-purple-400"
+                      >
+                        Skip storyboards for now
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Regular Text Editing for other steps */
+                <div className="relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={currentContent}
+                    onChange={(e) => handleContentChange(e.target.value)}
+                    placeholder="Start writing here..."
+                    className={cn(
+                      "min-h-[300px] text-lg leading-relaxed bg-white/5 border-white/10 text-white placeholder:text-gray-500 resize-none",
+                      "focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50",
+                      focusMode && "min-h-[500px] text-xl"
+                    )}
+                  />
+                  
+                  {/* Word count indicator */}
+                  <div className="absolute bottom-4 right-4 flex items-center gap-2 text-sm">
+                    {currentStep.minWords && (
+                      <span className={cn(
+                        "transition-colors",
+                        currentContent.split(/\s+/).filter(w => w).length >= currentStep.minWords
+                          ? "text-green-400"
+                          : "text-gray-500"
+                      )}>
+                        {currentContent.split(/\s+/).filter(w => w).length} / {currentStep.minWords} words
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               
-              {/* Tips Section */}
-              {!focusMode && (
+              {/* Tips Section - Hide for storyboard step */}
+              {!focusMode && currentStep.id !== 'storyboard' && (
                 <div className="mt-6 grid grid-cols-2 gap-3">
                   {currentStep.tips.map((tip, index) => (
                     <motion.div
@@ -1255,8 +1408,8 @@ export default function JourneyEditor({
                 </div>
               )}
               
-              {/* Stuck? Section */}
-              {!focusMode && (
+              {/* Stuck? Section - Hide for storyboard step */}
+              {!focusMode && currentStep.id !== 'storyboard' && (
                 <div className="mt-6 text-center">
                   <Button
                     variant="ghost"

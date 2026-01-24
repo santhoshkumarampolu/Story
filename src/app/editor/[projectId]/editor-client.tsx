@@ -21,8 +21,9 @@ import { AIOperationProgress } from '@/components/AIOperationProgress';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTranslations, T } from '@/components/TranslationProvider';
 import { cn } from "@/lib/utils";
-import { getProjectConfiguration, ProjectType } from '@/lib/project-templates';
+import { getProjectConfiguration, ProjectType, supportsStoryboardImages } from '@/lib/project-templates';
 import { OutlineEditor } from '@/components/story/outline-editor';
+import { StoryboardSection } from '@/components/StoryboardSectionV2';
 import { ChapterManager } from '@/components/story/chapter-manager';
 import { NarrativeDraftEditor } from '@/components/story/narrative-draft-editor';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -168,7 +169,10 @@ export default function EditorPageClient({
   const [generatingFullScript, setGeneratingFullScript] = useState<boolean>(false); // New state for full script generation
   const [savingFullScript, setSavingFullScript] = useState<boolean>(false); // New state for saving full script
   const [generatingSceneScript, setGeneratingSceneScript] = useState<string | null>(null); // For specific scene script
-  const [generatingSceneStoryboard, setGeneratingSceneStoryboard] = useState<string | null>(null); // For specific scene storyboard
+  const [generatingSceneStoryboard, setGeneratingSceneStoryboard] = useState<string | null>(null); // For specific scene storyboard (text)
+  const [generatingStoryboardImage, setGeneratingStoryboardImage] = useState<string | null>(null); // For storyboard image generation
+  const [imageQuota, setImageQuota] = useState<{ used: number; limit: number; remaining: number } | null>(null);
+  const [fullSizeImage, setFullSizeImage] = useState<string | null>(null); // For viewing full-size storyboard images
   const [selectedStoryboard, setSelectedStoryboard] = useState<string | null>(null);
   const [isTransliterationEnabled, setIsTransliterationEnabled] = useState(false);
   const [generatingIdea, setGeneratingIdea] = useState(false);
@@ -340,6 +344,13 @@ export default function EditorPageClient({
       fetchProjectData();
     }
   }, [projectId, toast, t, router, status]);
+
+  // Fetch image quota when project loads and supports storyboard images
+  useEffect(() => {
+    if (project && supportsStoryboardImages(project.type)) {
+      fetchImageQuota();
+    }
+  }, [project?.type]);
 
   const updateTokenUsage = async (operationType?: string, operationName?: string) => {
     try {
@@ -1063,6 +1074,70 @@ export default function EditorPageClient({
           </Card>
         );
       
+      case 'storyboard':
+        // Storyboard step - shows all scenes with their storyboards (images or text shot lists)
+        const projectSupportsImages = project ? supportsStoryboardImages(project.type) : false;
+        return (
+          <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
+            <CardContent className="p-6 flex flex-col gap-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-purple-300 flex items-center">
+                  <Camera className="h-5 w-5 mr-2" />
+                  {stepLabel}
+                  {projectSupportsImages && (
+                    <span className="ml-2 text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full">
+                      AI Images Available
+                    </span>
+                  )}
+                </h2>
+                {projectSupportsImages && imageQuota && (
+                  <div className="text-sm text-gray-400">
+                    {imageQuota.remaining}/{imageQuota.limit} images remaining
+                  </div>
+                )}
+              </div>
+              
+              {scenes.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">
+                  <p>{t("No scenes yet. Add scenes first to create storyboards.")}</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {scenes.map((scene) => (
+                    <div key={scene.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-medium text-white">
+                          {scene.title || `Scene ${scene.order + 1}`}
+                        </h3>
+                      </div>
+                      {scene.summary && (
+                        <p className="text-sm text-gray-400 mb-3">{scene.summary}</p>
+                      )}
+                      <StoryboardSection
+                        sceneId={scene.id}
+                        sceneTitle={scene.title}
+                        script={scene.script}
+                        summary={scene.summary}
+                        storyboard={scene.storyboard}
+                        projectType={project?.type || 'shortfilm'}
+                        supportsImages={projectSupportsImages}
+                        onStoryboardUpdate={(content) => updateSceneStoryboard(scene.id, content)}
+                        onGenerateTextStoryboard={() => generateSceneStoryboardApiCall(scene.id)}
+                        onGenerateImageStoryboard={projectSupportsImages ? () => generateSceneStoryboardImageApiCall(scene.id) : undefined}
+                        isGenerating={generatingSceneStoryboard === scene.id}
+                        isGeneratingImage={generatingStoryboardImage === scene.id}
+                        onViewFullSize={(url) => setFullSizeImage(url)}
+                        onClearStoryboard={() => clearSceneStoryboard(scene.id)}
+                        imageQuota={imageQuota || undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      
       default:
         return (
           <Card className="border-none bg-white/5 backdrop-blur-lg border border-white/10">
@@ -1608,6 +1683,124 @@ export default function EditorPageClient({
     } finally {
       setGeneratingSceneStoryboard(null);
     }
+  };
+
+  // Generate storyboard IMAGE (AI generated visual)
+  const generateSceneStoryboardImageApiCall = async (sceneId: string) => {
+    const sceneToGenerate = scenes.find(s => s.id === sceneId);
+    if (!sceneToGenerate) {
+      toast({ title: t("Error"), description: t("Scene not found."), variant: "destructive" });
+      return;
+    }
+
+    // Check if project type supports storyboard images
+    if (!project || !supportsStoryboardImages(project.type)) {
+      toast({ 
+        title: t("Not Available"), 
+        description: t("Storyboard images are only available for Short Film, Screenplay, Web Series, and Documentary projects."), 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    setGeneratingStoryboardImage(sceneId);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/scenes/${sceneId}/generate-storyboard-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate storyboard image');
+      }
+
+      const data = await response.json();
+
+      if (data.mode === 'prompt-only') {
+        // Image API not configured, show prompt to user
+        toast({ 
+          title: t("Image API Not Configured"), 
+          description: data.message,
+          variant: "default" 
+        });
+        return;
+      }
+
+      // Update scene with the generated image URL
+      setScenes(prevScenes =>
+        prevScenes.map(s =>
+          s.id === sceneId ? { ...s, storyboard: data.storyboard, version: (s.version || 0) + 1 } : s
+        )
+      );
+
+      // Update quota
+      if (data.quota) {
+        setImageQuota(data.quota);
+      }
+
+      toast({ 
+        title: t("Success"), 
+        description: t(`Storyboard image generated for "${sceneToGenerate.title}"`) 
+      });
+    } catch (error: any) {
+      console.error(`Error generating storyboard image for scene ${sceneId}:`, error);
+      toast({
+        title: t("Error"),
+        description: error.message || t("Failed to generate storyboard image."),
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingStoryboardImage(null);
+    }
+  };
+
+  // Fetch image quota on load
+  const fetchImageQuota = async () => {
+    try {
+      const response = await fetch('/api/user/image-quota');
+      if (response.ok) {
+        const data = await response.json();
+        setImageQuota(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch image quota:', error);
+    }
+  };
+
+  // Update scene storyboard (for manual text or uploaded image)
+  const updateSceneStoryboard = async (sceneId: string, storyboardContent: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/scenes/${sceneId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyboard: storyboardContent }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update storyboard');
+      }
+
+      setScenes(prevScenes =>
+        prevScenes.map(s =>
+          s.id === sceneId ? { ...s, storyboard: storyboardContent, version: (s.version || 0) + 1 } : s
+        )
+      );
+
+      toast({ title: t("Success"), description: t("Storyboard updated successfully") });
+    } catch (error: any) {
+      console.error(`Error updating storyboard for scene ${sceneId}:`, error);
+      toast({
+        title: t("Error"),
+        description: error.message || t("Failed to update storyboard."),
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Clear scene storyboard
+  const clearSceneStoryboard = async (sceneId: string) => {
+    await updateSceneStoryboard(sceneId, '');
   };
 
   const generateFullScriptApiCall = async () => {
@@ -2583,6 +2776,42 @@ export default function EditorPageClient({
           className="fixed inset-0 z-40" 
           onClick={() => setShowExportMenu(false)}
         />
+      )}
+      
+      {/* Full-size Storyboard Image Modal */}
+      {fullSizeImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setFullSizeImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img 
+              src={fullSizeImage} 
+              alt="Storyboard Full Size"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-4 right-4"
+              onClick={() => setFullSizeImage(null)}
+            >
+              {t("Close")}
+            </Button>
+            <a 
+              href={fullSizeImage} 
+              download="storyboard.png"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 right-4"
+            >
+              <Button variant="secondary" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                {t("Download")}
+              </Button>
+            </a>
+          </div>
+        </div>
       )}
     </ScrollArea>
   );

@@ -1,6 +1,13 @@
 
 export type ProjectType = 'shortfilm' | 'screenplay' | 'novel' | 'shortstory' | 'webseries' | 'documentary' | 'podcast';
 
+// Project types that support AI storyboard image generation
+export const STORYBOARD_IMAGE_ENABLED_TYPES: ProjectType[] = ['shortfilm', 'screenplay', 'webseries', 'documentary'];
+
+export function supportsStoryboardImages(projectType: string): boolean {
+  return STORYBOARD_IMAGE_ENABLED_TYPES.includes(projectType as ProjectType);
+}
+
 export interface ProjectConfiguration {
   name: string;
   description: string;
@@ -9,6 +16,7 @@ export interface ProjectConfiguration {
   bestFor: string[]; // Who should use this
   workflow: string[];
   outputFormats: string[]; // What users get at the end
+  supportsStoryboardImages?: boolean; // Whether AI image generation is available
   aiPrompts: {
     [key: string]: {
       system: string;
@@ -35,7 +43,8 @@ export const PROJECT_CONFIGURATIONS: Record<ProjectType, ProjectConfiguration> =
     tagline: 'From idea to action! 🎬',
     icon: '🎬',
     bestFor: ['Film students', 'Independent filmmakers', 'Film festival submissions', 'Portfolio pieces'],
-    outputFormats: ['Screenplay (industry format)', 'Scene breakdown', 'Shot list', 'Character profiles'],
+    outputFormats: ['Screenplay (industry format)', 'Scene breakdown', 'Shot list', 'Character profiles', 'AI Storyboard Images'],
+    supportsStoryboardImages: true,
     workflow: ['idea', 'logline', 'treatment', 'theme', 'characters', 'scenes', 'script', 'storyboard'],
     aiPrompts: {
       idea: {
@@ -140,7 +149,8 @@ export const PROJECT_CONFIGURATIONS: Record<ProjectType, ProjectConfiguration> =
     tagline: 'Your feature film starts here 🎭',
     icon: '🎭',
     bestFor: ['Aspiring screenwriters', 'Film competitions', 'Studio pitches', 'Spec scripts'],
-    outputFormats: ['Feature screenplay', 'Beat sheet', 'Character bible', 'Pitch document'],
+    outputFormats: ['Feature screenplay', 'Beat sheet', 'Character bible', 'Pitch document', 'AI Storyboard Images'],
+    supportsStoryboardImages: true,
     workflow: ['idea', 'logline', 'synopsis', 'beat-sheet', 'treatment', 'characters', 'world-building', 'scenes', 'script'],
     aiPrompts: {
       idea: {
@@ -510,7 +520,8 @@ export const PROJECT_CONFIGURATIONS: Record<ProjectType, ProjectConfiguration> =
     tagline: 'Make them binge! 📺',
     icon: '📺',
     bestFor: ['YouTube creators', 'Streaming pitches', 'Digital content', 'Serialized storytelling'],
-    outputFormats: ['Series bible', 'Pilot script', 'Episode outlines', 'Season arc'],
+    outputFormats: ['Series bible', 'Pilot script', 'Episode outlines', 'Season arc', 'AI Storyboard Images'],
+    supportsStoryboardImages: true,
     workflow: ['concept', 'series-logline', 'format', 'characters', 'season-arc', 'pilot-outline', 'episode-breakdown', 'pilot-script'],
     aiPrompts: {
       concept: {
@@ -634,7 +645,8 @@ export const PROJECT_CONFIGURATIONS: Record<ProjectType, ProjectConfiguration> =
     tagline: 'Tell the real story 🎙️',
     icon: '🎥',
     bestFor: ['Documentary filmmakers', 'Journalists', 'Non-fiction storytellers', 'Grant applications'],
-    outputFormats: ['Treatment', 'Interview questions', 'Shot list', 'Research document', 'Pitch deck'],
+    outputFormats: ['Treatment', 'Interview questions', 'Shot list', 'Research document', 'Pitch deck', 'AI Storyboard Images'],
+    supportsStoryboardImages: true,
     workflow: ['subject', 'angle', 'research', 'characters', 'structure', 'interview-plan', 'visual-approach', 'treatment'],
     aiPrompts: {
       subject: {
