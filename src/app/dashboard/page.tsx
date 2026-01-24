@@ -11,6 +11,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import { TranslationProvider, useTranslations, T } from '@/components/TranslationProvider';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { UsageLimitBanner } from '@/components/UsageLimitBanner';
+import { SubscriptionStatusCard } from '@/components/SubscriptionStatusCard';
 
 interface Project {
   id: string;
@@ -20,6 +22,32 @@ interface Project {
   updatedAt: string;
 }
 
+interface SubscriptionStatus {
+  subscription: {
+    status: string;
+    plan: string;
+    planName: string;
+    isActive: boolean;
+    isPro: boolean;
+    daysRemaining?: number | null;
+  };
+  usage: {
+    tokens: {
+      used: number;
+      limit: number;
+      remaining: number;
+      percentage: number;
+    };
+    images: {
+      used: number;
+      limit: number;
+      remaining: number;
+      percentage: number;
+    };
+    resetDate: string | null;
+  };
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -27,6 +55,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLanguage, setUserLanguage] = useState('English');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -35,17 +64,28 @@ export default function DashboardPage() {
   }, [status, router]);
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/projects');
-        if (!response.ok) throw new Error('Failed to fetch projects');
-        const data = await response.json();
-        setProjects(data);
+        // Fetch projects and subscription status in parallel
+        const [projectsRes, subscriptionRes] = await Promise.all([
+          fetch('/api/projects'),
+          fetch('/api/subscription/status')
+        ]);
+
+        if (projectsRes.ok) {
+          const projectsData = await projectsRes.json();
+          setProjects(projectsData);
+        }
+
+        if (subscriptionRes.ok) {
+          const subscriptionData = await subscriptionRes.json();
+          setSubscriptionStatus(subscriptionData);
+        }
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('Error fetching data:', error);
         toast({
           title: "Error",
-          description: "Failed to load projects. Please try again.",
+          description: "Failed to load data. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -54,7 +94,7 @@ export default function DashboardPage() {
     };
 
     if (status === 'authenticated') {
-      fetchProjects();
+      fetchData();
     }
   }, [status, toast]);
 
@@ -99,6 +139,7 @@ export default function DashboardPage() {
         formatDate={formatDate}
         userLanguage={userLanguage}
         setUserLanguage={setUserLanguage}
+        subscriptionStatus={subscriptionStatus}
       />
     </TranslationProvider>
   );
@@ -110,7 +151,8 @@ function DashboardContent({
   getProjectTypeIcon, 
   formatDate,
   userLanguage,
-  setUserLanguage 
+  setUserLanguage,
+  subscriptionStatus 
 }: {
   projects: Project[];
   session: any;
@@ -118,6 +160,7 @@ function DashboardContent({
   formatDate: (dateString: string) => string;
   userLanguage: string;
   setUserLanguage: (language: string) => void;
+  subscriptionStatus: SubscriptionStatus | null;
 }) {
   const { t } = useTranslations();
 
@@ -139,6 +182,40 @@ function DashboardContent({
             <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
           </div>
         </div>
+
+        {/* Usage Limit Banner - only show if usage is above 70% */}
+        {subscriptionStatus && (subscriptionStatus.usage.tokens.percentage >= 70 || subscriptionStatus.usage.images.percentage >= 70) && (
+          <div className="mb-6">
+            <UsageLimitBanner
+              tokensUsed={subscriptionStatus.usage.tokens.used}
+              tokensLimit={subscriptionStatus.usage.tokens.limit}
+              imagesUsed={subscriptionStatus.usage.images.used}
+              imagesLimit={subscriptionStatus.usage.images.limit}
+              currentTier={subscriptionStatus.subscription.status as 'free' | 'hobby' | 'pro'}
+              resetDate={subscriptionStatus.usage.resetDate ? new Date(subscriptionStatus.usage.resetDate) : undefined}
+            />
+          </div>
+        )}
+
+        {/* Subscription Status Card */}
+        {subscriptionStatus && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-6"
+          >
+            <SubscriptionStatusCard
+              status={subscriptionStatus.subscription.status as 'free' | 'hobby' | 'pro'}
+              tokensUsed={subscriptionStatus.usage.tokens.used}
+              tokensLimit={subscriptionStatus.usage.tokens.limit}
+              imagesUsed={subscriptionStatus.usage.images.used}
+              imagesLimit={subscriptionStatus.usage.images.limit}
+              daysRemaining={subscriptionStatus.subscription.daysRemaining}
+              resetDate={subscriptionStatus.usage.resetDate ? new Date(subscriptionStatus.usage.resetDate) : undefined}
+            />
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

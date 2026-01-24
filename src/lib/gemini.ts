@@ -3,27 +3,32 @@ import { prisma } from "@/lib/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// Model mapping - Gemini equivalents (2.x models available)
+// Model mapping - Gemini 3.x models (latest)
 export const GEMINI_MODELS = {
-  // Fast, cost-effective model
-  flash: "models/gemini-2.0-flash",
+  // Fast, cost-effective model (Gemini 3 Flash - latest)
+  flash: "gemini-3.0-flash",
   // Pro model for complex tasks
-  pro: "models/gemini-2.5-pro",
-  // Latest 2.5 flash
-  flash25: "models/gemini-2.5-flash",
+  pro: "gemini-2.5-pro",
+  // Previous stable version (backup)
+  flash25: "gemini-2.5-flash",
 } as const;
 
-// Token costs per 1K tokens (Gemini pricing)
+// Token costs per 1K tokens (Gemini pricing - estimated for 3.0)
 const TOKEN_COSTS = {
-  "models/gemini-2.0-flash": {
-    input: 0.000075,
-    output: 0.0003,
+  "gemini-3.0-flash": {
+    input: 0.0001,    // Estimated - update when official pricing released
+    output: 0.0004,
   },
-  "models/gemini-2.5-pro": {
+  "gemini-2.5-pro": {
     input: 0.00125,
     output: 0.005,
   },
-  "models/gemini-2.5-flash": {
+  "gemini-2.5-flash": {
+    input: 0.000075,
+    output: 0.0003,
+  },
+  // Legacy pricing for tracking old records
+  "models/gemini-2.0-flash": {
     input: 0.000075,
     output: 0.0003,
   },
@@ -205,7 +210,7 @@ export async function trackTokenUsage({
   
   if (typeof calculatedCost !== "number") {
     // Find matching model for cost calculation
-    let modelKey = "gemini-2.0-flash";
+    let modelKey = "gemini-3.0-flash";
     for (const key of Object.keys(TOKEN_COSTS)) {
       if (model.includes(key)) {
         modelKey = key;

@@ -5,14 +5,14 @@ export function WebsiteStructuredData() {
     "@type": "WebApplication",
     "name": "AI Story Studio",
     "url": "https://aistorystudio.com",
-    "description": "AI-powered storytelling platform for creating stories, screenplays, and scripts in multiple Indian languages",
+    "description": "AI-powered storytelling platform for creating stories, screenplays, and scripts in multiple languages",
     "applicationCategory": "Creative Writing Software",
     "operatingSystem": "Web Browser",
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "INR",
-      "description": "Free tier with 50,000 tokens/month"
+      "priceCurrency": "USD",
+      "description": "Free tier with 5,000 tokens/month"
     },
     "featureList": [
       "AI-powered story generation",

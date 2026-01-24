@@ -5,7 +5,6 @@ Disallow: /api/
 Disallow: /dashboard/
 Disallow: /editor/
 Disallow: /auth/
-Disallow: /_next/static/media/
 
 # Host
 Host: https://aistorystudio.com

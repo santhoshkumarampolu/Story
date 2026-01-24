@@ -24,12 +24,22 @@ model User {
   sessions      Session[]
   projects      Project[]
   tokenUsages   TokenUsage[] // Added relation for TokenUsage
+  payments      Payment[]    // Payment history
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  subscriptionStatus String? @default("free") // 'free', 'pro', 'admin'
-  isAdmin       Boolean      @default(false)
-  tokenUsageThisMonth Int    @default(0)
-  imageUsageThisMonth Int    @default(0)
+  
+  // Subscription fields
+  subscriptionStatus    String?   @default("free") // 'free', 'pro', 'admin'
+  subscriptionPlan      String?   @default("free") // Plan ID: 'free', 'pro_monthly', 'pro_yearly'
+  subscriptionStartDate DateTime? // When current subscription started
+  subscriptionEndDate   DateTime? // When subscription expires (for recurring billing)
+  subscriptionId        String?   // Razorpay subscription ID for recurring payments
+  lastPaymentDate       DateTime? // Last successful payment date
+  
+  isAdmin               Boolean   @default(false)
+  tokenUsageThisMonth   Int       @default(0)
+  imageUsageThisMonth   Int       @default(0)
+  usageResetDate        DateTime? // When monthly usage was last reset
 }
 
 model Account {
@@ -242,4 +252,37 @@ model TokenUsage {
 
   @@index([userId])
   @@index([projectId])
+}
+
+// Payment history for subscription tracking
+model Payment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  amount            Int      // Amount in smallest currency unit (paise for INR)
+  currency          String   @default("INR")
+  status            String   // 'pending', 'completed', 'failed', 'refunded'
+  
+  // Razorpay fields
+  razorpayOrderId   String?
+  razorpayPaymentId String?  @unique
+  razorpaySignature String?
+  
+  // Plan details
+  planId            String   // 'pro_monthly', 'pro_yearly', etc.
+  planName          String   // Human readable plan name
+  billingPeriod     String?  // 'monthly', 'yearly'
+  
+  // Metadata
+  metadata          String?  @db.Text // JSON string for additional data
+  failureReason     String?  // If payment failed
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([razorpayOrderId])
 }

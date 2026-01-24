@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { upgradeUserSubscription, SUBSCRIPTION_PLANS } from "@/lib/subscription";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan } = body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json(
@@ -38,23 +38,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Update user subscription
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        subscriptionStatus: "pro",
-        // Reset monthly usage for new subscription
-        tokenUsageThisMonth: 0,
-        imageUsageThisMonth: 0,
-      },
-    });
+    // Validate plan ID
+    const validPlans = ['hobby_monthly', 'hobby_yearly', 'pro_monthly', 'pro_yearly'];
+    const planId = validPlans.includes(plan) ? plan : 'pro_monthly';
+    
+    // Get plan details for amount
+    const planDetails = SUBSCRIPTION_PLANS[planId as keyof typeof SUBSCRIPTION_PLANS];
+    const amount = Math.round(planDetails.price * 100); // in cents (USD)
 
-    // Log the payment (you might want to create a separate table for this)
-    console.log(`Payment successful for user ${session.user.id}:`, {
+    // Upgrade user using the subscription library
+    const result = await upgradeUserSubscription(
+      session.user.id, 
+      planId as 'hobby_monthly' | 'hobby_yearly' | 'pro_monthly' | 'pro_yearly', 
+      {
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+        amount: amount,
+      }
+    );
+
+    console.log(`[PAYMENT] Successful upgrade for user ${session.user.id}:`, {
       orderId: razorpay_order_id,
       paymentId: razorpay_payment_id,
-      amount: "₹100",
-      plan: "pro",
+      plan: planId,
       timestamp: new Date().toISOString(),
     });
 
@@ -62,8 +69,10 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "Payment verified and subscription upgraded successfully",
       user: {
-        id: updatedUser.id,
-        subscriptionStatus: updatedUser.subscriptionStatus,
+        id: result.user.id,
+        subscriptionStatus: result.user.subscriptionStatus,
+        subscriptionPlan: result.user.subscriptionPlan,
+        subscriptionEndDate: result.user.subscriptionEndDate,
       },
     });
   } catch (error) {
