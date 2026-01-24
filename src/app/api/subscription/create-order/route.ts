@@ -42,14 +42,25 @@ export async function POST(req: NextRequest) {
     }
 
     // Create Razorpay order
+    // Note: Razorpay test mode only supports INR, so we convert USD to INR
+    // Using approximate conversion rate (1 USD = 83 INR)
+    const USD_TO_INR_RATE = 83;
+    const amountInINR = Math.round(amount * USD_TO_INR_RATE);
+    
+    // Receipt must be max 40 chars
+    const shortUserId = session.user.id.slice(-8);
+    const timestamp = Date.now().toString(36); // Base36 for shorter string
+    const receipt = `sub_${shortUserId}_${timestamp}`;
+    
     const order = await razorpay.orders.create({
-      amount: amount, // Amount in cents
-      currency: "USD",
-      receipt: `subscription_${session.user.id}_${Date.now()}`,
+      amount: amountInINR, // Amount in paise (INR)
+      currency: "INR",
+      receipt: receipt,
       notes: {
         userId: session.user.id,
         plan: plan,
         type: "subscription",
+        originalAmountUSD: amount / 100, // Store original USD amount
       },
     });
 
@@ -59,11 +70,16 @@ export async function POST(req: NextRequest) {
       currency: order.currency,
       receipt: order.receipt,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("[CREATE_ORDER] Error:", error);
+    console.error("[CREATE_ORDER] Error details:", {
+      message: error?.message,
+      statusCode: error?.statusCode,
+      error: error?.error,
+    });
     return NextResponse.json(
-      { error: "Failed to create order" },
-      { status: 500 }
+      { error: error?.error?.description || error?.message || "Failed to create order" },
+      { status: error?.statusCode || 500 }
     );
   }
 } 
