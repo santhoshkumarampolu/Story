@@ -26,6 +26,7 @@ model User {
   tokenUsages   TokenUsage[] // Added relation for TokenUsage
   payments      Payment[]    // Payment history
   userStats     UserStats?   // Gamification stats
+  userAchievements UserAchievement[] // User achievements
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   
@@ -313,6 +314,7 @@ model UserStats {
 model UserAchievement {
   id            String   @id @default(cuid())
   userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievementId String   // e.g., 'first_words', 'on_fire', 'wordsmith'
   unlockedAt    DateTime @default(now())
   

@@ -74,7 +74,7 @@ export async function GET() {
           ? Math.round(stats.totalWords / stats.sessionsCompleted) 
           : 0,
       },
-      achievements: achievements.map((a: { achievementId: string; unlockedAt: Date }) => ({
+      achievements: achievements.map(a => ({
         id: a.achievementId,
         unlockedAt: a.unlockedAt,
       })),
@@ -163,22 +163,29 @@ export async function POST(request: Request) {
     });
 
     // Record the writing session
-    await prisma.writingSession.create({
-      data: {
-        userId: user.id,
-        projectId: projectId || null,
-        words,
-        minutes,
-        stepsCompleted,
-        date: today,
-      },
-    });
+    if (words > 0 || minutes > 0) {
+      await prisma.writingSession.create({
+        data: {
+          userId: user.id,
+          projectId: projectId || null,
+          words,
+          minutes,
+          stepsCompleted,
+          date: today,
+        },
+      });
+    }
 
     // Check for new achievements
     const existingAchievements = await prisma.userAchievement.findMany({
       where: { userId: user.id },
     });
-    const unlockedIds = new Set(existingAchievements.map((a: { achievementId: string }) => a.achievementId));
+    const unlockedIds = new Set(existingAchievements.map(a => a.achievementId));
+
+    // Get current project count for achievement checking
+    const currentProjectCount = await prisma.project.count({
+      where: { userId: user.id },
+    });
 
     const newAchievements: string[] = [];
 
@@ -194,7 +201,8 @@ export async function POST(request: Request) {
           unlocked = updatedStats.stepsCompleted >= achievement.target;
           break;
         case 'streak':
-          unlocked = newStreak >= achievement.target || newLongestStreak >= achievement.target;
+          // Check both current and longest streak for streak achievements
+          unlocked = updatedStats.currentStreak >= achievement.target || updatedStats.longestStreak >= achievement.target;
           break;
         case 'sessions':
           unlocked = updatedStats.sessionsCompleted >= achievement.target;
@@ -206,7 +214,9 @@ export async function POST(request: Request) {
           unlocked = minutes >= achievement.target;
           break;
         case 'projects':
-          unlocked = updatedStats.projectsCompleted >= achievement.target;
+          // Check both created and completed projects
+          const totalProjects = currentProjectCount + updatedStats.projectsCompleted;
+          unlocked = totalProjects >= achievement.target;
           break;
       }
 
