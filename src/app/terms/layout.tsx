@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import TermsClient from './TermsClient';
 
 export const metadata: Metadata = {
   title: 'Terms of Service - AI Story Studio',
@@ -9,6 +8,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TermsPage() {
-  return <TermsClient />;
+export default function TermsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
 }

@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import PrivacyClient from './PrivacyClient';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy - AI Story Studio',
@@ -9,6 +8,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PrivacyPage() {
-  return <PrivacyClient />;
+export default function PrivacyLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
 }

@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: "https://aistorystudio.com",
+    // canonical set per page
   },
 };
 

@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import PricingClient from './PricingClient';
 
 export const metadata: Metadata = {
   title: 'Pricing - AI Story Studio',
@@ -9,6 +8,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PricingPage() {
-  return <PricingClient />;
+export default function PricingLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
 }
