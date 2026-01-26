@@ -230,18 +230,24 @@ export async function trackTokenUsage({
   }
 
   try {
-    await prisma.tokenUsage.create({
-      data: {
-        userId,
-        projectId,
-        type,
-        tokens: totalTokens,
-        cost: calculatedCost,
-        promptTokens,
-        completionTokens,
-        operationName: operationName || type,
-      },
-    });
+    const data: any = {
+      projectId: projectId || undefined,
+      type,
+      tokens: totalTokens,
+      cost: calculatedCost,
+      promptTokens,
+      completionTokens,
+      operationName: operationName || type,
+      user: {
+        connect: { id: userId }
+      }
+    };
+    if (projectId) {
+      data.project = {
+        connect: { id: projectId }
+      };
+    }
+    await prisma.tokenUsage.create({ data });
 
     return {
       tokens: totalTokens,

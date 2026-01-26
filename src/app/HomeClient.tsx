@@ -193,6 +193,59 @@ export default function HomeClient() {
             </div>
           </section>
 
+          {/* Dialogue Tool Highlight Section */}
+          <section className="relative py-10 px-4 bg-gradient-to-br from-pink-500/10 to-purple-500/10">
+            <div className="container mx-auto max-w-6xl">
+              <motion.div 
+                className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
+                variants={staggerContainer}
+              >
+                <motion.div variants={fadeInLeft} className="space-y-6">
+                  <div className="inline-flex items-center gap-2 text-pink-400 text-sm font-medium">
+                    <MessageCircle className="h-4 w-4" />
+                    NEW: Instant Dialogue Generator
+                  </div>
+                  <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                    Generate dialogue in English, Hindi, or Telugu
+                  </h2>
+                  <p className="text-lg text-white/60 leading-relaxed">
+                    Try our free, public AI Dialogue Tool—no login required! Instantly create authentic screenplay or story dialogue in your preferred language. Perfect for writers, filmmakers, and students.
+                  </p>
+                  <ul className="space-y-3">
+                    {["Multi-language (English, Hindi, Telugu)", "Screenplay or narrative style", "No signup needed"].map((item) => (
+                      <li key={item} className="flex items-center gap-3 text-white/70">
+                        <div className="h-1.5 w-1.5 rounded-full bg-pink-400" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/dialogue-tool">
+                    <Button size="lg" variant="ai" className="mt-4">
+                      Try Dialogue Tool
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+                <motion.div 
+                  variants={fadeInRight}
+                  className="relative rounded-2xl border border-pink-400/20 bg-white/5"
+                >
+                  <div className="rounded-xl p-8 min-h-[320px] flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="mx-auto w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center">
+                        <MessageCircle className="h-8 w-8 text-pink-400" />
+                      </div>
+                      <p className="text-white/40 text-sm">AI Dialogue Tool Preview</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
+
           {/* Feature 2 - Visual Left, Text Right */}
           <section className="relative py-10 px-4 bg-white/[0.02]">
             <div className="container mx-auto max-w-6xl">

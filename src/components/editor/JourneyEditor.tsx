@@ -14,10 +14,12 @@ import {
   ChevronRight, ChevronLeft, Check, Lock, Trophy, Flame, 
   MessageCircle, Zap, Target, Star, ArrowRight, Play,
   Pause, RotateCcw, Clock, BookOpen, Volume2, Mic, Home, ArrowLeft,
-  Download, FileDown, X
+  Download, FileDown, X,
+  MessageSquare
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import AIWritingAssistant from './AIWritingAssistant';
+import DialogueWriter from './DialogueWriter';
 import { ContentTranslator } from '@/components/ContentTranslator';
 import WritingStatsTracker from './WritingStatsTracker';
 
@@ -130,6 +132,21 @@ const WORKFLOW_STEPS: Record<string, WorkflowStep[]> = {
       ],
       celebration: "Your scenes are set! 🎬",
       minWords: 100
+    },
+    {
+      id: 'dialogue',
+      label: 'The Words',
+      icon: MessageSquare,
+      description: "Bring your characters to life with authentic dialogue.",
+      prompt: "Write dialogue that reveals character, advances plot, and sounds natural.",
+      tips: [
+        "🗣️ Dialogue should reveal character, not explain plot",
+        "👂 Listen to real conversations for authenticity",
+        "🎭 Each character should have a unique voice",
+        "✂️ Less is often more - subtext speaks volumes"
+      ],
+      celebration: "Your characters are speaking! 🗣️",
+      minWords: 50
     },
     {
       id: 'script',
@@ -359,6 +376,21 @@ const WORKFLOW_STEPS: Record<string, WorkflowStep[]> = {
       ],
       celebration: "Ready to write! 📝",
       minWords: 400
+    },
+    {
+      id: 'dialogue',
+      label: 'The Dialogue',
+      icon: MessageSquare,
+      description: "Craft authentic dialogue that brings your characters to life.",
+      prompt: "Write dialogue that reveals character, advances plot, and feels natural.",
+      tips: [
+        "🗣️ Dialogue reveals character, not plot",
+        "👂 Listen to real conversations",
+        "🎭 Unique voice for each character",
+        "✂️ Subtext over exposition"
+      ],
+      celebration: "Your characters are speaking! 🗣️",
+      minWords: 150
     }
   ],
   screenplay: [
@@ -466,6 +498,21 @@ const WORKFLOW_STEPS: Record<string, WorkflowStep[]> = {
       ],
       celebration: "Ready for the page! 📝",
       minWords: 300
+    },
+    {
+      id: 'dialogue',
+      label: 'The Dialogue',
+      icon: MessageSquare,
+      description: "Craft authentic dialogue that brings your characters to life.",
+      prompt: "Write dialogue that reveals character, advances plot, and feels natural.",
+      tips: [
+        "🗣️ Dialogue reveals character, not plot",
+        "👂 Listen to real conversations",
+        "🎭 Unique voice for each character",
+        "✂️ Subtext over exposition"
+      ],
+      celebration: "Your characters are speaking! 🗣️",
+      minWords: 200
     },
     {
       id: 'script',
@@ -1403,7 +1450,7 @@ export default function JourneyEditor({
                 </div>
               </Card>
               
-              {/* Main Content Area - Special handling for storyboard */}
+              {/* Main Content Area - Special handling for storyboard and dialogue */}
               {currentStep.id === 'storyboard' ? (
                 /* Storyboard Step - Special UI */
                 <div className="relative">
@@ -1469,6 +1516,33 @@ export default function JourneyEditor({
                         className="text-gray-400 border-gray-600 hover:border-purple-500 hover:text-purple-400"
                       >
                         Skip storyboards for now
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : currentStep.id === 'dialogue' ? (
+                /* Dialogue Step - Special UI */
+                <div className="relative">
+                  <DialogueWriter
+                    projectId={projectId}
+                    characters={initialData.characters || []}
+                    onDialogueGenerated={(dialogue) => {
+                      setStepContent(prev => ({ ...prev, [currentStep.id]: dialogue }));
+                    }}
+                  />
+                  
+                  {/* Mark as complete button */}
+                  <div className="mt-6 text-center">
+                    {!completedSteps.has('dialogue') && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCompletedSteps(prev => new Set([...prev, 'dialogue']));
+                          setCurrentStreak(prev => prev + 1);
+                        }}
+                        className="text-gray-400 border-gray-600 hover:border-purple-500 hover:text-purple-400"
+                      >
+                        Mark dialogue step complete
                       </Button>
                     )}
                   </div>
