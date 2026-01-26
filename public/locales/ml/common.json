@@ -43,5 +43,75 @@
     "error": "ഒരു പിശക് സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.",
     "noData": "ഡാറ്റ ലഭ്യമല്ല",
     "welcome": "തിരികെ സ്വാഗതം!"
+  },
+  "dialogueTool": {
+    "title": "AI സംഭാഷണ ജനറേറ്റർ (AI Dialogue Generator)",
+    "subtitle": "ഇംഗ്ലീഷ്, ഹിന്ദി, തെലുങ്ക്, തമിഴ്, കന്നഡ അല്ലെങ്കിൽ മലയാളം ഭാഷകളിൽ തൽക്ഷണം സംഭാഷണങ്ങൾ സൃഷ്ടിക്കുക.",
+    "limitReached": "പ്രതിമാസ പരിധി കഴിഞ്ഞു. പ്രോയിലേക്ക് അപ്‌ഗ്രേഡ് ചെയ്യുക.",
+    "upgradeToPro": "പ്രോയിലേക്ക് അപ്‌ഗ്രേഡ് ചെയ്യുക",
+    "usage": "ഉപയോഗം",
+    "sceneContext": "രംഗത്തിന്റെ സാഹചര്യം",
+    "sceneContextPlaceholder": "രംഗം, സാഹചര്യം അല്ലെങ്കിൽ സംഘർഷം വിവരിക്കുക...",
+    "tone": "ശൈലി (Tone)",
+    "conflict": "സംഘർഷത്തിന്റെ തീവ്രത",
+    "writingStyle": "എഴുത്തു രീതി",
+    "objective": "രംഗത്തിന്റെ ലക്ഷ്യം",
+    "objectivePlaceholder": "കഥാപാത്രങ്ങൾ എന്ത് നേടാനാണ് ആഗ്രഹിക്കുന്നത്?",
+    "beats": "പ്രധാന പോയിന്റുകൾ (Key Beats)",
+    "beatsPlaceholder": "പോയിന്റ് 1, പോയിന്റ് 2...",
+    "variationMode": "വ്യതിയാന മോഡ് (Variation Mode)",
+    "variationDesc": "വ്യത്യസ്ത വൈകാരിക തലങ്ങളുള്ള 2 പതിപ്പുകൾ സൃഷ്ടിക്കുന്നു.",
+    "transliteration": "ലിപിമാറ്റം (Transliteration)",
+    "transliterationDesc": "പ്രാദേശിക ഭാഷകൾക്കായി റോമൻ ലിപിയും ചേർക്കുന്നു.",
+    "length": "ദൈർഘ്യം",
+    "language": "ഭാഷ",
+    "characters": "കഥാപാത്രങ്ങൾ",
+    "characterName": "കഥാപാത്രത്തിന്റെ പേര്",
+    "characterDescription": "വിവരണം (നിർബന്ധമില്ല)",
+    "addCharacter": "+ കഥാപാത്രത്തെ ചേർക്കുക",
+    "additionalInstructions": "അധിക നിർദ്ദേശങ്ങൾ",
+    "additionalInstructionsPlaceholder": "ഉദാ: ഇത് തമാശയാക്കുക...",
+    "generateDialogue": "സംഭാഷണം സൃഷ്ടിക്കുക",
+    "generating": "സൃഷ്ടിക്കുന്നു...",
+    "generatedDialogue": "സൃഷ്ടിച്ച സംഭാഷണം",
+    "copyDialogue": "സംഭാഷണം പകർപ്പുക",
+    "copySuccess": "സംഭാഷണം പകർത്തി!",
+    "copyFailed": "പകർത്തുന്നതിൽ പരാജയപ്പെട്ടു.",
+    "missingContext": "രംഗ സാഹചര്യവും കുറഞ്ഞത് രണ്ട് കഥാപാത്രങ്ങളും നൽകുക.",
+    "generationError": "സംഭാഷണം സൃഷ്ടിക്കുന്നതിൽ പരാജയപ്പെട്ടു.",
+    "tryTool": "സംഭാഷണ ഉപകരണം പരീക്ഷിക്കുക",
+    "tones": {
+      "emotional": "വൈകാരികം",
+      "comedy": "ഹാസ്യം",
+      "love": "പ്രണയം",
+      "witty": "ബുദ്ധിപരം",
+      "dramatic": "നാടകീയം",
+      "action": "ആക്ഷൻ",
+      "suspense": "സസ്പെൻസ്"
+    },
+    "conflicts": {
+      "low": "കുറഞ്ഞ",
+      "medium": "മിതമാണ്",
+      "high": "കൂടുതൽ"
+    },
+    "styles": {
+      "casual": "സാധാരണ",
+      "formal": "ഔദ്യോഗികം",
+      "poetic": "കാവ്യാത്മകം",
+      "tarantino": "വേഗതയുള്ള-ബുദ്ധിപരമായ"
+    },
+    "lengths": {
+      "short": "ചെറുത്",
+      "medium": "മിതം",
+      "long": "വലുത്"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    }
   }
 }

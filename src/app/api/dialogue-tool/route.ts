@@ -9,7 +9,13 @@ interface DialogueToolRequest {
   tone: 'emotional' | 'comedy' | 'love' | 'witty' | 'dramatic' | 'action' | 'suspense';
   length: 'short' | 'medium' | 'long';
   characters: Array<{ name: string; description?: string }>;
-  language: 'en' | 'hi' | 'te'; // English, Hindi, Telugu
+  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml'; // English, Hindi, Telugu, Kannada, Tamil, Malayalam
+  conflictIntensity?: 'low' | 'medium' | 'high';
+  writingStyle?: 'casual' | 'formal' | 'poetic' | 'tarantino';
+  sceneObjective?: string;
+  keyBeats?: string;
+  variationMode?: boolean;
+  transliteration?: boolean;
   additionalInstructions?: string;
   sceneData?: {
     title?: string;
@@ -24,13 +30,33 @@ interface DialogueToolRequest {
 
 export async function POST(request: Request) {
   try {
+    // For dialogue tool, allow anonymous access (no authentication required)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = session?.user?.id;
+    let user = null;
+
+    if (userId) {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { tokenUsageThisMonth: true, subscriptionStatus: true }
+      });
+
+      // Limit check for free users: 12,000 tokens total for the tool/month
+      if (user && user.subscriptionStatus === 'free' && user.tokenUsageThisMonth >= 12000) {
+        return NextResponse.json({
+          error: 'token_limit_reached',
+          message: 'You have reached your 12,000 token limit for this month. Subscribe to Pro to continue generating unlimited dialogue!'
+        }, { status: 403 });
+      }
     }
 
     const body: DialogueToolRequest = await request.json();
-    const { context, tone, length, characters, language, additionalInstructions, sceneData, projectType } = body;
+    const { 
+      context, tone, length, characters, language, 
+      conflictIntensity, writingStyle, sceneObjective, 
+      keyBeats, variationMode, transliteration,
+      additionalInstructions, sceneData, projectType 
+    } = body;
 
     if (!context || !tone || !length || !characters || characters.length === 0 || !language) {
       return NextResponse.json({
@@ -47,6 +73,12 @@ export async function POST(request: Request) {
       additionalInstructions,
       projectType,
       language,
+      conflictIntensity,
+      writingStyle,
+      sceneObjective,
+      keyBeats,
+      variationMode,
+      transliteration,
     });
 
     const generatedDialogue = await generateContent({
@@ -55,16 +87,19 @@ export async function POST(request: Request) {
       maxTokens: length === 'long' ? 10000 : length === 'medium' ? 7200 : 6000,
     });
 
-    await trackTokenUsage({
-      userId: session.user.id,
-      projectId: null as unknown as string,
-      type: 'character_generation',
-      model: generatedDialogue.model || 'gemini-3.0-flash',
-      promptTokens: generatedDialogue.usage?.promptTokens || 0,
-      completionTokens: generatedDialogue.usage?.completionTokens || 0,
-      totalTokens: generatedDialogue.usage?.totalTokens || 0,
-      operationName: 'Dialogue Generation Tool',
-    });
+    // Track token usage only for authenticated users
+    if (userId) {
+      await trackTokenUsage({
+        userId,
+        projectId: null as unknown as string,
+        type: 'character_generation',
+        model: generatedDialogue.model || 'gemini-3.0-flash',
+        promptTokens: generatedDialogue.usage?.promptTokens || 0,
+        completionTokens: generatedDialogue.usage?.completionTokens || 0,
+        totalTokens: generatedDialogue.usage?.totalTokens || 0,
+        operationName: 'Dialogue Generation Tool',
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -93,6 +128,12 @@ function buildMultilingualDialoguePrompt({
   additionalInstructions,
   projectType,
   language,
+  conflictIntensity,
+  writingStyle,
+  sceneObjective,
+  keyBeats,
+  variationMode,
+  transliteration,
 }: {
   context: string;
   tone: string;
@@ -108,9 +149,22 @@ function buildMultilingualDialoguePrompt({
   };
   additionalInstructions?: string;
   projectType?: string;
-  language: 'en' | 'hi' | 'te';
+  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml';
+  conflictIntensity?: string;
+  writingStyle?: string;
+  sceneObjective?: string;
+  keyBeats?: string;
+  variationMode?: boolean;
+  transliteration?: boolean;
 }): string {
-  const languageNames = { en: 'English', hi: 'Hindi', te: 'Telugu' };
+  const languageNames = { 
+    en: 'English', 
+    hi: 'Hindi', 
+    te: 'Telugu', 
+    kn: 'Kannada', 
+    ta: 'Tamil', 
+    ml: 'Malayalam' 
+  };
   const lengthGuide = {
     short: 'brief exchanges (2-4 lines per character)',
     medium: 'moderate length conversations (4-8 lines per character)',
@@ -125,18 +179,49 @@ function buildMultilingualDialoguePrompt({
     action: 'fast-paced, urgent, high-energy exchanges',
     suspense: 'tense, mysterious, building anticipation',
   };
-  let prompt = `Generate a ${projectType === 'screenplay' ? 'screenplay-style' : 'narrative'} dialogue in ${languageNames[language] || 'the specified language'} for this scene:
 
-SCENE CONTEXT: ${context}
+  const writingStyleDescriptions = {
+    casual: 'natural, everyday speech, using slang and contractions',
+    formal: 'proper vocabulary, no slang, structured and professional',
+    poetic: 'metaphorical, rhythmic, evocative language',
+    tarantino: 'cool, pop-culture heavy, philosophical yet gritty and rhythmic banter',
+  };
 
-TONE: ${toneDescriptions[tone as keyof typeof toneDescriptions] || tone}
+  const conflictDescriptions = {
+    low: 'polite disagreement or minor misunderstanding',
+    medium: 'noticeable tension, power struggle, or conflicting desires',
+    high: 'intense verbal battle, high stakes, or emotional explosion',
+  };
 
-LENGTH: ${lengthGuide[length as keyof typeof lengthGuide]}
+  let prompt = `Generate a ${projectType === 'screenplay' ? 'screenplay-style' : 'narrative'} dialogue in ${languageNames[language] || 'the specified language'} for this scene.
 
-CHARACTERS:`;
+SCENE CONTEXT: ${context}`;
+
+  if (sceneObjective) {
+    prompt += `\nSCENE OBJECTIVE: ${sceneObjective}`;
+  }
+
+  prompt += `\nTONE: ${toneDescriptions[tone as keyof typeof toneDescriptions] || tone}`;
+
+  if (writingStyle && writingStyleDescriptions[writingStyle as keyof typeof writingStyleDescriptions]) {
+    prompt += `\nWRITING STYLE: ${writingStyleDescriptions[writingStyle as keyof typeof writingStyleDescriptions]}`;
+  }
+
+  if (conflictIntensity && conflictDescriptions[conflictIntensity as keyof typeof conflictDescriptions]) {
+    prompt += `\nCONFLICT LEVEL: ${conflictDescriptions[conflictIntensity as keyof typeof conflictDescriptions]}`;
+  }
+
+  prompt += `\nLENGTH: ${lengthGuide[length as keyof typeof lengthGuide]}`;
+
+  if (keyBeats) {
+    prompt += `\nKEY BEATS TO COVER: ${keyBeats}`;
+  }
+
+  prompt += `\n\nCHARACTERS:`;
   characters.forEach((char, index) => {
     prompt += `\n${index + 1}. ${char.name}${char.description ? ` - ${char.description}` : ''}`;
   });
+
   if (sceneData) {
     prompt += `\n\nSCENE DETAILS:
 - Title: ${sceneData.title}
@@ -144,10 +229,26 @@ CHARACTERS:`;
 - Location: ${sceneData.location}
 - Time: ${sceneData.timeOfDay}`;
   }
+
   if (additionalInstructions) {
     prompt += `\n\nADDITIONAL INSTRUCTIONS: ${additionalInstructions}`;
   }
+
+  if (variationMode) {
+    prompt += `\n\nVARIATION MODE: Provide two distinct versions of this scene with slightly different emotional arcs or outcomes.`;
+  }
+
+  if (transliteration && language !== 'en') {
+    prompt += `\n\nTRANSLITERATION: For all ${languageNames[language]} dialogue, provide BOTH the original script and the Romanized (English characters) transliteration immediately after the original line.`;
+  }
+
   prompt += `
+
+IMPORTANT GUIDE FOR ${languageNames[language]}:
+- Use natural, colloquial, and conversational ${languageNames[language]}.
+- Avoid overly bookish, heavy, or formal literary vocabulary.
+- Reflect how real people speak in everyday life.
+- It's natural to mix in common English words as people do in current urban settings (e.g., Hinglish, Telugish, Tanglish, Kanglish, etc.).
 
 IMPORTANT: Generate ONLY the dialogue. Do not include any introductory text, explanations, or meta-comments. Start directly with the character names and dialogue in proper screenplay format.
 
@@ -156,9 +257,7 @@ RAMU
 Hello, how are you?
 
 SOMU
-I'm fine, thank you.
+I'm fine, thank you.`;
 
-RAMU
-That's good to hear.`;
   return prompt;
 }

@@ -38,6 +38,7 @@ export function useI18n({
 }: UseI18nProps): UseI18nReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState(targetLanguage || 'en');
+  const [translations, setTranslations] = useState<Record<string, any>>({});
   const loadedNamespaces = useRef<Set<string>>(new Set());
   const pendingLoads = useRef<Set<string>>(new Set());
 
@@ -50,8 +51,10 @@ export function useI18n({
   }, [targetLanguage, currentLanguage]);
 
   const loadNamespace = useCallback(async (namespace: string) => {
+    if (!enabled || !currentLanguage) return;
+
     const cacheKey = `${currentLanguage}:${namespace}`;
-    
+
     // Return if already loaded or currently loading
     if (translationCache[cacheKey] || loadedNamespaces.current.has(cacheKey) || pendingLoads.current.has(cacheKey)) {
       return;
@@ -77,6 +80,8 @@ export function useI18n({
         const translations = await response.json();
         translationCache[cacheKey] = translations;
         loadedNamespaces.current.add(cacheKey);
+        // Update state to trigger re-render
+        setTranslations(prev => ({ ...prev, [cacheKey]: translations }));
       } else {
         // Fallback to English if target language file doesn't exist
         if (langCode !== 'en') {
@@ -85,6 +90,8 @@ export function useI18n({
             const fallbackTranslations = await fallbackResponse.json();
             translationCache[cacheKey] = fallbackTranslations;
             loadedNamespaces.current.add(cacheKey);
+            // Update state to trigger re-render
+            setTranslations(prev => ({ ...prev, [cacheKey]: fallbackTranslations }));
           }
         }
       }
@@ -94,7 +101,7 @@ export function useI18n({
       pendingLoads.current.delete(cacheKey);
       setIsLoading(false);
     }
-  }, [currentLanguage]);
+  }, [currentLanguage, enabled]);
 
   const t = useCallback((
     key: string, 
@@ -106,21 +113,36 @@ export function useI18n({
   ): string => {
     const { ns = 'common', defaultValue = key, interpolation = {} } = options;
     
-    // If translations are disabled or language is English, return default value
-    if (!enabled || currentLanguage === 'English' || currentLanguage === 'en') {
+    // If translations are disabled, return default value
+    if (!enabled) {
+      return defaultValue;
+    }
+
+    // For English, try to get from English translation file first, then fallback to default
+    if (currentLanguage === 'English' || currentLanguage === 'en') {
+      const englishCacheKey = `en:${ns}`;
+      const englishTranslations = translations[englishCacheKey] || translationCache[englishCacheKey];
+      if (englishTranslations) {
+        const englishValue = getNestedValue(englishTranslations, key);
+        if (englishValue) {
+          const result = typeof englishValue === 'string' && Object.keys(interpolation).length > 0
+            ? interpolate(englishValue, interpolation)
+            : englishValue;
+          return result;
+        }
+      }
       return defaultValue;
     }
 
     const cacheKey = `${currentLanguage}:${ns}`;
-    const translations = translationCache[cacheKey];
+    const cachedTranslations = translations[cacheKey] || translationCache[cacheKey];
     
-    if (!translations) {
-      // Don't call loadNamespace here as it triggers setState during render
-      // Namespaces should be preloaded via TranslationProvider or loadNamespace calls in useEffect
+    if (!cachedTranslations) {
+      // Don't call loadNamespace during render - components should load namespaces in useEffect
       return defaultValue;
     }
 
-    const translatedValue = getNestedValue(translations, key);
+    const translatedValue = getNestedValue(cachedTranslations, key);
     
     if (translatedValue) {
       // Apply interpolation if provided
@@ -128,12 +150,11 @@ export function useI18n({
         ? interpolate(translatedValue, interpolation)
         : translatedValue;
       
-      // Return bilingual format for non-English languages
-      return `${defaultValue} (${result})`;
+      return result;
     }
 
     return defaultValue;
-  }, [enabled, currentLanguage]);
+  }, [enabled, currentLanguage, loadNamespace, translations]);
 
   const setLanguage = useCallback((language: string) => {
     setCurrentLanguage(language);

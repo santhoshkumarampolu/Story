@@ -93,15 +93,12 @@ export default function HomeClient() {
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="border-white/20 bg-white/5 text-white hover:bg-white/10 text-base px-8 py-6 font-medium rounded-full"
-                    onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    See How It Works
-                  </Button>
+                  <Link href="/dialogue-tool">
+                    <Button size="lg" variant="outline" className="border-pink-500/50 bg-pink-500/10 text-pink-300 hover:bg-pink-500/20 text-base px-8 py-6 font-semibold rounded-full">
+                      <MessageCircle className="mr-2 h-5 w-5" />
+                      Try AI Dialogue Tool
+                    </Button>
+                  </Link>
                 </motion.div>
 
                 {/* Trust indicators */}
@@ -231,15 +228,29 @@ export default function HomeClient() {
                 </motion.div>
                 <motion.div 
                   variants={fadeInRight}
-                  className="relative rounded-2xl border border-pink-400/20 bg-white/5"
+                  className="relative rounded-2xl border border-pink-500/20 bg-white/5 overflow-hidden shadow-2xl shadow-pink-500/10"
                 >
-                  <div className="rounded-xl p-8 min-h-[320px] flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center">
-                        <MessageCircle className="h-8 w-8 text-pink-400" />
+                  <div className="rounded-xl p-6 min-h-[360px] bg-gradient-to-b from-transparent to-pink-500/5">
+                    <div className="space-y-4 font-serif text-sm md:text-base opacity-80">
+                      <div className="space-y-1">
+                        <p className="font-bold text-pink-400">RAMU (రాము)</p>
+                        <p className="text-white/90">Where have you been? I waited for hours.</p>
                       </div>
-                      <p className="text-white/40 text-sm">AI Dialogue Tool Preview</p>
+                      <div className="space-y-1">
+                        <p className="font-bold text-pink-400">SOMU (సోము)</p>
+                        <p className="text-white/90">I was caught in the rains. The city is drowning.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-bold text-pink-400">RAMU (రాము)</p>
+                        <p className="text-white/90">And I am drowning in your excuses.</p>
+                      </div>
+                      <div className="pt-4 border-t border-white/10 italic text-white/40">
+                        Supports Telugu, Hindi & English script effortlessly.
+                      </div>
                     </div>
+                  </div>
+                  <div className="absolute top-4 right-4 bg-pink-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded">
+                    Live Demo
                   </div>
                 </motion.div>
               </motion.div>

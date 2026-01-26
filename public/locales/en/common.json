@@ -43,5 +43,75 @@
     "error": "An error occurred. Please try again.",
     "noData": "No data available",
     "welcome": "Welcome back!"
+  },
+  "dialogueTool": {
+    "title": "AI Dialogue Generator ",
+    "subtitle": "Instantly generate authentic screenplay or story dialogue in English, Hindi, Telugu, Tamil, Kannada, or Malayalam. No login required!",
+    "limitReached": "Monthly token limit reached (12,000 for free users). Please upgrade to Pro for unlimited generation",
+    "upgradeToPro": "Upgrade to Pro",
+    "usage": "Usage",
+    "sceneContext": "Scene Context",
+    "sceneContextPlaceholder": "Describe the scene, situation, or conflict...",
+    "tone": "Tone",
+    "conflict": "Conflict Intensity",
+    "writingStyle": "Writing Style",
+    "objective": "Scene Objective",
+    "objectivePlaceholder": "What do the characters want to achieve?",
+    "beats": "Key Beats",
+    "beatsPlaceholder": "Point 1, Point 2 (What must happen?)",
+    "variationMode": "Variation Mode",
+    "variationDesc": "Generates 2 distinct versions with different emotional arcs.",
+    "transliteration": "Transliteration",
+    "transliterationDesc": "Adds Romanized text (e.g. Namaste) for regional languages.",
+    "length": "Length",
+    "language": "Language",
+    "characters": "Characters",
+    "characterName": "Character Name",
+    "characterDescription": "Description (optional)",
+    "addCharacter": "+ Add Character",
+    "additionalInstructions": "Additional Instructions",
+    "additionalInstructionsPlaceholder": "e.g. Make it funny, add a twist, etc.",
+    "generateDialogue": "Generate Dialogue",
+    "generating": "Generating...",
+    "generatedDialogue": "Generated Dialogue",
+    "copyDialogue": "Copy Dialogue",
+    "copySuccess": "Dialogue copied to clipboard!",
+    "copyFailed": "Failed to copy to clipboard.",
+    "missingContext": "Please provide scene context and at least two characters.",
+    "generationError": "Failed to generate dialogue.",
+    "tryTool": "Try Dialogue Tool",
+    "tones": {
+      "emotional": "Emotional",
+      "comedy": "Comedy",
+      "love": "Love",
+      "witty": "Witty",
+      "dramatic": "Dramatic",
+      "action": "Action",
+      "suspense": "Suspense"
+    },
+    "conflicts": {
+      "low": "Low (Subtle)",
+      "medium": "Medium (Active)",
+      "high": "High (Explosive)"
+    },
+    "styles": {
+      "casual": "Casual/Everyday",
+      "formal": "Formal",
+      "poetic": "Poetic",
+      "tarantino": "Fast-Witty"
+    },
+    "lengths": {
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Long"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    }
   }
 }

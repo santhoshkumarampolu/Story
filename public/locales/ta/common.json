@@ -43,5 +43,75 @@
     "error": "பிழை ஏற்பட்டது. மீண்டும் முயற்சிக்கவும்.",
     "noData": "தரவு இல்லை",
     "welcome": "மீண்டும் வரவேற்கிறோம்!"
+  },
+  "dialogueTool": {
+    "title": "AI உரையாடல் உருவாக்கி (AI Dialogue Generator)",
+    "subtitle": "ஆங்கிலம், இந்தி, தெலுங்கு, தமிழ், கன்னடம் அல்லது மலையாளத்தில் உடனடி உரையாடல்களை உருவாக்குங்கள்.",
+    "limitReached": "மாதாந்திர வரம்பு முடிந்தது. புரோவிற்கு மேம்படுத்தவும்.",
+    "upgradeToPro": "புரோவிற்கு மேம்படுத்தவும்",
+    "usage": "பயன்பாடு",
+    "sceneContext": "காட்சியின் சூழல்",
+    "sceneContextPlaceholder": "காட்சி, சூழ்நிலை அல்லது மோதலை விவரிக்கவும்...",
+    "tone": "தொனி (Tone)",
+    "conflict": "மோதலின் தீவிரம்",
+    "writingStyle": "எழுத்து முறை",
+    "objective": "காட்சியின் நோக்கம்",
+    "objectivePlaceholder": "கதாபாத்திரங்கள் எதை அடைய விரும்புகிறார்கள்?",
+    "beats": "முக்கிய புள்ளிகள் (Key Beats)",
+    "beatsPlaceholder": "புள்ளி 1, புள்ளி 2...",
+    "variationMode": "மாறுபாட்டு முறை (Variation Mode)",
+    "variationDesc": "வெவ்வேறு உணர்ச்சிகரமான மாற்றங்களுடன் 2 பதிப்புகளை உருவாக்குகிறது.",
+    "transliteration": "ஒலிபெயர்ப்பு (Transliteration)",
+    "transliterationDesc": "பிராந்திய மொழிகளுக்கு ரோமானிய உரையையும் சேர்க்கிறது.",
+    "length": "நீளம்",
+    "language": "மொழி",
+    "characters": "கதாபாத்திரங்கள்",
+    "characterName": "கதாபாத்திரத்தின் பெயர்",
+    "characterDescription": "விளக்கம் (விருப்பம்)",
+    "addCharacter": "+ கதாபாத்திரத்தைச் சேர்",
+    "additionalInstructions": "கூடுதல் வழிமுறைகள்",
+    "additionalInstructionsPlaceholder": "எ.கா. இதை வேடிக்கையாக்குங்கள்...",
+    "generateDialogue": "உரையாடலை உருவாக்கு",
+    "generating": "உருவாக்கப்படுகிறது...",
+    "generatedDialogue": "உருவாக்கப்பட்ட உரையாடல்",
+    "copyDialogue": "உரையாடலை நகலெடுக்க",
+    "copySuccess": "உரையாடல் நகலெடுக்கப்பட்டது!",
+    "copyFailed": "நகலெடுக்கத் தவறிவிட்டது.",
+    "missingContext": "காட்சி சூழல் மற்றும் குறைந்தபட்சம் இரண்டு கதாபாத்திரங்களை வழங்கவும்.",
+    "generationError": "உரையாடலை உருவாக்குவதில் தோல்வி.",
+    "tryTool": "உரையாடல் கருவியை முயற்சிக்கவும்",
+    "tones": {
+      "emotional": "உணர்ச்சிகரமான",
+      "comedy": "நகைச்சுவை",
+      "love": "காதல்",
+      "witty": "புத்திசாலித்தனமான",
+      "dramatic": "நாடகীয়",
+      "action": "அதிரடி",
+      "suspense": "பரபரப்பு"
+    },
+    "conflicts": {
+      "low": "குறைந்த",
+      "medium": "நடுத்தர",
+      "high": "அதிக"
+    },
+    "styles": {
+      "casual": "சாதாரண",
+      "formal": "முறைசார்ந்த",
+      "poetic": "கவிதை",
+      "tarantino": "வேகமான-புத்திசாலித்தனமான"
+    },
+    "lengths": {
+      "short": "குறுகிய",
+      "medium": "நடுத்தர",
+      "long": "நீளமான"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    }
   }
 }

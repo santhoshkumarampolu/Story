@@ -197,7 +197,7 @@ export async function trackTokenUsage({
   cost,
 }: {
   userId: string;
-  projectId: string;
+  projectId?: string;
   type: "script" | "storyboard" | "treatment" | "idea" | "character_generation" | "logline" | "scenes";
   model: string;
   promptTokens: number;

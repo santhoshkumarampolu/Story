@@ -1,23 +1,23 @@
 {
   "navigation": {
-    "projects": "मेरे प्रोजेक्ट्स",
-    "newProject": "नया प्रोजेक्ट",
-    "dashboard": "डैशबोर्ड",
-    "profile": "प्रोफ़ाइल",
-    "logout": "लॉग आउट"
+    "projects": "My Projects(मेरे प्रोजेक्ट्स)",
+    "newProject": "New Project(नया प्रोजेक्ट)",
+    "dashboard": "Dashboard(डैशबोर्ड)",
+    "profile": "Profile(प्रोफ़ाइल)",
+    "logout": "Logout(लॉग आउट)"
   },
   "buttons": {
-    "save": "सेव करें",
-    "cancel": "रद्द करें",
-    "delete": "डिलीट करें",
-    "edit": "संपादित करें",
-    "create": "बनाएं",
-    "back": "वापस",
-    "next": "अगला",
-    "previous": "पिछला",
-    "submit": "सबमिट करें",
-    "upload": "अपलोड करें",
-    "download": "डाउनलोड करें"
+    "save": "Save(सेव करें)",
+    "cancel": "Cancel(रद्द करें)",
+    "delete": "Delete(डिलीट करें)",
+    "edit": "Edit(संपादित करें)",
+    "create": "Create(बनाएं)",
+    "back": "Back(वापस)",
+    "next": "Next(अगला)",
+    "previous": "Previous(पिछला)",
+    "submit": "Submit(सबमिट करें)",
+    "upload": "Upload(अपलोड करें)",
+    "download": "Download(डाउनलोड करें)"
   },
   "states": {
     "loading": "लोड हो रहा है...",
@@ -43,5 +43,75 @@
     "error": "एक त्रुटि हुई। कृपया फिर से कोशिश करें।",
     "noData": "कोई डेटा उपलब्ध नहीं",
     "welcome": "वापस स्वागत है!"
+  },
+  "dialogueTool": {
+    "title": "AI संवाद जनरेटर (Dialogue Generator)",
+    "subtitle": "अंग्रेजी, हिंदी, तेलुगु, तमिल, कन्नड़ या मलयालम में आसानी से असली संवाद (dialogue) बनाएं। लॉगिन की जरूरत नहीं है!",
+    "limitReached": "मासिक सीमा (12,000 टोकन) समाप्त हो गई है। असीमित जनरेशन के लिए प्रो प्लान लें।",
+    "upgradeToPro": "प्रो में अपग्रेड करें",
+    "usage": "उपयोग",
+    "sceneContext": "सीन का संदर्भ (Scene Context)",
+    "sceneContextPlaceholder": "सीन, स्थिति या किरदारों के बीच झगड़े का वर्णन करें...",
+    "tone": "टोन (Tone)",
+    "length": "लंबाई (Length)",
+    "language": "भाषा",
+    "characters": "किरदार (Characters)",
+    "characterName": "किरदार का नाम",
+    "characterDescription": "विवरण (वैकल्पिक)",
+    "addCharacter": "+ किरदार जोड़ें",
+    "additionalInstructions": "कुछ और निर्देश? (Additional Instructions)",
+    "additionalInstructionsPlaceholder": "उदाहरण: इसे मजाकिया बनाएं, कुछ नया मोड़ जोड़ें, आदि।",
+    "generateDialogue": "संवाद बनाएं (Generate Dialogue)",
+    "generating": "संवाद बन रहा है...",
+    "generatedDialogue": "तैयार संवाद (Result)",
+    "copyDialogue": "कॉपी करें",
+    "copySuccess": "संवाद कॉपी हो गया!",
+    "copyFailed": "कॉपी नहीं हो पाया।",
+    "missingContext": "कृपया सीन का संदर्भ और दो किरदारों के नाम लिखें।",
+    "generationError": "संवाद बनाने में कुछ दिक्कत आई।",
+    "tryTool": "टूल आजमाएं",
+    "tones": {
+      "emotional": "भावुक (Emotional)",
+      "comedy": "कॉमेडी (Comedy)",
+      "love": "रोमांटिक (Love)",
+      "witty": "हाजिरजवाबी (Witty)",
+      "dramatic": "नाटकीय (Dramatic)",
+      "action": "एक्शन (Action)",
+      "suspense": "सस्पेंस (Suspense)"
+    },
+    "lengths": {
+      "short": "छोटा (Short)",
+      "medium": "मध्यम (Medium)",
+      "long": "लंबा (Long)"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    },
+    "conflict": "टकराव (Conflict Intensity)",
+    "writingStyle": "लिखने का तरीका (Style)",
+    "objective": "सीन का मकसद (Objective)",
+    "objectivePlaceholder": "किरदार क्या हासिल करना चाहते हैं?",
+    "beats": "मुख्य बातें (Key Beats)",
+    "beatsPlaceholder": "बात 1, बात 2 (क्या होना जरूरी है?)",
+    "variationMode": "वैरिएशन मोड (Variation Mode)",
+    "variationDesc": "दो अलग-अलग अंदाज़ में संवाद तैयार करेगा।",
+    "transliteration": "इंग्लिश लिपि (Transliteration)",
+    "transliterationDesc": "हिंदी के साथ रोमन इंग्लिश में भी डायलॉग्स लिखेगा।",
+    "conflicts": {
+      "low": "कम (Slight)",
+      "medium": "मध्यम (Active)",
+      "high": "ज्यादा (Explosive)"
+    },
+    "styles": {
+      "casual": "आम बोलचाल (Casual)",
+      "formal": "औपचारिक (Formal)",
+      "poetic": "काव्यात्मक (Poetic)",
+      "tarantino": "तेज और चतुर (Fast-Witty)"
+    }
   }
 }

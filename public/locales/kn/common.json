@@ -43,5 +43,75 @@
     "error": "ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "noData": "ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ",
     "welcome": "ಮರಳಿ ಸ್ವಾಗತ!"
+  },
+  "dialogueTool": {
+    "title": "AI ಸಂವಾದ ಜನರೇಟರ್ (AI Dialogue Generator)",
+    "subtitle": "ಇಂಗ್ಲಿಷ್, ಹಿಂದಿ, ತೆಲುಗು, ತಮಿಳು, ಕನ್ನಡ ಅಥವಾ ಮಲಯಾಳಂ ಭಾಷೆಗಳಲ್ಲಿ ತಕ್ಷಣ ಸಂವಾದಗಳನ್ನು ರಚಿಸಿ.",
+    "limitReached": "ತಿಂಗಳ ಮಿತಿ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಪ್ರೊ ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.",
+    "upgradeToPro": "ಪ್ರೊ ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ",
+    "usage": "ಬಳಕೆ",
+    "sceneContext": "ದೃಶ್ಯದ ಸನ್ನಿವೇಶ",
+    "sceneContextPlaceholder": "ದೃಶ್ಯ, ಪರಿಸ್ಥಿತಿ ಅಥವಾ ಸಂಘರ್ಷವನ್ನು ವಿವರಿಸಿ...",
+    "tone": "ಧ್ವನಿ (Tone)",
+    "conflict": "ಸಂಘರ್ಷದ ತೀವ್ರತೆ",
+    "writingStyle": "ಬರವಣಿಗೆಯ ಶೈಲಿ",
+    "objective": "ದೃಶ್ಯದ ಉದ್ದೇಶ",
+    "objectivePlaceholder": "ಪಾತ್ರಗಳು ಏನನ್ನು ಸಾಧಿಸಲು ಬಯಸುತ್ತವೆ?",
+    "beats": "ಮುಖ್ಯ ಅಂಶಗಳು (Key Beats)",
+    "beatsPlaceholder": "ಅಂಶ 1, ಅಂಶ 2...",
+    "variationMode": "ವೈವಿಧ್ಯಮಯ ಮೋಡ್ (Variation Mode)",
+    "variationDesc": "ವಿಭಿನ್ನ ಭಾವನಾತ್ಮಕ ಆರ್ಕ್‌ಗಳೊಂದಿಗೆ 2 ಆವೃತ್ತಿಗಳನ್ನು ರಚಿಸುತ್ತದೆ.",
+    "transliteration": "ಲಿಪ್ಯಂತರ (Transliteration)",
+    "transliterationDesc": "ಪ್ರಾದೇಶಿಕ ಭಾಷೆಗಳಿಗೆ ರೋಮನೈಸ್ಡ್ ಪಠ್ಯವನ್ನು ಸೇರಿಸುತ್ತದೆ.",
+    "length": "ಉದ್ದ",
+    "language": "ಭಾಷೆ",
+    "characters": "ಪಾತ್ರಗಳು",
+    "characterName": "ಪಾತ್ರದ ಹೆಸರು",
+    "characterDescription": "ವಿವರಣೆ (ಐಚ್ಛಿಕ)",
+    "addCharacter": "+ ಪಾತ್ರವನ್ನು ಸೇರಿಸಿ",
+    "additionalInstructions": "ಹೆಚ್ಚುವರಿ ಸೂಚನೆಗಳು",
+    "additionalInstructionsPlaceholder": "ಉದಾ: ಇದನ್ನು ತಮಾಷೆಯಾಗಿ ಮಾಡಿ...",
+    "generateDialogue": "ಸಂವಾದ ರಚಿಸಿ",
+    "generating": "ರಚಿಸಲಾಗುತ್ತಿದೆ...",
+    "generatedDialogue": "ರಚಿಸಲಾದ ಸಂವಾದ",
+    "copyDialogue": "ಸಂವಾದವನ್ನು ಕಾಪಿ ಮಾಡಿ",
+    "copySuccess": "ಸಂವಾದವನ್ನು ಕಾಪಿ ಮಾಡಲಾಗಿದೆ!",
+    "copyFailed": "ಕಾಪಿ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.",
+    "missingContext": "ದಯವಿಟ್ಟು ದೃಶ್ಯದ ಸನ್ನಿವೇಶ ಮತ್ತು ಕನಿಷ್ಠ ಎರಡು ಪಾತ್ರಗಳನ್ನು ನೀಡಿ.",
+    "generationError": "ಸಂವಾದ ರಚಿಸಲು ವಿಫಲವಾಗಿದೆ.",
+    "tryTool": "ಸಂವಾದ ಪರಿಕರವನ್ನು ಪ್ರಯತ್ನಿಸಿ",
+    "tones": {
+      "emotional": "ಭಾವನಾತ್ಮಕ",
+      "comedy": "ಹಾಸ್ಯ",
+      "love": "ಪ್ರೀತಿ",
+      "witty": "ಚತುರ",
+      "dramatic": "ನಾಟಕೀಯ",
+      "action": "ಆಕ್ಷನ್",
+      "suspense": "ಸಸ್ಪೆನ್ಸ್"
+    },
+    "conflicts": {
+      "low": "ಕಡಿಮೆ",
+      "medium": "ಮಧ್ಯಮ",
+      "high": "ಹೆಚ್ಚು"
+    },
+    "styles": {
+      "casual": "ಸಾಮಾನ್ಯ",
+      "formal": "ಔಪಚಾರಿಕ",
+      "poetic": "ಕಾವ್ಯಾತ್ಮಕ",
+      "tarantino": "ವೇಗವಾದ-ಚತುರ"
+    },
+    "lengths": {
+      "short": "ಚಿಕ್ಕದಾದ",
+      "medium": "ಮಧ್ಯಮ",
+      "long": "ಉದ್ದವಾದ"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    }
   }
 }

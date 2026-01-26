@@ -1,23 +1,23 @@
 {
   "navigation": {
-    "projects": "నా ప్రాజెక్టులు",
-    "newProject": "కొత్త ప్రాజెక్ట్",
-    "dashboard": "డ్యాష్‌బోర్డ్",
-    "profile": "ప్రొఫైల్",
-    "logout": "లాగ్ అవుట్"
+    "projects": "My Projects(నా ప్రాజెక్టులు)",
+    "newProject": "New Project(కొత్త ప్రాజెక్ట్)",
+    "dashboard": "Dashboard(డ్యాష్‌బోర్డ్)",
+    "profile": "Profile(ప్రొఫైల్)",
+    "logout": "Logout(లాగ్ అవుట్)"
   },
   "buttons": {
-    "save": "సేవ్ చేయి",
-    "cancel": "రద్దు చేయి",
-    "delete": "తొలగించు",
-    "edit": "సవరించు",
-    "create": "సృష్టించు",
-    "back": "వెనుకకు",
-    "next": "తరువాత",
-    "previous": "మునుపటి",
-    "submit": "సమర్పించు",
-    "upload": "అప్‌లోడ్",
-    "download": "డౌన్‌లోడ్"
+    "save": "Save(సేవ్ చేయి)",
+    "cancel": "Cancel(రద్దు చేయి)",
+    "delete": "Delete(తొలగించు)",
+    "edit": "Edit(సవరించు)",
+    "create": "Create(సృష్టించు)",
+    "back": "Back(వెనుకకు)",
+    "next": "Next(తరువాత)",
+    "previous": "Previous(మునుపటి)",
+    "submit": "Submit(సమర్పించు)",
+    "upload": "Upload(అప్‌లోడ్)",
+    "download": "Download(డౌన్‌లోడ్)"
   },
   "states": {
     "loading": "లోడ్ అవుతోంది...",
@@ -43,5 +43,75 @@
     "error": "లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
     "noData": "డేటా అందుబాటులో లేదు",
     "welcome": "మళ్లీ స్వాగతం!"
+  },
+  "dialogueTool": {
+    "title": "AI డైలాగ్ జనరేటర్ (Dialogue Generator)",
+    "subtitle": "ఇంగ్లీష్, హిందీ, తెలుగు, తమిళం, కన్నడ లేదా మలయాళంలో తక్షణమే అసలైన డైలాగ్స్ సృష్టించండి. లాగిన్ అవసరం లేదు!",
+    "limitReached": "నెలవారీ పరిమితి (12,000 టోకెన్లు) ముగిసింది. అపరిమిత జనరేషన్ కోసం ప్రో కి అప్‌గ్రేడ్ అవ్వండి.",
+    "upgradeToPro": "ప్రో కి అప్‌గ్రేడ్ అవ్వండి",
+    "usage": "వినియోగం (Usage)",
+    "sceneContext": "సీన్ సందర్భం (Scene Context)",
+    "sceneContextPlaceholder": "దృశ్యం, పరిస్థితి లేదా పాత్రల మధ్య గొడవ గురించి వివరించండి...",
+    "tone": "టోన్ (Tone)",
+    "length": "లెంత్ (Length)",
+    "language": "భాష",
+    "characters": "పాత్రలు (Characters)",
+    "characterName": "పాత్ర పేరు",
+    "characterDescription": "వివరణ (ఐచ్ఛికం)",
+    "addCharacter": "+ పాత్రను జోడించు",
+    "additionalInstructions": "అదనపు సూచనలు (Additional Instructions)",
+    "additionalInstructionsPlaceholder": "ఉదా: దీన్ని వినోదకరంగా చేయండి, ఒక మలుపు జోడించండి, మొదలైనవి.",
+    "generateDialogue": "డైలాగ్ సృష్టించండి (Generate Dialogue)",
+    "generating": "డైలాగ్ తయారవుతోంది...",
+    "generatedDialogue": "తయారైన డైలాగ్ (Result)",
+    "copyDialogue": "కాపీ చేయి",
+    "copySuccess": "డైలాగ్ కాపీ చేయబడింది!",
+    "copyFailed": "కాపీ చేయడం విఫలమైంది.",
+    "missingContext": "దయచేసి సీన్ సందర్భం మరియు కనీసం ఇద్దరు పాత్రల పేర్లు అందించండి.",
+    "generationError": "డైలాగ్ సృష్టించడంలో లోపం సంభవించింది.",
+    "tryTool": "టూల్‌ను ప్రయత్నించండి",
+    "tones": {
+      "emotional": "భావోద్వేగ (Emotional)",
+      "comedy": "కామెడీ (Comedy)",
+      "love": "ప్రేమ (Romantic)",
+      "witty": "తెలివైన (Witty)",
+      "dramatic": "నాటకీయ (Dramatic)",
+      "action": "యాక్షన్ (Action)",
+      "suspense": "సస్పెన్స్ (Suspense)"
+    },
+    "lengths": {
+      "short": "చిన్నది (Short)",
+      "medium": "మధ్యస్థం (Medium)",
+      "long": "పెద్దది (Long)"
+    },
+    "languages": {
+      "en": "English",
+      "hi": "Hindi",
+      "te": "Telugu",
+      "ta": "Tamil",
+      "kn": "Kannada",
+      "ml": "Malayalam"
+    },
+    "conflict": "సంఘర్షణ స్థాయి (Conflict Intensity)",
+    "writingStyle": "శైలి (Writing Style)",
+    "objective": "సీన్ లక్ష్యం (Scene Objective)",
+    "objectivePlaceholder": "పాత్రలు ఏమి సాధించాలనుకుంటున్నాయి?",
+    "beats": "ముఖ్యమైన విషయాలు (Key Beats)",
+    "beatsPlaceholder": "విషయం 1, విషయం 2 (ఏమి జరగాలి?)",
+    "variationMode": "మల్టిపుల్ ఆప్షన్స్ (Variation Mode)",
+    "variationDesc": "రెండు వేర్వేరు వెర్షన్లలో డైలాగ్స్ తయారు చేస్తుంది.",
+    "transliteration": "లిప్యంతరీకరణ (Transliteration)",
+    "transliterationDesc": "తెలుగుతో పాటు ఇంగ్లీష్ అక్షరాలలో కూడా డైలాగ్స్ ఇస్తుంది.",
+    "conflicts": {
+      "low": "తక్కువ (Low)",
+      "medium": "మధ్యస్థం (Active)",
+      "high": "ఎక్కువ (Explosive)"
+    },
+    "styles": {
+      "casual": "వాడుక భాష (Casual)",
+      "formal": "గ్రాంథికం/మర్యాద (Formal)",
+      "poetic": "కవితాత్మకం (Poetic)",
+      "tarantino": "చురుకైన సంభాషణ (Fast-Witty)"
+    }
   }
 }

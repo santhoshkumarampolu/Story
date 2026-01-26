@@ -1,17 +1,17 @@
 {
   "dashboard": {
-    "title": "డ్యాష్‌బోర్డ్",
-    "welcome": "మళ్లీ స్వాగతం",
-    "recentProjects": "ఇటీవలి ప్రాజెక్టులు",
-    "noProjectsYet": "ఇంకా ప్రాజెక్టులు లేవు",
-    "createFirstProject": "ప్రారంభించడానికి మీ మొదటి ప్రాజెక్ట్‌ను సృష్టించండి",
-    "lastUpdated": "చివరిగా అప్‌డేట్ చేయబడింది",
-    "quickActions": "త్వరిత చర్యలు"
+    "title": "Dashboard(డ్యాష్‌బోర్డ్)",
+    "welcome": "Welcome back(మళ్లీ స్వాగతం)",
+    "recentProjects": "Recent Projects(ఇటీవలి ప్రాజెక్టులు)",
+    "noProjectsYet": "No projects yet(ఇంకా ప్రాజెక్టులు లేవు)",
+    "createFirstProject": "Create your first project to get started(ప్రారంభించడానికి మీ మొదటి ప్రాజెక్ట్‌ను సృష్టించండి)",
+    "lastUpdated": "Last updated(చివరిగా అప్‌డేట్ చేయబడింది)",
+    "quickActions": "Quick Actions(త్వరిత చర్యలు)"
   },
   "actions": {
-    "newProject": "కొత్త ప్రాజెక్ట్", 
-    "allProjects": "అన్ని ప్రాజెక్టులు",
-    "viewProject": "ప్రాజెక్ట్ చూడండి",
-    "editProject": "ప్రాజెక్ట్ సవరించండి"
+    "newProject": "New Project(కొత్త ప్రాజెక్ట్)", 
+    "allProjects": "All Projects(అన్ని ప్రాజెక్టులు)",
+    "viewProject": "View Project(ప్రాజెక్ట్ చూడండి)",
+    "editProject": "Edit Project(ప్రాజెక్ట్ సవరించండి)"
   }
 }

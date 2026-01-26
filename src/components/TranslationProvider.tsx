@@ -24,7 +24,7 @@ export function TranslationProvider({
   targetLanguage,
   enabled = true 
 }: TranslationProviderProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(true); // Start as true
   const { t, setLanguage, currentLanguage, isLoading, loadNamespace } = useI18n({
     targetLanguage,
     enabled 
@@ -32,27 +32,14 @@ export function TranslationProvider({
 
   // Load required namespaces on mount and language change
   useEffect(() => {
-    const initializeTranslations = async () => {
-      if (enabled && targetLanguage && targetLanguage !== 'English') {
-        try {
-          await Promise.all([
-            loadNamespace('common'),
-            loadNamespace('dashboard'),
-            loadNamespace('projects'),
-            loadNamespace('editor')
-          ]);
-        } catch (error) {
-          console.error('Failed to load translations:', error);
-        }
-      }
-      setIsInitialized(true);
-    };
-
-    initializeTranslations();
+    // Load common namespace on mount
+    if (enabled && targetLanguage) {
+      loadNamespace('common');
+    }
   }, [targetLanguage, enabled, loadNamespace]);
 
   // Don't render children until translations are loaded
-  if (!isInitialized || isLoading) {
+  if (!isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
