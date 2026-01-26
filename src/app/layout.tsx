@@ -1,11 +1,29 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk, Lora, Outfit } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/session-provider";
 import MobileWarning from "@/components/MobileWarning";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://aistorystudio.com'),
@@ -86,7 +104,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-background antialiased dark`}>
+      <body className={`${inter.variable} ${outfit.variable} ${spaceGrotesk.variable} ${lora.variable} font-outfit min-h-screen bg-background antialiased dark`}>
         <GoogleAnalytics />
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
         <SessionProvider>

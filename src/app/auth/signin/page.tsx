@@ -88,7 +88,7 @@ export default function SignInPage() {
                   </svg>
                   Back to home
                 </Link>
-                <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold tracking-tight">
+                <h1 className="font-outfit text-4xl sm:text-5xl font-bold tracking-tight">
                   Welcome back
                 </h1>
                 <p className="text-lg text-white/70">

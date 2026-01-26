@@ -99,7 +99,7 @@ interface ProfileData {
       project: {
         id: string;
         title: string;
-      };
+      } | null;
     }>;
   };
 }
@@ -644,7 +644,7 @@ export default function ProfilePage() {
                               {getOperationIcon(usage.type)}
                               <div>
                                 <p className="text-sm font-medium text-white">{usage.operationName || usage.type}</p>
-                                <p className="text-xs text-gray-400">{usage.project.title}</p>
+                                <p className="text-xs text-gray-400">{usage.project?.title || 'Standalone Tool'}</p>
                               </div>
                             </div>
                             <div className="text-right">

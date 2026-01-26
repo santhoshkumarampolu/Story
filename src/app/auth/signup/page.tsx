@@ -165,7 +165,7 @@ export default function SignUpPage() {
                   </svg>
                   Back to home
                 </Link>
-                <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold tracking-tight whitespace-nowrap">
+                <h1 className="font-outfit text-4xl sm:text-5xl font-bold tracking-tight whitespace-nowrap">
                   Create an account
                 </h1>
                 <p className="text-lg text-white/70">

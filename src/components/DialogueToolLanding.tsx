@@ -334,16 +334,16 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
       <CardHeader className="border-b border-border/40 p-6 md:p-8 pb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20 shadow-inner group">
-              <NotebookPen className="h-7 w-7 text-pink-500 group-hover:scale-110 transition-transform" />
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 shadow-inner group">
+              <NotebookPen className="h-7 w-7 text-indigo-500 group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <CardTitle className={`text-2xl md:text-3xl font-space-grotesk tracking-tight transition-colors duration-500 ${activeTheme.text}`}>
+              <CardTitle className={`text-2xl md:text-3xl font-outfit font-semibold tracking-tight transition-colors duration-500 ${activeTheme.text}`}>
                 {t('dialogueTool.title')}
               </CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`flex h-2 w-2 rounded-full animate-pulse ring-4 transition-colors duration-500 ${currentStep === 1 ? 'bg-[#00BCD4] ring-[#00BCD4]/20' : 'bg-green-500 ring-green-500/20'}`}></span>
-             <span className="text-[11px] font-bold text-muted-foreground  tracking-[0.2em]">Neural Engine Ready</span>
+             <span className="text-[10px] font-bold text-muted-foreground/60 tracking-[0.25em] uppercase">Neural Engine Active</span>
               </div>
             </div>
           </div>
@@ -418,8 +418,8 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <label className="text-[13px] font-black  tracking-[0.15em] text-muted-foreground/80 flex items-center gap-1">
-                        {t('dialogueTool.sceneContext')} <span className="text-rose-500">*</span>
+                      <label className="text-[13px] font-bold tracking-widest uppercase text-muted-foreground/60 flex items-center gap-1">
+                        {t('dialogueTool.sceneContext')} <span className="text-rose-500/50">*</span>
                       </label>
                       <VoiceButton field="context" setter={setContext} />
                     </div>
@@ -498,7 +498,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                   <div className="space-y-3">
-                    <label className="text-[13px] font-black  tracking-[0.15em] text-muted-foreground/80">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
                       {t('dialogueTool.tone')}
                     </label>
                     <Select value={tone} onValueChange={setTone}>
@@ -603,7 +603,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                   <Button 
                     type="button" 
                     onClick={() => setCurrentStep(3)}
-                    className={`h-12 px-8 rounded-xl text-white font-bold tracking-widest transition-all shadow-lg active:scale-95 ${activeTheme.bg} ${activeTheme.hover} ${activeTheme.shadow}`}
+                    className={`h-12 px-8 rounded-xl text-white font-bold tracking-widest uppercase text-xs transition-all shadow-lg active:scale-95 ${activeTheme.bg} ${activeTheme.hover} ${activeTheme.shadow}`}
                   >
                     Continue →
                   </Button>
@@ -622,17 +622,17 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
               >
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[13px] font-black  tracking-[0.15em] text-muted-foreground/80">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
                       {t('dialogueTool.characters')}
                     </label>
-                    <span className="text-[13px] font-bold text-muted-foreground/60 tracking-wider">MINIMUM 2 PLAYERS</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/40 tracking-wider uppercase">Minimum 2 characters</span>
                   </div>
                   <div className="grid gap-4">
                     {characters.map((char, idx) => (
-                      <div key={idx} className="group relative flex flex-col md:flex-row gap-4 p-4 rounded-2xl border border-border/40 bg-muted/5 transition-all hover:bg-muted/10 hover:border-pink-500/30">
+                      <div key={idx} className="group relative flex flex-col md:flex-row gap-4 p-4 rounded-2xl border border-border/40 bg-muted/5 transition-all hover:bg-muted/10 hover:border-indigo-500/30">
                         <div className="flex-1 space-y-2">
-                          <label className="text-[13px] font-black  tracking-[0.1em] text-muted-foreground/40 ml-1 flex items-center gap-1">
-                            Name <span className="text-rose-500">*</span>
+                          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 ml-1 flex items-center gap-1">
+                            Name <span className="text-rose-500/50">*</span>
                           </label>
                           <Input
                             value={char.name}
@@ -643,7 +643,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                           />
                         </div>
                         <div className="flex-[2] space-y-2">
-                          <label className="text-[13px] font-black  tracking-[0.1em] text-muted-foreground/40 ml-1">Description</label>
+                          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 ml-1">Description</label>
                           <Input
                             value={char.description}
                             onChange={e => handleCharacterChange(idx, "description", e.target.value)}
@@ -663,14 +663,14 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                       </div>
                     ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={addCharacter} className="w-full border-dashed h-12 rounded-xl text-[13px] font-black  tracking-[0.15em] text-muted-foreground hover:text-pink-500 hover:border-pink-500/50 hover:bg-pink-500/5">
+                  <Button type="button" variant="outline" size="sm" onClick={addCharacter} className="w-full border-dashed h-12 rounded-xl text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60 hover:text-indigo-500 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all">
                     + {t('dialogueTool.addCharacter')}
                   </Button>
                 </div>
 
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center gap-2">
-                    <label className="text-[13px] font-black  tracking-[0.15em] text-muted-foreground/80">
+                    <label className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
                       {t('dialogueTool.additionalInstructions')} <span className="opacity-40 font-normal lowercase tracking-normal ml-1">(Optional)</span>
                     </label>
                     <VoiceButton field="additionalInstructions" setter={setAdditionalInstructions} />
@@ -695,7 +695,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                     </Button>
                     <Button 
                       type="submit" 
-                      className={`flex-1 h-14 text-sm font-black  tracking-[0.2em] text-white transition-all active:scale-[0.98] disabled:opacity-70 group rounded-2xl ${activeTheme.bg} ${activeTheme.hover} ${activeTheme.shadow}`} 
+                      className={`flex-1 h-14 text-sm font-bold tracking-[0.15em] uppercase text-white transition-all active:scale-[0.98] disabled:opacity-70 group rounded-2xl ${activeTheme.bg} ${activeTheme.hover} ${activeTheme.shadow}`} 
                       disabled={loading || characters.filter(c => c.name).length < 2}
                     >
                       {loading ? (
@@ -721,8 +721,8 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
           <div ref={resultRef} className="mt-20 space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-1000">
             <div className="flex items-center justify-between border-b border-border/40 pb-6">
               <div className="flex items-center gap-3">
-                <div className={`h-2 w-2 rounded-full animate-pulse ${activeTheme.bg}`} />
-                <label className="text-[11px] font-black  tracking-[0.4em] text-muted-foreground">
+                <div className={`h-2 w-2 rounded-full animate-bounce ${activeTheme.bg}`} />
+                <label className="text-[11px] font-bold tracking-[0.3em] text-muted-foreground/50 uppercase">
                   {t('dialogueTool.generatedDialogue')}
                 </label>
               </div>
@@ -730,25 +730,29 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                 <Button 
                   variant="ghost" 
                   onClick={handleReset}
-                  className="h-12 px-6 rounded-xl text-[13px] font-black  tracking-[0.2em] text-muted-foreground hover:bg-muted transition-all"
+                  className="h-11 px-5 rounded-xl text-[12px] font-bold tracking-widest text-muted-foreground hover:bg-muted transition-all"
                 >
                   Clear & Reset
                 </Button>
                 <Button
                   size="sm"
                   variant="secondary"
-                  className={`h-12 px-8 text-[11px] font-black tracking-[0.2em] border border-border/60 bg-background transition-all shadow-sm rounded-xl ${activeTheme.text} hover:${activeTheme.lightBg} hover:${activeTheme.text}`}
+                  className={`h-11 px-7 text-[11px] font-bold tracking-widest border border-border/60 bg-background transition-all shadow-sm rounded-xl ${activeTheme.text} hover:${activeTheme.lightBg} hover:${activeTheme.text}`}
                   onClick={handleCopy}
                 >
                   {t('dialogueTool.copyDialogue')}
                 </Button>
               </div>
             </div>
-            <div className={`relative rounded-[40px] border-2 border-border/60 bg-muted/10 p-10 md:p-16 shadow-2xl overflow-hidden group`}>
-               {/* Background pattern */}
-              <div className={`absolute inset-0 opacity-[0.05] pointer-events-none [background-size:24px_24px] group-hover:opacity-[0.08] transition-opacity ${currentStep === 1 ? 'bg-[radial-gradient(#10b981_1px,transparent_1px)]' : currentStep === 2 ? 'bg-[radial-gradient(#8b5cf6_1px,transparent_1px)]' : 'bg-[radial-gradient(#4f46e5_1px,transparent_1px)]'}`}></div>
+            <div className={`relative rounded-[40px] border-2 border-border/40 bg-muted/5 p-12 md:p-20 shadow-2xl overflow-hidden group transition-all duration-700 hover:border-indigo-500/20`}>
+               {/* Watermark/Pattern */}
+              <div className="absolute top-8 right-8 opacity-10 rotate-12">
+                <Sparkles className={`h-24 w-24 ${activeTheme.text}`} />
+              </div>
+
+              <div className={`absolute inset-0 opacity-[0.03] pointer-events-none [background-size:32px_32px] group-hover:opacity-[0.05] transition-opacity ${currentStep === 1 ? 'bg-[radial-gradient(#10b981_1px,transparent_1px)]' : currentStep === 2 ? 'bg-[radial-gradient(#8b5cf6_1px,transparent_1px)]' : 'bg-[radial-gradient(#4f46e5_1px,transparent_1px)]'}`}></div>
               
-              <pre className={`relative whitespace-pre-wrap font-serif text-xl leading-[2.2] md:text-2xl text-foreground selection:bg-indigo-500/30 break-words ${language !== 'en' ? 'font-medium' : ''}`}>
+              <pre className={`relative whitespace-pre-wrap font-serif text-xl leading-relaxed md:text-2xl text-foreground/90 selection:bg-indigo-500/30 break-words drop-shadow-sm ${language !== 'en' ? 'font-medium' : ''}`}>
                 {result}
               </pre>
             </div>

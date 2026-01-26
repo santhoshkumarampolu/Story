@@ -22,7 +22,7 @@ export default function PrivacyClient() {
               Back to Home
             </Link>
 
-            <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold mb-8">
+            <h1 className="font-outfit text-4xl sm:text-5xl font-bold mb-8">
               Privacy Policy
             </h1>
 

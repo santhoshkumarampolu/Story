@@ -43,7 +43,7 @@ export default function ContactClient() {
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
               {/* Left Column - Info */}
               <div>
-                <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold mb-6">
+                <h1 className="font-outfit text-4xl sm:text-5xl font-bold mb-6">
                   Get in Touch
                 </h1>
                 <p className="text-lg text-white/60 mb-12">

@@ -22,7 +22,7 @@ export default function TermsClient() {
               Back to Home
             </Link>
 
-            <h1 className="font-space-grotesk text-4xl sm:text-5xl font-bold mb-8">
+            <h1 className="font-outfit text-4xl sm:text-5xl font-bold mb-8">
               Terms of Service
             </h1>
 

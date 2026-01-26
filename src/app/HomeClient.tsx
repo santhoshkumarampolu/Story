@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, Variants } from "framer-motion";
 import { Header } from "@/components/layout/header";
-import { Sparkles, Languages, Users, Zap, ChevronRight, Play, Check, Trophy, Flame, Target, PartyPopper, MessageCircle, Rocket } from "lucide-react";
+import { Sparkles, Languages, Users, Zap, ChevronRight, Play, Check, Trophy, Flame, Target, PartyPopper, NotebookPen, Rocket, Mic } from "lucide-react";
 import { WebsiteStructuredData, OrganizationStructuredData, FAQStructuredData } from "@/components/seo/StructuredData";
 
 // Animation variants
@@ -45,7 +45,7 @@ export default function HomeClient() {
 
         <main>
           {/* Hero Section - Clean & Bold */}
-          <section className="relative min-h-[90vh] flex items-center justify-center px-4 pt-10 pb-10">
+          <section className="relative min-h-[80vh] flex items-center justify-center px-4 pt-10 pb-6">
             <div className="container mx-auto max-w-5xl">
               <motion.div 
                 className="flex flex-col items-center text-center"
@@ -56,7 +56,7 @@ export default function HomeClient() {
                 {/* Badge */}
                 <motion.div 
                   variants={fadeInUp}
-                  className="mb-8 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm text-purple-300"
+                  className="mb-6 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm text-purple-300"
                 >
                   <Sparkles className="h-4 w-4" />
                   AI-Powered Storytelling Platform
@@ -65,7 +65,7 @@ export default function HomeClient() {
                 {/* Main headline */}
                 <motion.h1 
                   variants={fadeInUp}
-                  className="font-space-grotesk text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6"
+                  className="font-outfit text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6"
                 >
                   Your guided journey to
                   <span className="block mt-2 text-purple-400">
@@ -76,16 +76,16 @@ export default function HomeClient() {
                 {/* Subheadline */}
                 <motion.p 
                   variants={fadeInUp}
-                  className="max-w-2xl text-lg sm:text-xl text-white/60 mb-10"
+                  className="max-w-2xl text-lg sm:text-l text-white/60 mb-8"
                 >
                   From spark to screenplay, guided step-by-step. Celebrate progress, unlock achievements, 
-                  and let AI help you overcome every block. Writing has never been this engaging.
+                  and let AI help you overcome every block.
                 </motion.p>
 
                 {/* CTA Buttons */}
                 <motion.div 
                   variants={fadeInUp}
-                  className="flex flex-col sm:flex-row gap-4 mb-16"
+                  className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16"
                 >
                   <Link href="/auth/signup">
                     <Button size="lg" className="bg-white text-black hover:bg-white/90 text-base px-8 py-6 font-semibold rounded-full">
@@ -93,12 +93,18 @@ export default function HomeClient() {
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/dialogue-tool">
-                    <Button size="lg" variant="outline" className="border-pink-500/50 bg-pink-500/10 text-pink-300 hover:bg-pink-500/20 text-base px-8 py-6 font-semibold rounded-full">
-                      <MessageCircle className="mr-2 h-5 w-5" />
-                      Try AI Dialogue Tool
-                    </Button>
-                  </Link>
+                  
+                  <div className="relative group">
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-indigo-600 text-[10px] font-bold px-3 py-1 rounded-full text-white uppercase tracking-widest z-10 shadow-lg border border-white/20">
+                      No Login Required
+                    </div>
+                    <Link href="/dialogue-tool" className="block transform transition-transform group-hover:scale-105 active:scale-95">
+                      <Button size="lg" variant="outline" className="border-indigo-500/60 bg-indigo-500/5 text-indigo-300 hover:bg-indigo-500/20 text-base px-10 py-7 font-bold rounded-full border-2 backdrop-blur-sm">
+                        <NotebookPen className="mr-2 h-5 w-5" />
+                        Try AI Dialogue Tool
+                      </Button>
+                    </Link>
+                  </div>
                 </motion.div>
 
                 {/* Trust indicators */}
@@ -123,25 +129,6 @@ export default function HomeClient() {
             </div>
           </section>
 
-          {/* Stats Bar - Simple inline */}
-          {/* <section className="relative py-12 border-y border-white/10 bg-white/[0.02]">
-            <div className="container mx-auto max-w-5xl px-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                {[
-                  { value: "10K+", label: "Stories Created" },
-                  { value: "6", label: "Languages" },
-                  { value: "50K+", label: "Scenes Generated" },
-                  { value: "4.9", label: "User Rating" },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-sm text-white/50">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section> */}
-
           {/* Feature 1 - Text Left, Visual Right */}
           <section className="relative py-10 px-4">
             <div className="container mx-auto max-w-6xl">
@@ -157,7 +144,7 @@ export default function HomeClient() {
                     <Sparkles className="h-4 w-4" />
                     AI-Powered Writing
                   </div>
-                  <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                  <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                     Generate stories from a single idea
                   </h2>
                   <p className="text-lg text-white/60 leading-relaxed">
@@ -190,75 +177,8 @@ export default function HomeClient() {
             </div>
           </section>
 
-          {/* Dialogue Tool Highlight Section */}
-          <section className="relative py-10 px-4 bg-gradient-to-br from-pink-500/10 to-purple-500/10">
-            <div className="container mx-auto max-w-6xl">
-              <motion.div 
-                className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
-                initial="initial"
-                whileInView="animate"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-              >
-                <motion.div variants={fadeInLeft} className="space-y-6">
-                  <div className="inline-flex items-center gap-2 text-pink-400 text-sm font-medium">
-                    <MessageCircle className="h-4 w-4" />
-                    NEW: Instant Dialogue Generator
-                  </div>
-                  <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-                    Generate dialogue in English, Hindi, or Telugu
-                  </h2>
-                  <p className="text-lg text-white/60 leading-relaxed">
-                    Try our free, public AI Dialogue Tool—no login required! Instantly create authentic screenplay or story dialogue in your preferred language. Perfect for writers, filmmakers, and students.
-                  </p>
-                  <ul className="space-y-3">
-                    {["Multi-language (English, Hindi, Telugu)", "Screenplay or narrative style", "No signup needed"].map((item) => (
-                      <li key={item} className="flex items-center gap-3 text-white/70">
-                        <div className="h-1.5 w-1.5 rounded-full bg-pink-400" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/dialogue-tool">
-                    <Button size="lg" variant="ai" className="mt-4">
-                      Try Dialogue Tool
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </motion.div>
-                <motion.div 
-                  variants={fadeInRight}
-                  className="relative rounded-2xl border border-pink-500/20 bg-white/5 overflow-hidden shadow-2xl shadow-pink-500/10"
-                >
-                  <div className="rounded-xl p-6 min-h-[360px] bg-gradient-to-b from-transparent to-pink-500/5">
-                    <div className="space-y-4 font-serif text-sm md:text-base opacity-80">
-                      <div className="space-y-1">
-                        <p className="font-bold text-pink-400">RAMU (రాము)</p>
-                        <p className="text-white/90">Where have you been? I waited for hours.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-bold text-pink-400">SOMU (సోము)</p>
-                        <p className="text-white/90">I was caught in the rains. The city is drowning.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-bold text-pink-400">RAMU (రాము)</p>
-                        <p className="text-white/90">And I am drowning in your excuses.</p>
-                      </div>
-                      <div className="pt-4 border-t border-white/10 italic text-white/40">
-                        Supports Telugu, Hindi & English script effortlessly.
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute top-4 right-4 bg-pink-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded">
-                    Live Demo
-                  </div>
-                </motion.div>
-              </motion.div>
-            </div>
-          </section>
-
           {/* Feature 2 - Visual Left, Text Right */}
-          <section className="relative py-10 px-4 bg-white/[0.02]">
+          <section className="relative py-12 px-4 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-y border-white/5">
             <div className="container mx-auto max-w-6xl">
               <motion.div 
                 className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
@@ -269,23 +189,86 @@ export default function HomeClient() {
               >
                 <motion.div 
                   variants={fadeInLeft}
-                  className="relative rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-1 order-2 lg:order-1"
+                  className="relative rounded-3xl border border-indigo-500/20 bg-black overflow-hidden shadow-2xl shadow-indigo-500/20 order-2 lg:order-1"
                 >
-                  <div className="rounded-xl bg-black/80 p-8 min-h-[320px] flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center">
-                        <Languages className="h-8 w-8 text-blue-400" />
-                      </div>
-                      <p className="text-white/40 text-sm">Multi-Language Translation</p>
-                    </div>
+                  <div className="rounded-xl p-8 min-h-[300px] bg-gradient-to-b from-transparent to-indigo-500/5">
+                    <motion.div 
+                      className="space-y-6 font-serif text-base md:text-lg opacity-90"
+                      variants={staggerContainer}
+                      initial="initial"
+                      whileInView="animate"
+                      viewport={{ once: true }}
+                    >
+                      <motion.div variants={fadeInUp} className="space-y-1">
+                        <p className="font-bold text-indigo-500 text-sm tracking-widest uppercase">RAVI (రవి)</p>
+                        <p className="text-white/90 leading-relaxed">Bagunnava? Script work enthavaraku vachindi?</p>
+                      </motion.div>
+                      <motion.div variants={fadeInUp} className="space-y-1">
+                        <p className="font-bold text-indigo-500 text-sm tracking-widest uppercase">KIRAN (కిరణ్)</p>
+                        <p className="text-white/90 leading-relaxed">Yeah! Almost complete ayindi. This AI captures the context perfectly.</p>
+                      </motion.div>
+                      <motion.div variants={fadeInUp} className="pt-6 border-t border-white/10 flex items-center justify-between">
+                        <span className="italic text-white/40 text-sm">AI capturing Telgish/Hinglish...</span>
+                        <Mic className="h-4 w-4 text-indigo-500 animate-pulse" />
+                      </motion.div>
+                    </motion.div>
+                  </div>
+                  <div className="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-lg">
+                    Live Demo
                   </div>
                 </motion.div>
-                <motion.div variants={fadeInRight} className="space-y-6 order-1 lg:order-2">
+                
+                <motion.div variants={fadeInRight} className="space-y-5 order-1 lg:order-2">
+                  <div className="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium">
+                    <NotebookPen className="h-4 w-4" />
+                    FREE & NO LOGIN REQUIRED
+                  </div>
+                  <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                    Instant AI Dialogue in <span className="text-indigo-500">6+ Languages</span>
+                  </h2>
+                  <p className="text-lg text-white/60 leading-relaxed">
+                    Try our free AI Dialogue Tool—start generating instantly without an account. Now with Voice Dictation and support for all major Southern languages.
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      "English, Hindi, Telugu", 
+                      "Tamil, Kannada, Malayalam", 
+                      "Voice Commands Enabled", 
+                      "No Signup Needed"
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-3 text-white/70">
+                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/dialogue-tool">
+                    <Button size="lg" variant="secondary" className="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white border-none rounded-full px-8">
+                      Try Free Instantly
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* Feature 3 - Text Left, Visual Right */}
+          <section className="relative py-10 px-4 bg-white/[0.02]">
+            <div className="container mx-auto max-w-6xl">
+              <motion.div 
+                className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
+                variants={staggerContainer}
+              >
+                <motion.div variants={fadeInLeft} className="space-y-6">
                   <div className="inline-flex items-center gap-2 text-blue-400 text-sm font-medium">
                     <Languages className="h-4 w-4" />
                     Multi-Language Support
                   </div>
-                  <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                  <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                     Write once, translate everywhere
                   </h2>
                   <p className="text-lg text-white/60 leading-relaxed">
@@ -300,6 +283,19 @@ export default function HomeClient() {
                       </li>
                     ))}
                   </ul>
+                </motion.div>
+                <motion.div 
+                  variants={fadeInRight}
+                  className="relative rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-1"
+                >
+                  <div className="rounded-xl bg-black/80 p-8 min-h-[320px] flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center">
+                        <Languages className="h-8 w-8 text-blue-400" />
+                      </div>
+                      <p className="text-white/40 text-sm">Multi-Language Translation</p>
+                    </div>
+                  </div>
                 </motion.div>
               </motion.div>
             </div>
@@ -319,7 +315,7 @@ export default function HomeClient() {
                   <Trophy className="h-4 w-4" />
                   Journey Mode - NEW
                 </div>
-                <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
                   Writing that feels like a game
                 </h2>
                 <p className="text-lg text-white/60 max-w-2xl mx-auto">
@@ -361,7 +357,7 @@ export default function HomeClient() {
                     color: "orange"
                   },
                   {
-                    icon: MessageCircle,
+                    icon: NotebookPen,
                     title: "AI Writing Buddy",
                     description: "Stuck? Chat with your AI assistant for instant help, prompts, and feedback.",
                     color: "blue"
@@ -399,7 +395,7 @@ export default function HomeClient() {
                 viewport={{ once: true }}
                 variants={fadeInUp}
               >
-                <h2 className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
                   Your creative journey in 4 steps
                 </h2>
                 <p className="text-lg text-white/60 max-w-2xl mx-auto">
@@ -458,7 +454,7 @@ export default function HomeClient() {
                   <Zap className="h-4 w-4" />
                   Coming Soon
                 </div>
-                <h2 className="font-space-grotesk text-3xl sm:text-4xl font-bold mb-4">
+                <h2 className="font-outfit text-3xl sm:text-4xl font-bold mb-4">
                   Storyboard & Video Generation
                 </h2>
                 <p className="text-lg text-white/60 max-w-xl mx-auto mb-8">
@@ -486,14 +482,14 @@ export default function HomeClient() {
               >
                 <motion.div 
                   variants={fadeInUp}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 px-4 py-2 text-sm text-purple-300 mb-6"
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 px-4 py-2 text-sm text-purple-300 mb-6"
                 >
                   <Sparkles className="h-4 w-4" />
                   Start your writing journey today
                 </motion.div>
                 <motion.h2 
                   variants={fadeInUp}
-                  className="font-space-grotesk text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
+                  className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
                 >
                   Ready to transform how you write?
                 </motion.h2>
@@ -505,7 +501,7 @@ export default function HomeClient() {
                 </motion.p>
                 <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/signup">
-                    <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-base px-10 py-6 font-semibold rounded-full">
+                    <Button size="lg" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-base px-10 py-6 font-semibold rounded-full">
                       Start Your Journey Free
                       <Rocket className="ml-2 h-4 w-4" />
                     </Button>
