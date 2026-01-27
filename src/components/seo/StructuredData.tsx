@@ -16,6 +16,8 @@ export function WebsiteStructuredData() {
     },
     "featureList": [
       "AI-powered story generation",
+      "AI dialogue writing with dialect support",
+      "Voice-to-dialogue dictation",
       "Screenplay writing with professional formatting",
       "Multi-language support (English, Hindi, Telugu, Tamil, Kannada, Malayalam)",
       "Character development tools",

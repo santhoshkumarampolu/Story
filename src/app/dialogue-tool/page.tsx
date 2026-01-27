@@ -1,38 +1,25 @@
-'use client';
+import { Metadata } from 'next';
+import DialogueToolClient from './DialogueToolClient';
 
-import { useState } from 'react';
-import DialogueToolLanding from '@/components/DialogueToolLanding';
-import { TranslationProvider } from '@/components/TranslationProvider';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Header } from '@/components/layout/header';
+export const metadata: Metadata = {
+  title: 'Free AI Dialogue Generator | Write Scripts in 6 Languages',
+  description: 'Generate realistic dialogue for stories and screenplays instantly. Support for English, Hindi, Telugu, Tamil, Kannada, and Malayalam. No login required.',
+  keywords: [
+    'AI dialogue generator',
+    'AI script writer',
+    'dialogue writing tool',
+    'Telugu AI writing',
+    'Hindi AI script generator',
+    'screenplay dialogue assistant'
+  ],
+  openGraph: {
+    title: 'Free AI Dialogue Generator | AI Story Studio',
+    description: 'Instantly generate professional dialogue for your stories and films. No account needed.',
+    url: 'https://aistorystudio.com/dialogue-tool',
+    type: 'website',
+  }
+};
 
-export default function Home() {
-  const [language, setLanguage] = useState('English');
-  
-  // Map language names to codes for translation system
-  const getLanguageCode = (lang: string) => {
-    const mapping: Record<string, string> = {
-      'English': 'en',
-      'Hindi': 'hi',
-      'Telugu': 'te',
-      'Tamil': 'ta',
-      'Kannada': 'kn',
-      'Malayalam': 'ml'
-    };
-    return mapping[lang] || 'en';
-  };
-
-  return (
-    <TranslationProvider targetLanguage={getLanguageCode(language)} enabled={true}>
-      <Header />
-      <main className="min-h-screen bg-background pt-10">
-        <div className="flex justify-end px-4 max-w-7xl mx-auto mb-4">
-          <LanguageSwitcher currentLanguage={language} onLanguageChange={setLanguage} />
-        </div>
-        <section className="pb-20">
-          <DialogueToolLanding language={getLanguageCode(language)} />
-        </section>
-      </main>
-    </TranslationProvider>
-  );
+export default function DialogueToolPage() {
+  return <DialogueToolClient />;
 }

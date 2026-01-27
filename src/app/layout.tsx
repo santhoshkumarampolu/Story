@@ -33,6 +33,9 @@ export const metadata: Metadata = {
   },
   description: "Transform your ideas into compelling stories, screenplays, and scripts with AI assistance. Write in 6 Indian languages including Hindi, Telugu, Tamil, Kannada, and Malayalam. Free to start.",
   keywords: [
+    "AI dialogue writing",
+    "AI dialogue generator",
+    "dialogue writing with AI",
     "AI story writer",
     "screenplay writing software",
     "script generator",
@@ -44,7 +47,7 @@ export const metadata: Metadata = {
     "Indian language storytelling",
     "film script generator",
     "short film writing",
-    "novel writing AI",
+    "novel writing UI",
     "creative writing tool"
   ],
   authors: [{ name: "AI Story Studio" }],
