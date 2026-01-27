@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { NotebookPen, Sparkles, AlertCircle, Settings2, ShieldCheck, ChevronDown, ChevronUp, Lock, Mic, MicOff } from "lucide-react";
+import { NotebookPen, Sparkles, AlertCircle, Settings2, ShieldCheck, ChevronDown, ChevronUp, Lock, Mic, MicOff, Copy, CheckCircle } from "lucide-react";
 import { useTranslations, useTranslationsFor } from "@/components/TranslationProvider";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,6 +69,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
   const [style, setStyle] = useState("casual");
   const [objective, setObjective] = useState("");
   const [beats, setBeats] = useState("");
+  const [copied, setCopied] = useState(false);
   const [length, setLength] = useState("short");
   const [variationMode, setVariationMode] = useState(false);
   const [transliteration, setTransliteration] = useState(false);
@@ -170,7 +171,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
       type="button"
       variant="ghost"
       size="icon"
-      className={`h-7 w-7 rounded-full transition-all ${listeningField === field ? 'bg-rose-500/10 text-rose-500 animate-pulse' : 'text-muted-foreground hover:bg-muted'}`}
+      className={`h-7 w-7 rounded-full transition-all cursor-pointer hover:scale-110 active:scale-95 ${listeningField === field ? 'bg-rose-500/10 text-rose-500 animate-pulse' : 'text-muted-foreground hover:bg-muted'}`}
       onClick={() => toggleListening(field, setter)}
       title={listeningField === field ? "Stop listening" : "Start dictating"}
     >
@@ -185,7 +186,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
       // Primary method: modern Clipboard API
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(result);
+        setCopied(true);
         toast.success(t('dialogueTool.copySuccess'));
+        setTimeout(() => setCopied(false), 3000);
       } else {
         // Fallback method: textarea element
         const textArea = document.createElement("textarea");
@@ -200,7 +203,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
         document.body.removeChild(textArea);
         
         if (successful) {
+          setCopied(true);
           toast.success(t('dialogueTool.copySuccess'));
+          setTimeout(() => setCopied(false), 3000);
         } else {
           toast.error(t('dialogueTool.copyFailed'));
         }
@@ -737,10 +742,26 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                 <Button
                   size="sm"
                   variant="secondary"
-                  className={`h-11 px-7 text-[11px] font-bold tracking-widest border border-border/60 bg-background transition-all shadow-sm rounded-xl ${activeTheme.text} hover:${activeTheme.lightBg} hover:${activeTheme.text}`}
+                  className={`h-11 px-7 text-[11px] font-bold tracking-widest border transition-all shadow-sm rounded-xl cursor-pointer active:scale-95 ${
+                    copied 
+                      ? 'bg-green-500/10 border-green-500/20 text-green-500' 
+                      : `bg-background border-border/60 ${activeTheme.text} hover:${activeTheme.lightBg} hover:${activeTheme.text}`
+                  }`}
                   onClick={handleCopy}
                 >
-                  {t('dialogueTool.copyDialogue')}
+                  <div className="flex items-center gap-2">
+                    {copied ? (
+                      <>
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>COPIED!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>{t('dialogueTool.copyDialogue').toUpperCase()}</span>
+                      </>
+                    )}
+                  </div>
                 </Button>
               </div>
             </div>
