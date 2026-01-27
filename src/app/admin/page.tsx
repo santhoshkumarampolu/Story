@@ -20,7 +20,8 @@ import {
   Crown,
   Trash2,
   AlertTriangle,
-  Eye
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,6 +69,13 @@ interface AdminStats {
     byModel: { model: string; tokens: number; count: number }[];
   };
   subscriptions: { status: string; count: number }[];
+  dialogueTool?: {
+    totalGenerations: number;
+    withLogin: number;
+    withoutLogin: number;
+    totalTokens: number;
+    uniqueUsers: number;
+  };
 }
 
 export default function AdminDashboard() {
@@ -214,30 +222,7 @@ export default function AdminDashboard() {
             <div className="text-center max-w-md">
               <Shield className="h-16 w-16 text-purple-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">Admin Access Required</h1>
-              <p className="text-white/60 mb-6">{error}</p>
-              
-              {/* Show "Become Admin" button - will only work if no admins exist */}
-              <Button 
-                onClick={becomeAdmin}
-                disabled={settingAdmin}
-                className="bg-purple-600 hover:bg-purple-700 text-white mb-4"
-              >
-                {settingAdmin ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Setting up...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="h-4 w-4 mr-2" />
-                    Become Admin (First Time Setup)
-                  </>
-                )}
-              </Button>
-              
-              <p className="text-white/40 text-sm mb-6">
-                This only works if no admins exist yet
-              </p>
+              <p className="text-white/60 mb-6">{error || "You do not have permission to view this page."}</p>
               
               <Link href="/dashboard">
                 <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
@@ -316,6 +301,23 @@ export default function AdminDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
+                        <p className="text-white/60 text-sm">Dialogue Tool</p>
+                        <p className="text-3xl font-bold text-white mt-1">{formatNumber(stats.dialogueTool?.totalGenerations || 0)}</p>
+                        <p className="text-indigo-400 text-sm mt-1">
+                          {stats.dialogueTool?.withoutLogin} guests
+                        </p>
+                      </div>
+                      <div className="h-12 w-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                        <MessageSquare className="h-6 w-6 text-indigo-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/5 border-white/10">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
                         <p className="text-white/60 text-sm">Total Projects</p>
                         <p className="text-3xl font-bold text-white mt-1">{formatNumber(stats.projects.total)}</p>
                         <p className="text-green-400 text-sm mt-1">
@@ -345,24 +347,71 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
 
-                <Card className="bg-white/5 border-white/10">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white/60 text-sm">Verified Users</p>
-                        <p className="text-3xl font-bold text-white mt-1">{formatNumber(stats.users.verified)}</p>
-                        <p className="text-white/40 text-sm mt-1">
-                          {((stats.users.verified / stats.users.total) * 100).toFixed(1)}% of total
+              {/* Dialogue Tool Deep Dive */}
+              {stats.dialogueTool && stats.dialogueTool.totalGenerations > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-indigo-400" />
+                        Dialogue Tool Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+                            <p className="text-xs text-white/40 uppercase font-bold tracking-widest">Logged In Users</p>
+                            <p className="text-2xl font-bold text-white mt-1">{formatNumber(stats.dialogueTool.withLogin)}</p>
+                            <p className="text-xs text-white/30 mt-1">
+                              {((stats.dialogueTool.withLogin / stats.dialogueTool.totalGenerations) * 100).toFixed(1)}% of tool
+                            </p>
+                          </div>
+                          <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+                            <p className="text-xs text-white/40 uppercase font-bold tracking-widest">Guest Usage</p>
+                            <p className="text-2xl font-bold text-white mt-1">{formatNumber(stats.dialogueTool.withoutLogin)}</p>
+                            <p className="text-xs text-white/30 mt-1">
+                              {((stats.dialogueTool.withoutLogin / stats.dialogueTool.totalGenerations) * 100).toFixed(1)}% of tool
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/[0.05]">
+                            <span className="text-white/60 text-sm">Unique Logged-in Users</span>
+                            <span className="font-bold">{formatNumber(stats.dialogueTool.uniqueUsers)}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/[0.05]">
+                            <span className="text-white/60 text-sm">Total Tokens Consumed</span>
+                            <span className="font-bold">{formatNumber(stats.dialogueTool.totalTokens)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-green-400" />
+                        Conversion Insight
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center justify-center h-48">
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-white">
+                          {((stats.dialogueTool.totalGenerations / stats.tokens.totalOperations) * 100).toFixed(1)}%
+                        </p>
+                        <p className="text-white/40 text-sm mt-2">
+                          Contribution of Dialogue Tool to total AI operations
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                        <CheckCircle className="h-6 w-6 text-green-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
               {/* User Stats Row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

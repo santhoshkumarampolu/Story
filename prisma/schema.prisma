@@ -239,8 +239,8 @@ model TokenUsage {
   type      String // e.g., "translation", "generation", "image", "logline", "scenes", "character_generation"
   tokens    Int
   cost      Float    @default(0) // Cost in some unit, e.g., USD cents
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  // Now optional for public tool usage
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   projectId String?  // Now optional for public tool usage
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

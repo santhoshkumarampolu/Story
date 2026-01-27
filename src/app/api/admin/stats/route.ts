@@ -11,13 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { isAdmin: true, subscriptionStatus: true }
-    });
-
-    if (!user?.isAdmin && user?.subscriptionStatus !== 'admin') {
+    // Strictly check for the super admin email
+    if (session.user.email !== 'santhoshkumarampolu@gmail.com') {
       return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
     }
 
@@ -48,6 +43,25 @@ export async function GET() {
 
     // Get total projects
     const totalProjects = await prisma.project.count();
+
+    // Get Dialogue Tool specific stats
+    const dialogueToolStats = await prisma.tokenUsage.findMany({
+      where: { 
+        OR: [
+          { operationName: 'Dialogue Generation Tool' },
+          { operationName: 'Dialogue Generation' }
+        ]
+      },
+      select: { userId: true, tokens: true, createdAt: true }
+    });
+
+    const dialogueUsage = {
+      totalGenerations: dialogueToolStats.length,
+      withLogin: dialogueToolStats.filter(s => s.userId).length,
+      withoutLogin: dialogueToolStats.filter(s => !s.userId).length,
+      totalTokens: dialogueToolStats.reduce((sum, s) => sum + (s.tokens || 0), 0),
+      uniqueUsers: new Set(dialogueToolStats.filter(s => s.userId).map(s => s.userId)).size
+    };
 
     // Get projects by type
     const projectsByType = await prisma.project.groupBy({
@@ -180,7 +194,8 @@ export async function GET() {
       subscriptions: subscriptionStats.map(s => ({
         status: s.subscriptionStatus || 'free',
         count: s._count.id
-      }))
+      })),
+      dialogueTool: dialogueUsage
     });
 
   } catch (error) {

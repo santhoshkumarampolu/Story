@@ -2,11 +2,37 @@
 
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { ArrowLeft, Mail, MessageSquare, Clock, Send } from "lucide-react";
+import { ArrowLeft, Mail, MessageSquare, Clock, Send, Plus, Minus, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ContactClient() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      question: "What is AI Story Studio?",
+      answer: "AI Story Studio is an AI-powered platform that helps you create stories, screenplays, and scripts. It guides you step-by-step from idea to finished screenplay, providing AI assistance for characters, plot, and dialogue at every stage."
+    },
+    {
+      question: "Which languages does AI Story Studio support?",
+      answer: "We support 6 major languages: English, Hindi, Telugu, Tamil, Kannada, and Malayalam. You can write in any of these languages, and our AI understands the specific cultural context and nuances of each."
+    },
+    {
+      question: "Is AI Story Studio free to use?",
+      answer: "Yes! We offer a generous free tier with 50,000 tokens per month, which is enough to create multiple short films or several story drafts. Pro plans are available for professional writers who need higher limits."
+    },
+    {
+      question: "Can I use it without creating an account?",
+      answer: "Yes, you can try our AI Dialogue Tool instantly without signing up. For full project management, Journey Mode, and saving your work, you'll need to create a free account."
+    },
+    {
+      question: "Can I export my screenplay to industry formats?",
+      answer: "Absolutely. You can export your scripts to PDF, Fountain (.fountain), and plain text. These formats are compatible with professional industry software like Final Draft."
+    }
+  ];
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -212,6 +238,75 @@ export default function ContactClient() {
                     </p>
                   </form>
                 )}
+              </div>
+            </div>
+
+            {/* FAQ Section */}
+            <div className="mt-32 max-w-4xl mx-auto">
+              <motion.div 
+                className="text-center mb-16"
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
+              >
+                <div className="inline-flex items-center gap-2 text-indigo-400 text-sm font-medium mb-4">
+                  <HelpCircle className="h-4 w-4" />
+                  FAQ
+                </div>
+                <h2 className="font-outfit text-3xl sm:text-4xl font-bold mb-4">
+                  Quick Answers
+                </h2>
+                <p className="text-lg text-white/60">
+                  Find fast solutions to common questions before reaching out.
+                </p>
+              </motion.div>
+
+              <div className="space-y-4">
+                {faqs.map((faq, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group"
+                  >
+                    <button
+                      onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                      className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-start justify-between gap-4 ${
+                        openFaq === index 
+                        ? 'bg-white/10 border-indigo-500/50 shadow-lg shadow-indigo-500/10' 
+                        : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/[0.07]'
+                      }`}
+                    >
+                      <span className={`text-lg font-semibold transition-colors duration-300 ${openFaq === index ? 'text-indigo-400' : 'text-white/90'}`}>
+                        {faq.question}
+                      </span>
+                      <div className={`mt-1 flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>
+                        {openFaq === index ? (
+                          <Minus className="h-5 w-5 text-indigo-400" />
+                        ) : (
+                          <Plus className="h-5 w-5 text-white/40 group-hover:text-white/60" />
+                        )}
+                      </div>
+                    </button>
+                    <AnimatePresence>
+                      {openFaq === index && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-6 pt-2 text-white/60 leading-relaxed text-base">
+                            {faq.answer}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>

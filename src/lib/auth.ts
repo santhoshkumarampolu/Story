@@ -53,11 +53,15 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please verify your email before signing in.");
         }
 
+        // Super Admin check
+        const isAdmin = user.isAdmin || user.email === 'santhoshkumarampolu@gmail.com';
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           image: user.image,
+          isAdmin: isAdmin,
         };
       }
     })
@@ -140,6 +144,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image;
+        token.isAdmin = (user as any).isAdmin || user.email === 'santhoshkumarampolu@gmail.com';
       } else if (token) {
         // On subsequent requests, verify the user still exists
         const dbUser = await prisma.user.findUnique({
@@ -153,13 +158,15 @@ export const authOptions: NextAuthOptions = {
             id: "", // Set empty string for invalid users
             email: null,
             name: null,
-            picture: null
+            picture: null,
+            isAdmin: false
           };
         } else {
           // Update token with latest user data
           token.email = dbUser.email;
           token.name = dbUser.name;
           token.picture = dbUser.image;
+          token.isAdmin = dbUser.isAdmin || dbUser.email === 'santhoshkumarampolu@gmail.com';
         }
       }
       
@@ -174,6 +181,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       
       return session;

@@ -196,7 +196,7 @@ export async function trackTokenUsage({
   operationName,
   cost,
 }: {
-  userId: string;
+  userId?: string;
   projectId?: string;
   type: "script" | "storyboard" | "treatment" | "idea" | "character_generation" | "logline" | "scenes";
   model: string;
@@ -238,10 +238,14 @@ export async function trackTokenUsage({
       promptTokens,
       completionTokens,
       operationName: operationName || type,
-      user: {
-        connect: { id: userId }
-      }
     };
+    
+    if (userId) {
+      data.user = {
+        connect: { id: userId }
+      };
+    }
+
     if (projectId) {
       data.project = {
         connect: { id: projectId }

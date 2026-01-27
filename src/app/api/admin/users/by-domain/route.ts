@@ -12,13 +12,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { isAdmin: true, subscriptionStatus: true }
-    });
-
-    if (!user?.isAdmin && user?.subscriptionStatus !== 'admin') {
+    // Strictly check for the super admin email
+    if (session.user.email !== 'santhoshkumarampolu@gmail.com') {
       return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
     }
 
@@ -90,13 +85,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { isAdmin: true, subscriptionStatus: true }
-    });
-
-    if (!user?.isAdmin && user?.subscriptionStatus !== 'admin') {
+    // Strictly check for the super admin email
+    if (session.user.email !== 'santhoshkumarampolu@gmail.com') {
       return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
     }
 

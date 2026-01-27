@@ -87,19 +87,17 @@ export async function POST(request: Request) {
       maxTokens: length === 'long' ? 10000 : length === 'medium' ? 7200 : 6000,
     });
 
-    // Track token usage only for authenticated users
-    if (userId) {
-      await trackTokenUsage({
-        userId,
-        projectId: null as unknown as string,
-        type: 'character_generation',
-        model: generatedDialogue.model || 'gemini-3.0-flash',
-        promptTokens: generatedDialogue.usage?.promptTokens || 0,
-        completionTokens: generatedDialogue.usage?.completionTokens || 0,
-        totalTokens: generatedDialogue.usage?.totalTokens || 0,
-        operationName: 'Dialogue Generation Tool',
-      });
-    }
+    // Track token usage for everyone (including guests)
+    await trackTokenUsage({
+      userId: userId || undefined,
+      projectId: undefined,
+      type: 'character_generation',
+      model: generatedDialogue.model || 'gemini-3.0-flash',
+      promptTokens: generatedDialogue.usage?.promptTokens || 0,
+      completionTokens: generatedDialogue.usage?.completionTokens || 0,
+      totalTokens: generatedDialogue.usage?.totalTokens || 0,
+      operationName: 'Dialogue Generation Tool',
+    });
 
     return NextResponse.json({
       success: true,

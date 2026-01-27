@@ -72,6 +72,7 @@ export async function checkUserSubscriptionAndUsage(userId: string, tokensToAdd 
     where: { id: userId },
     select: {
       id: true,
+      email: true,
       isAdmin: true,
       subscriptionStatus: true,
       subscriptionEndDate: true,
@@ -82,8 +83,11 @@ export async function checkUserSubscriptionAndUsage(userId: string, tokensToAdd 
   });
   if (!user) throw new Error('User not found');
 
+  // Specific admin email has unlimited access
+  const isSuperAdmin = user.email === 'santhoshkumarampolu@gmail.com' || user.isAdmin;
+
   // Admin users have unlimited access
-  if (user.isAdmin) return { allowed: true, user, tokensRemaining: Infinity, imagesRemaining: Infinity };
+  if (isSuperAdmin) return { allowed: true, user, tokensRemaining: Infinity, imagesRemaining: Infinity };
 
   // Check if monthly usage should be reset
   if (shouldResetMonthlyUsage(user.usageResetDate)) {
