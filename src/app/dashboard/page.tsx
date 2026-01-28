@@ -17,6 +17,7 @@ import { SubscriptionStatusCard } from '@/components/SubscriptionStatusCard';
 interface Project {
   id: string;
   title: string;
+  type?: string;
   language: string;
   createdAt: string;
   updatedAt: string;
