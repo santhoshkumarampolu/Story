@@ -17,7 +17,7 @@ export default function ContactClient() {
     },
     {
       question: "Which languages does AI Story Studio support?",
-      answer: "We support 6 major languages: English, Hindi, Telugu, Tamil, Kannada, and Malayalam. You can write in any of these languages, and our AI understands the specific cultural context and nuances of each."
+      answer: "We support 9 major languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam, Spanish, French, and German. You can write in any of these languages, and our AI understands the specific cultural context and nuances of each."
     },
     {
       question: "Is AI Story Studio free to use?",
@@ -118,7 +118,12 @@ export default function ContactClient() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Common Questions</h3>
-                      <p className="text-white/70">Check our FAQ for quick answers</p>
+                      <button 
+                        onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="text-white/70 hover:text-indigo-400 transition-colors text-left"
+                      >
+                        Check our FAQ for quick answers
+                      </button>
                       <p className="text-sm text-white/50 mt-1">
                         Billing, features, and account help
                       </p>
@@ -242,7 +247,7 @@ export default function ContactClient() {
             </div>
 
             {/* FAQ Section */}
-            <div className="mt-32 max-w-4xl mx-auto">
+            <div id="faq" className="mt-32 max-w-4xl mx-auto">
               <motion.div 
                 className="text-center mb-16"
                 initial="initial"

@@ -40,7 +40,7 @@ export default function HomeClient() {
     },
     {
       question: "Which languages does AI Story Studio support?",
-      answer: "We support 6 major languages: English, Hindi, Telugu, Tamil, Kannada, and Malayalam. You can write in any of these languages, and our AI understands the specific cultural context and nuances of each."
+      answer: "We support 9 major languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam, Spanish, French, and German. You can write in any of these languages, and our AI understands the specific cultural context and nuances of each."
     },
     {
       question: "Is AI Story Studio free to use?",
@@ -250,15 +250,15 @@ export default function HomeClient() {
                     FREE & NO LOGIN REQUIRED
                   </div>
                   <h2 className="font-outfit text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-                    Instant AI Dialogue in <span className="text-indigo-500">6+ Languages</span>
+                    Instant AI Dialogue in <span className="text-indigo-500">9+ Languages</span>
                   </h2>
                   <p className="text-lg text-white/60 leading-relaxed">
-                    Try our free AI Dialogue Tool—start generating instantly without an account. Now with Voice Dictation and support for all major Southern languages.
+                    Try our free AI Dialogue Tool—start generating instantly without an account. Now with Voice Dictation and support for Spanish, French, German, and major Indian languages.
                   </p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
-                      "English, Hindi, Telugu", 
-                      "Tamil, Kannada, Malayalam", 
+                      "English, Spanish, French", 
+                      "German, Hindi, Telugu", 
                       "Voice Commands Enabled", 
                       "No Signup Needed"
                     ].map((item) => (
@@ -298,11 +298,11 @@ export default function HomeClient() {
                     Write once, translate everywhere
                   </h2>
                   <p className="text-lg text-white/60 leading-relaxed">
-                    Create in English, Hindi, or Telugu—then instantly translate to other supported languages 
+                    Create in English, Hindi, or Spanish—then instantly translate to other supported languages 
                     without losing context, tone, or cultural nuance. Perfect for global audiences.
                   </p>
                   <ul className="space-y-3">
-                    {["Context-aware translation", "Preserve emotional tone", "6 languages supported"].map((item) => (
+                    {["Context-aware translation", "Preserve emotional tone", "9 languages supported"].map((item) => (
                       <li key={item} className="flex items-center gap-3 text-white/70">
                         <div className="h-1.5 w-1.5 rounded-full bg-blue-400" />
                         {item}
