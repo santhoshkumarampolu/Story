@@ -1,0 +1,44 @@
+{
+  "dashboard": {
+    "title": "Panel de Control",
+    "welcome": "Bienvenido de nuevo",
+    "recentProjects": "Proyectos Recientes",
+    "noProjectsYet": "Aún no hay proyectos",
+    "createFirstProject": "Crea tu primer proyecto para comenzar",
+    "lastUpdated": "Última actualización",
+    "quickActions": "Acciones Rápidas"
+  },
+  "actions": {
+    "newProject": "Nuevo Proyecto", 
+    "allProjects": "Todos los Proyectos",
+    "viewProject": "Ver Proyecto",
+    "editProject": "Editar Proyecto",
+    "upgrade": "Actualizar a Pro",
+    "upgradeToHobby": "Actualizar a Hobby",
+    "upgradeToPro": "Actualizar a Pro",
+    "viewPlans": "Ver Planes"
+  },
+  "usage": {
+    "neuralTokens": "Tokens Neurales",
+    "aiVisualizations": "Visualizaciones AI",
+    "accountActive": "Cuenta Activa",
+    "resetOn": "Se reinicia el",
+    "used": "Usado",
+    "left": "Restante",
+    "limitReached": "Límite de Uso Alcanzado",
+    "runningLow": "Bajo en Uso"
+  },
+  "plans": {
+    "pro": "Estudio Pro",
+    "hobby": "Modo Hobby",
+    "free": "Plan Gratuito"
+  },
+  "projectTypes": {
+    "story": "Historia",
+    "shortfilm": "Cortometraje",
+    "screenplay": "Guion",
+    "novel": "Novela",
+    "shortstory": "Cuento Corto",
+    "synopsis": "Sinopsis"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "navigation": {
+    "projects": "Meine Projekte",
+    "newProject": "Neues Projekt",
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "logout": "Abmelden"
+  },
+  "buttons": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "upload": "Hochladen",
+    "download": "Herunterladen"
+  },
+  "states": {
+    "loading": "Laden...",
+    "saving": "Speichern...",
+    "deleting": "Löschen...",
+    "creating": "Erstellen...",
+    "uploading": "Hochladen...",
+    "processing": "Verarbeiten..."
+  },
+  "common": {
+    "lastUpdated": "Zuletzt aktualisiert",
+    "created": "Erstellt am",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "language": "Sprache",
+    "type": "Typ",
+    "status": "Status",
+    "actions": "Aktionen",
+    "back": "Zurück",
+    "continue": "Weiter",
+    "signUpFree": "Kostenlos Registrieren",
+    "loginNow": "Jetzt einloggen",
+    "minChars": "Mind.",
+    "required": "Erforderlich",
+    "optional": "Optional",
+    "clearAndReset": "Löschen & Zurücksetzen",
+    "copied": "KOPIERT!"
+  },
+  "messages": {
+    "deleteConfirm": "Sind Sie sicher, dass Sie dieses Element löschen möchten? Dies kann nicht rückgängig gemacht werden.",
+    "success": "Vorgang erfolgreich abgeschlossen",
+    "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "noData": "Keine Daten verfügbar",
+    "welcome": "Willkommen zurück!"
+  },
+  "dialogueTool": {
+    "title": "KI-Dialog-Generator",
+    "subtitle": "Generieren Sie sofort authentische Dialoge für Drehbücher oder Geschichten auf Deutsch und weiteren Sprachen. Keine Anmeldung erforderlich!",
+    "limitReached": "Monatliches Token-Limit erreicht. Bitte auf Pro upgraden für unbegrenzte Generierung.",
+    "upgradeToPro": "Auf Pro upgraden",
+    "usage": "Nutzung",
+    "sceneContext": "Szenenkontext",
+    "sceneContextPlaceholder": "Beschreiben Sie die Szene, Situation oder den Konflikt...",
+    "tone": "Tonfall",
+    "conflict": "Konfliktintensität",
+    "writingStyle": "Schreibstil",
+    "objective": "Szenenziel",
+    "objectivePlaceholder": "Was wollen die Charaktere erreichen?",
+    "beats": "Schlüsselmomente",
+    "beatsPlaceholder": "Punkt 1, Punkt 2 (Was muss passieren?)",
+    "variationMode": "Variationsmodus",
+    "variationDesc": "Erzeugt 2 verschiedene Versionen mit unterschiedlichen emotionalen Bögen.",
+    "transliteration": "Transliteration",
+    "transliterationDesc": "Fügt romanisierten Text für regionale Sprachen hinzu.",
+    "length": "Länge",
+    "language": "Sprache",
+    "characters": "Charaktere",
+    "characterName": "Name des Charakters",
+    "characterDescription": "Beschreibung (optional)",
+    "addCharacter": "+ Charakter hinzufügen",
+    "additionalInstructions": "Zusätzliche Anweisungen",
+    "additionalInstructionsPlaceholder": "z.B. Mach es lustig, füge eine Wendung hinzu, etc.",
+    "generateDialogue": "Dialog generieren",
+    "generating": "Generiere...",
+    "generatedDialogue": "Generierter Dialog",
+    "copyDialogue": "Dialog kopieren",
+    "copySuccess": "Dialog in die Zwischenablage kopiert!",
+    "copyFailed": "Kopieren fehlgeschlagen.",
+    "missingContext": "Bitte geben Sie den Szenenkontext und mindestens zwei Charaktere an.",
+    "guestLimitReached": "Limit für Gastmodus erreicht. Melden Sie sich an, um 12.000 Token freizuschalten!",
+    "generationError": "Dialog-Generierung fehlgeschlagen.",
+    "tryTool": "Dialog-Tool ausprobieren",
+    "neuralEngine": "Neural Engine Aktiv",
+    "guestMode": "Gastmodus",
+    "freeUsed": "Gratis genutzt",
+    "enjoyingTool": "Gefällt Ihnen das Tool? Melden Sie sich an, um 12.000 Token pro Monat freizuschalten!",
+    "steps": {
+      "scene": "Szene",
+      "style": "Stil",
+      "players": "Charaktere"
+    },
+    "sceneContextMinError": "Bitte beschreiben Sie Ihre Szene (mind. 10 Zeichen)",
+    "minCharacters": "Mindestens 2 Charaktere",
+    "characterNameLabel": "Name",
+    "characterDescriptionLabel": "Beschreibung",
+    "tones": {
+      "emotional": "Emotional",
+      "comedy": "Komödie",
+      "love": "Liebe",
+      "witty": "Geistreich",
+      "dramatic": "Dramatisch",
+      "action": "Action",
+      "suspense": "Spannung"
+    },
+    "conflicts": {
+      "low": "Niedrig (Subtil)",
+      "medium": "Mittel (Aktiv)",
+      "high": "Hoch (Explosiv)"
+    },
+    "styles": {
+      "casual": "Locker/Alltäglich",
+      "formal": "Formal",
+      "poetic": "Poetisch",
+      "tarantino": "Schnell & Schlagfertig"
+    },
+    "lengths": {
+      "short": "Kurz",
+      "medium": "Mittel",
+      "long": "Lang"
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "navigation": {
+    "projects": "Mis Proyectos",
+    "newProject": "Nuevo Proyecto",
+    "dashboard": "Panel de Control",
+    "profile": "Perfil",
+    "logout": "Cerrar Sesión"
+  },
+  "buttons": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "upload": "Subir",
+    "download": "Descargar"
+  },
+  "states": {
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "deleting": "Eliminando...",
+    "creating": "Creando...",
+    "uploading": "Subiendo...",
+    "processing": "Procesando..."
+  },
+  "common": {
+    "lastUpdated": "Última actualización",
+    "created": "Creado el",
+    "title": "Título",
+    "description": "Descripción",
+    "language": "Idioma",
+    "type": "Tipo",
+    "status": "Estado",
+    "actions": "Acciones",
+    "back": "Volver",
+    "continue": "Continuar",
+    "signUpFree": "Regístrate Gratis",
+    "loginNow": "Iniciar sesión ahora",
+    "minChars": "Mín",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "clearAndReset": "Borrar y Reiniciar",
+    "copied": "¡COPIADO!"
+  },
+  "messages": {
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
+    "success": "Operación completada con éxito",
+    "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    "noData": "No hay datos disponibles",
+    "welcome": "¡Bienvenido de nuevo!"
+  },
+  "dialogueTool": {
+    "title": "Generador de Diálogos IA",
+    "subtitle": "Genera instantáneamente diálogos auténticos para guiones o historias en español y otros idiomas. ¡No requiere registro!",
+    "limitReached": "Límite mensual de tokens alcanzado. Por favor, actualiza a Pro para generación ilimitada.",
+    "upgradeToPro": "Actualizar a Pro",
+    "usage": "Uso",
+    "sceneContext": "Contexto de la Escena",
+    "sceneContextPlaceholder": "Describe la escena, situación o conflicto...",
+    "tone": "Tono",
+    "conflict": "Intensidad del Conflicto",
+    "writingStyle": "Estilo de Escritura",
+    "objective": "Objetivo de la Escena",
+    "objectivePlaceholder": "¿Qué quieren lograr los personajes?",
+    "beats": "Puntos Clave",
+    "beatsPlaceholder": "Punto 1, Punto 2 (¿Qué debe suceder?)",
+    "variationMode": "Modo Variación",
+    "variationDesc": "Genera 2 versiones distintas con diferentes arcos emocionales.",
+    "transliteration": "Transliteración",
+    "transliterationDesc": "Añade texto romanizado para idiomas regionales.",
+    "length": "Longitud",
+    "language": "Idioma",
+    "characters": "Personajes",
+    "characterName": "Nombre del Personaje",
+    "characterDescription": "Descripción (opcional)",
+    "addCharacter": "+ Añadir Personaje",
+    "additionalInstructions": "Instrucciones Adicionales",
+    "additionalInstructionsPlaceholder": "ej. Hazlo divertido, añade un giro, etc.",
+    "generateDialogue": "Generar Diálogo",
+    "generating": "Generando...",
+    "generatedDialogue": "Diálogo Generado",
+    "copyDialogue": "Copiar Diálogo",
+    "copySuccess": "¡Diálogo copiado al portapapeles!",
+    "copyFailed": "Error al copiar.",
+    "missingContext": "Por favor, proporciona el contexto de la escena y al menos dos personajes.",
+    "guestLimitReached": "Límite alcanzado para el modo invitado. ¡Inicia sesión para desbloquear 12.000 tokens!",
+    "generationError": "Error al generar el diálogo.",
+    "tryTool": "Probar herramienta de diálogo",
+    "neuralEngine": "Motor Neural Activo",
+    "guestMode": "Modo Invitado",
+    "freeUsed": "Gratis Usado",
+    "enjoyingTool": "¿Te gusta la herramienta? ¡Inicia sesión para desbloquear 12.000 tokens al mes!",
+    "steps": {
+      "scene": "Escena",
+      "style": "Estilo",
+      "players": "Personajes"
+    },
+    "sceneContextMinError": "Por favor, describe tu escena (mín 10 caract.)",
+    "minCharacters": "Mínimo 2 personajes",
+    "characterNameLabel": "Nombre",
+    "characterDescriptionLabel": "Descripción",
+    "tones": {
+      "emotional": "Emocional",
+      "comedy": "Comedia",
+      "love": "Amor",
+      "witty": "Ingenioso",
+      "dramatic": "Dramático",
+      "action": "Acción",
+      "suspense": "Suspense"
+    },
+    "conflicts": {
+      "low": "Bajo (Sutil)",
+      "medium": "Medio (Activo)",
+      "high": "Alto (Explosivo)"
+    },
+    "styles": {
+      "casual": "Casual/Cotidiano",
+      "formal": "Formal",
+      "poetic": "Poético",
+      "tarantino": "Rápido e Ingenioso"
+    },
+    "lengths": {
+      "short": "Corto",
+      "medium": "Medio",
+      "long": "Largo"
+    }
+  }
+}

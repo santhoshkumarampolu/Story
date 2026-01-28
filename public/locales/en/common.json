@@ -35,7 +35,16 @@
     "language": "Language",
     "type": "Type",
     "status": "Status",
-    "actions": "Actions"
+    "actions": "Actions",
+    "back": "Back",
+    "continue": "Continue",
+    "signUpFree": "Sign Up Free",
+    "loginNow": "Login Now",
+    "minChars": "Min",
+    "required": "Required",
+    "optional": "Optional",
+    "clearAndReset": "Clear & Reset",
+    "copied": "COPIED!"
   },
   "messages": {
     "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
@@ -78,8 +87,22 @@
     "copySuccess": "Dialogue copied to clipboard!",
     "copyFailed": "Failed to copy to clipboard.",
     "missingContext": "Please provide scene context and at least two characters.",
+    "guestLimitReached": "Limit reached for guest mode. Login to unlock 12,000 free tokens!",
     "generationError": "Failed to generate dialogue.",
     "tryTool": "Try Dialogue Tool",
+    "neuralEngine": "Neural Engine Active",
+    "guestMode": "Guest Mode",
+    "freeUsed": "Free Used",
+    "enjoyingTool": "Enjoying the tool? Login to unlock 12,000 tokens per month!",
+    "steps": {
+      "scene": "Scene",
+      "style": "Style",
+      "players": "Players"
+    },
+    "sceneContextMinError": "Please describe your scene (min 10 chars)",
+    "minCharacters": "Minimum 2 characters",
+    "characterNameLabel": "Name",
+    "characterDescriptionLabel": "Description",
     "tones": {
       "emotional": "Emotional",
       "comedy": "Comedy",

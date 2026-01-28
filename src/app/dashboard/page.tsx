@@ -123,7 +123,15 @@ export default function DashboardPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(userLanguage === 'hi' ? 'hi-IN' : userLanguage === 'te' ? 'te-IN' : 'en-US', {
+    const localeMap: Record<string, string> = {
+      'en': 'en-US',
+      'hi': 'hi-IN',
+      'te': 'te-IN',
+      'fr': 'fr-FR',
+      'de': 'de-DE',
+      'es': 'es-ES'
+    };
+    return new Date(dateString).toLocaleDateString(localeMap[userLanguage] || 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

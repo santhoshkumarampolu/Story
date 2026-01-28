@@ -1,0 +1,132 @@
+{
+  "navigation": {
+    "projects": "Mes Projets",
+    "newProject": "Nouveau Projet",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "buttons": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "upload": "Télécharger",
+    "download": "Télécharger"
+  },
+  "states": {
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression...",
+    "creating": "Création...",
+    "uploading": "Téléchargement...",
+    "processing": "Traitement..."
+  },
+  "common": {
+    "lastUpdated": "Dernière mise à jour",
+    "created": "Créé le",
+    "title": "Titre",
+    "description": "Description",
+    "language": "Langue",
+    "type": "Type",
+    "status": "Statut",
+    "actions": "Actions",
+    "back": "Retour",
+    "continue": "Continuer",
+    "signUpFree": "S'inscrire Gratuitement",
+    "loginNow": "Se connecter maintenant",
+    "minChars": "Min",
+    "required": "Requis",
+    "optional": "Optionnel",
+    "clearAndReset": "Effacer & Réinitialiser",
+    "copied": "COPIÉ !"
+  },
+  "messages": {
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+    "success": "Opération réussie",
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "noData": "Aucune donnée disponible",
+    "welcome": "Bon retour !"
+  },
+  "dialogueTool": {
+    "title": "Générateur de Dialogue IA",
+    "subtitle": "Générez instantanément des dialogues authentiques pour scénarios ou histoires en français et autres langues. Aucune inscription requise !",
+    "limitReached": "Limite de jetons mensuelle atteinte. Veuillez passer à Pro pour une génération illimitée.",
+    "upgradeToPro": "Passer à Pro",
+    "usage": "Utilisation",
+    "sceneContext": "Contexte de la Scène",
+    "sceneContextPlaceholder": "Décrivez la scène, la situation ou le conflit...",
+    "tone": "Ton",
+    "conflict": "Intensité du Conflit",
+    "writingStyle": "Style d'Écriture",
+    "objective": "Objectif de la Scène",
+    "objectivePlaceholder": "Que veulent accomplir les personnages ?",
+    "beats": "Points Clés",
+    "beatsPlaceholder": "Point 1, Point 2 (Que doit-il se passer ?)",
+    "variationMode": "Mode Variation",
+    "variationDesc": "Génère 2 versions distinctes avec des arcs émotionnels différents.",
+    "transliteration": "Translittération",
+    "transliterationDesc": "Ajoute du texte romanisé pour les langues régionales.",
+    "length": "Longueur",
+    "language": "Langue",
+    "characters": "Personnages",
+    "characterName": "Nom du Personnage",
+    "characterDescription": "Description (optionnel)",
+    "addCharacter": "+ Ajouter un Personnage",
+    "additionalInstructions": "Instructions Supplémentaires",
+    "additionalInstructionsPlaceholder": "ex: Rendez-le drôle, ajoutez un rebondissement, etc.",
+    "generateDialogue": "Générer le Dialogue",
+    "generating": "Génération...",
+    "generatedDialogue": "Dialogue Généré",
+    "copyDialogue": "Copier le Dialogue",
+    "copySuccess": "Dialogue copié dans le presse-papiers !",
+    "copyFailed": "Échec de la copie.",
+    "missingContext": "Veuillez fournir le contexte de la scène et au moins deux personnages.",
+    "guestLimitReached": "Limite atteinte pour le mode invité. Connectez-vous pour débloquer 12 000 jetons !",
+    "generationError": "Échec de la génération du dialogue.",
+    "tryTool": "Essayer l'outil de dialogue",
+    "neuralEngine": "Moteur Neural Actif",
+    "guestMode": "Mode Invité",
+    "freeUsed": "Gratuit Utilisé",
+    "enjoyingTool": "Vous aimez l'outil ? Connectez-vous pour débloquer 12 000 jetons par mois !",
+    "steps": {
+      "scene": "Scène",
+      "style": "Style",
+      "players": "Personnages"
+    },
+    "sceneContextMinError": "Veuillez décrire votre scène (min 10 caract.)",
+    "minCharacters": "Minimum 2 personnages",
+    "characterNameLabel": "Nom",
+    "characterDescriptionLabel": "Description",
+    "tones": {
+      "emotional": "Émotionnel",
+      "comedy": "Comédie",
+      "love": "Amour",
+      "witty": "Spirituel",
+      "dramatic": "Dramatique",
+      "action": "Action",
+      "suspense": "Suspense"
+    },
+    "conflicts": {
+      "low": "Faible (Subtil)",
+      "medium": "Moyen (Actif)",
+      "high": "Élevé (Explosif)"
+    },
+    "styles": {
+      "casual": "Décontracté",
+      "formal": "Formel",
+      "poetic": "Poétique",
+      "tarantino": "Vif et d'Esprit"
+    },
+    "lengths": {
+      "short": "Court",
+      "medium": "Moyen",
+      "long": "Long"
+    }
+  }
+}

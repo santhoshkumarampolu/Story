@@ -65,13 +65,21 @@ export function useI18n({
 
     try {
       // Map language codes (support both names and codes)
-      const langCode =
-        currentLanguage === 'English' || currentLanguage === 'en' ? 'en' :
-        currentLanguage === 'Telugu'  || currentLanguage === 'te' ? 'te' :
-        currentLanguage === 'Hindi'   || currentLanguage === 'hi' ? 'hi' :
-        currentLanguage === 'Tamil'   || currentLanguage === 'ta' ? 'ta' :
-        currentLanguage === 'Kannada' || currentLanguage === 'kn' ? 'kn' :
-        currentLanguage === 'Malayalam' || currentLanguage === 'ml' ? 'ml' : 'en';
+      // If currentLanguage is a 2-character code, use it directly
+      let langCode = currentLanguage.length === 2 ? currentLanguage.toLowerCase() : 'en';
+      
+      if (currentLanguage.length > 2) {
+        langCode =
+          currentLanguage === 'English' ? 'en' :
+          currentLanguage === 'Telugu'  ? 'te' :
+          currentLanguage === 'Hindi'   ? 'hi' :
+          currentLanguage === 'Tamil'   ? 'ta' :
+          currentLanguage === 'Kannada' ? 'kn' :
+          currentLanguage === 'Malayalam' ? 'ml' :
+          currentLanguage === 'Spanish' ? 'es' :
+          currentLanguage === 'French' ? 'fr' :
+          currentLanguage === 'German' ? 'de' : 'en';
+      }
 
       // Try to load the translation file
       const response = await fetch(`/locales/${langCode}/${namespace}.json`);

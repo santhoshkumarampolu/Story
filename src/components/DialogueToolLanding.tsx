@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { NotebookPen, Sparkles, AlertCircle, Settings2, ShieldCheck, ChevronDown, ChevronUp, Lock, Mic, MicOff, Copy, CheckCircle } from "lucide-react";
-import { useTranslations, useTranslationsFor } from "@/components/TranslationProvider";
+import { T, useTranslations, useTranslationsFor } from "@/components/TranslationProvider";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -127,7 +127,10 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                        language === 'te' ? 'te-IN' : 
                        language === 'ta' ? 'ta-IN' : 
                        language === 'kn' ? 'kn-IN' : 
-                       language === 'ml' ? 'ml-IN' : 'en-US';
+                       language === 'ml' ? 'ml-IN' : 
+                       language === 'es' ? 'es-ES' :
+                       language === 'fr' ? 'fr-FR' :
+                       language === 'de' ? 'de-DE' : 'en-US';
     
     recognition.continuous = true;
     recognition.interimResults = false;
@@ -272,10 +275,10 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
 
     // Guest limit check: Allow only 2 generations without login
     if (!session && guestCount >= 2) {
-      toast.error("Limit reached for guest mode. Login to unlock 12,000 free tokens!", {
+      toast.error(t('dialogueTool.guestLimitReached'), {
         duration: 6000,
         action: {
-          label: "Login Now",
+          label: t('common.loginNow'),
           onClick: () => window.location.href = "/auth/signin"
         }
       });
@@ -348,7 +351,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
               </CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`flex h-2 w-2 rounded-full animate-pulse ring-4 transition-colors duration-500 ${currentStep === 1 ? 'bg-[#00BCD4] ring-[#00BCD4]/20' : 'bg-green-500 ring-green-500/20'}`}></span>
-             <span className="text-[10px] font-bold text-muted-foreground/60 tracking-[0.25em] uppercase">Neural Engine Active</span>
+             <span className="text-[10px] font-bold text-muted-foreground/60 tracking-[0.25em] uppercase">
+               <T k="dialogueTool.neuralEngine" ns="common" defaultValue="Neural Engine Active" />
+             </span>
               </div>
             </div>
           </div>
@@ -361,7 +366,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
           {!session && (
             <div className={`flex items-center gap-2.5 px-4 py-2 rounded-full border text-[13px] font-bold shadow-sm transition-all duration-500 ${activeTheme.softBg} ${activeTheme.softBorder} ${activeTheme.text}`}>
               <Lock className="h-3.5 w-3.5" />
-              Guest Mode: {guestCount}/2 Free Used
+              <T k="dialogueTool.guestMode" ns="common" defaultValue="Guest Mode" />: {guestCount}/2 <T k="dialogueTool.freeUsed" ns="common" defaultValue="Free Used" />
             </div>
           )}
         </div>
@@ -370,12 +375,14 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
         </p>
         {!session && guestCount >= 1 && (
           <div className={`mt-4 p-3 rounded-xl border flex items-center justify-between transition-all duration-500 ${activeTheme.lightBg} ${activeTheme.lightBorder}`}>
-            <span className={`text-xs font-medium ${activeTheme.text}`}>Enjoying the tool? Login to unlock 12,000 tokens per month!</span>
+            <span className={`text-xs font-medium ${activeTheme.text}`}>
+              <T k="dialogueTool.enjoyingTool" ns="common" defaultValue="Enjoying the tool? Login to unlock 12,000 tokens per month!" />
+            </span>
             <button 
               onClick={() => window.location.href = "/auth/signin"}
               className={`text-[13px] font-bold text-white px-3 py-1.5 rounded-lg transition-colors ${activeTheme.bg} ${activeTheme.hover}`}
             >
-              Sign Up Free
+              <T k="common.signUpFree" ns="common" defaultValue="Sign Up Free" />
             </button>
           </div>
         )}
@@ -396,7 +403,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                   {currentStep > step ? "✓" : step}
                 </div>
                 <span className={`text-[13px] font-black  tracking-[0.15em] mt-2 ${currentStep >= step ? "text-foreground" : "text-muted-foreground"}`}>
-                  {step === 1 ? "Scene" : step === 2 ? "Style" : "Players"}
+                  {step === 1 ? <T k="dialogueTool.steps.scene" ns="common" defaultValue="Scene" /> : 
+                   step === 2 ? <T k="dialogueTool.steps.style" ns="common" defaultValue="Style" /> : 
+                   <T k="dialogueTool.steps.players" ns="common" defaultValue="Players" />}
                 </span>
               </div>
             ))}
@@ -434,9 +443,11 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                            ? 'text-[#00BCD4] bg-[#E0F7FA]' 
                            : 'text-rose-500 bg-rose-50'
                        }`}>
-                        {context.trim().length}/10 Min
+                        {context.trim().length}/10 <T k="common.minChars" ns="common" defaultValue="Min" />
                       </span>
-                      <span className="text-[13px] font-bold text-muted-foreground/60 bg-muted px-2 py-0.5 rounded-full border border-border/40  tracking-tighter">Required</span>
+                      <span className="text-[13px] font-bold text-muted-foreground/60 bg-muted px-2 py-0.5 rounded-full border border-border/40  tracking-tighter">
+                        <T k="common.required" ns="common" defaultValue="Required" />
+                      </span>
                     </div>
                   </div>
                   <Textarea
@@ -483,10 +494,10 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                 <div className="pt-4 flex justify-end">
                   <Button 
                     type="button" 
-                    onClick={() => context.trim().length >= 10 ? setCurrentStep(2) : toast.error("Please describe your scene (min 10 chars)")}
+                    onClick={() => context.trim().length >= 10 ? setCurrentStep(2) : toast.error(t('dialogueTool.sceneContextMinError'))}
                     className={`h-12 px-8 rounded-xl text-white font-bold tracking-widest transition-all shadow-lg active:scale-95 ${activeTheme.bg} ${activeTheme.hover}`}
                   >
-                    Continue →
+                    <T k="common.continue" ns="common" defaultValue="Continue" /> →
                   </Button>
                 </div>
               </motion.div>
@@ -603,14 +614,14 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                     onClick={() => setCurrentStep(1)}
                     className="h-12 px-6 rounded-xl text-[13px] font-black  tracking-widest text-muted-foreground hover:bg-muted"
                   >
-                    ← Back
+                    ← <T k="common.back" ns="common" defaultValue="Back" />
                   </Button>
                   <Button 
                     type="button" 
                     onClick={() => setCurrentStep(3)}
                     className={`h-12 px-8 rounded-xl text-white font-bold tracking-widest uppercase text-xs transition-all shadow-lg active:scale-95 ${activeTheme.bg} ${activeTheme.hover} ${activeTheme.shadow}`}
                   >
-                    Continue →
+                    <T k="common.continue" ns="common" defaultValue="Continue" /> →
                   </Button>
                 </div>
               </motion.div>
@@ -630,14 +641,16 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                     <label className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
                       {t('dialogueTool.characters')}
                     </label>
-                    <span className="text-[10px] font-bold text-muted-foreground/40 tracking-wider uppercase">Minimum 2 characters</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/40 tracking-wider uppercase">
+                      <T k="dialogueTool.minCharacters" ns="common" defaultValue="Minimum 2 characters" />
+                    </span>
                   </div>
                   <div className="grid gap-4">
                     {characters.map((char, idx) => (
                       <div key={idx} className="group relative flex flex-col md:flex-row gap-4 p-4 rounded-2xl border border-border/40 bg-muted/5 transition-all hover:bg-muted/10 hover:border-indigo-500/30">
                         <div className="flex-1 space-y-2">
                           <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 ml-1 flex items-center gap-1">
-                            Name <span className="text-rose-500/50">*</span>
+                            <T k="dialogueTool.characterNameLabel" ns="common" defaultValue="Name" /> <span className="text-rose-500/50">*</span>
                           </label>
                           <Input
                             value={char.name}
@@ -648,7 +661,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                           />
                         </div>
                         <div className="flex-[2] space-y-2">
-                          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 ml-1">Description</label>
+                          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/40 ml-1">
+                            <T k="dialogueTool.characterDescriptionLabel" ns="common" defaultValue="Description" />
+                          </label>
                           <Input
                             value={char.description}
                             onChange={e => handleCharacterChange(idx, "description", e.target.value)}
@@ -676,7 +691,9 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center gap-2">
                     <label className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
-                      {t('dialogueTool.additionalInstructions')} <span className="opacity-40 font-normal lowercase tracking-normal ml-1">(Optional)</span>
+                      {t('dialogueTool.additionalInstructions')} <span className="opacity-40 font-normal lowercase tracking-normal ml-1">
+                        (<T k="common.optional" ns="common" defaultValue="Optional" />)
+                      </span>
                     </label>
                     <VoiceButton field="additionalInstructions" setter={setAdditionalInstructions} />
                   </div>
@@ -696,7 +713,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                       onClick={() => setCurrentStep(2)}
                       className="h-12 px-6 rounded-xl text-[13px] font-black  tracking-widest text-muted-foreground hover:bg-muted"
                     >
-                      ← Back
+                      ← <T k="common.back" ns="common" defaultValue="Back" />
                     </Button>
                     <Button 
                       type="submit" 
@@ -737,7 +754,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                   onClick={handleReset}
                   className="h-11 px-5 rounded-xl text-[12px] font-bold tracking-widest text-muted-foreground hover:bg-muted transition-all"
                 >
-                  Clear & Reset
+                  <T k="common.clearAndReset" ns="common" defaultValue="Clear & Reset" />
                 </Button>
                 <Button
                   size="sm"
@@ -753,7 +770,7 @@ export default function DialogueToolLanding({ language = "en" }: DialogueToolLan
                     {copied ? (
                       <>
                         <CheckCircle className="h-3.5 w-3.5" />
-                        <span>COPIED!</span>
+                        <span><T k="common.copied" ns="common" defaultValue="COPIED!" /></span>
                       </>
                     ) : (
                       <>

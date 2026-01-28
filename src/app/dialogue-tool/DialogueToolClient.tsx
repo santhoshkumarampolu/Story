@@ -7,17 +7,23 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Header } from '@/components/layout/header';
 
 export default function DialogueToolClient() {
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState('en');
   
-  // Map language names to codes for translation system
+  // Map language codes to supported names or just return if already a code
   const getLanguageCode = (lang: string) => {
+    const codes = ['en', 'hi', 'te', 'ta', 'kn', 'ml', 'es', 'fr', 'de'];
+    if (codes.includes(lang.toLowerCase())) return lang.toLowerCase();
+
     const mapping: Record<string, string> = {
       'English': 'en',
       'Hindi': 'hi',
       'Telugu': 'te',
       'Tamil': 'ta',
       'Kannada': 'kn',
-      'Malayalam': 'ml'
+      'Malayalam': 'ml',
+      'Spanish': 'es',
+      'French': 'fr',
+      'German': 'de'
     };
     return mapping[lang] || 'en';
   };

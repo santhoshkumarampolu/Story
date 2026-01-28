@@ -11,6 +11,9 @@ interface LanguageSwitcherProps {
 
 const supportedLanguages = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
+  { code: 'es', label: 'Spanish', nativeLabel: 'Español' },
+  { code: 'fr', label: 'French', nativeLabel: 'Français' },
+  { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
   { code: 'hi', label: 'Hindi', nativeLabel: 'हिंदी' },
   { code: 'te', label: 'Telugu', nativeLabel: 'తెలుగు' },
   { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' },
@@ -23,13 +26,18 @@ export function LanguageSwitcher({ currentLanguage, onLanguageChange }: Language
   const normalizeLang = (l: string | null | undefined) => {
     if (!l) return 'en';
     const lower = l.toLowerCase();
-    if (lower === 'english' || lower === 'en') return 'en';
-    if (lower === 'hindi' || lower === 'hi') return 'hi';
-    if (lower === 'telugu' || lower === 'te') return 'te';
-    if (lower === 'tamil' || lower === 'ta') return 'ta';
-    if (lower === 'kannada' || lower === 'kn') return 'kn';
-    if (lower === 'malayalam' || lower === 'ml') return 'ml';
-    return l;
+    
+    // Check if it's already a code we support
+    if (supportedLanguages.some(lang => lang.code === lower)) return lower;
+
+    if (lower === 'english') return 'en';
+    if (lower === 'hindi') return 'hi';
+    if (lower === 'telugu') return 'te';
+    if (lower === 'spanish') return 'es';
+    if (lower === 'french') return 'fr';
+    if (lower === 'german') return 'de';
+    
+    return lower;
   };
 
   const selectedLanguage = normalizeLang(currentLanguage);

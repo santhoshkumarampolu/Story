@@ -9,7 +9,7 @@ interface DialogueToolRequest {
   tone: 'emotional' | 'comedy' | 'love' | 'witty' | 'dramatic' | 'action' | 'suspense';
   length: 'short' | 'medium' | 'long';
   characters: Array<{ name: string; description?: string }>;
-  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml'; // English, Hindi, Telugu, Kannada, Tamil, Malayalam
+  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml' | 'es' | 'fr' | 'de'; // English, Hindi, Telugu, Kannada, Tamil, Malayalam, Spanish, French, German
   conflictIntensity?: 'low' | 'medium' | 'high';
   writingStyle?: 'casual' | 'formal' | 'poetic' | 'tarantino';
   sceneObjective?: string;
@@ -147,7 +147,7 @@ function buildMultilingualDialoguePrompt({
   };
   additionalInstructions?: string;
   projectType?: string;
-  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml';
+  language: 'en' | 'hi' | 'te' | 'kn' | 'ta' | 'ml' | 'es' | 'fr' | 'de';
   conflictIntensity?: string;
   writingStyle?: string;
   sceneObjective?: string;
@@ -161,7 +161,10 @@ function buildMultilingualDialoguePrompt({
     te: 'Telugu', 
     kn: 'Kannada', 
     ta: 'Tamil', 
-    ml: 'Malayalam' 
+    ml: 'Malayalam',
+    es: 'Spanish',
+    fr: 'French',
+    de: 'German'
   };
   const lengthGuide = {
     short: 'brief exchanges (2-4 lines per character)',
@@ -240,13 +243,20 @@ SCENE CONTEXT: ${context}`;
     prompt += `\n\nTRANSLITERATION: For all ${languageNames[language]} dialogue, provide BOTH the original script and the Romanized (English characters) transliteration immediately after the original line.`;
   }
 
+  const isIndianLanguage = ['hi', 'te', 'kn', 'ta', 'ml'].includes(language);
+
   prompt += `
 
 IMPORTANT GUIDE FOR ${languageNames[language]}:
 - Use natural, colloquial, and conversational ${languageNames[language]}.
 - Avoid overly bookish, heavy, or formal literary vocabulary.
-- Reflect how real people speak in everyday life.
-- It's natural to mix in common English words as people do in current urban settings (e.g., Hinglish, Telugish, Tanglish, Kanglish, etc.).
+- Reflect how real people speak in everyday life.`;
+
+  if (isIndianLanguage) {
+    prompt += `\n- It's natural to mix in common English words as people do in current urban settings (e.g., Hinglish, Telugish, Tanglish, Kanglish, etc.).`;
+  }
+
+  prompt += `
 
 IMPORTANT: Generate ONLY the dialogue. Do not include any introductory text, explanations, or meta-comments. Start directly with the character names and dialogue in proper screenplay format.
 
