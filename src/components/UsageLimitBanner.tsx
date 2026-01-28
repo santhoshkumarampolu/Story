@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, Zap, Crown, Rocket, X, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { T } from '@/components/TranslationProvider';
 
 interface UsageLimitBannerProps {
   tokensUsed: number;
@@ -52,9 +53,9 @@ export function UsageLimitBanner({
   };
 
   const getUpgradeText = () => {
-    if (currentTier === 'free') return 'Upgrade to Hobby';
-    if (currentTier === 'hobby') return 'Upgrade to Pro';
-    return 'View Plans';
+    if (currentTier === 'free') return <T k="actions.upgradeToHobby" ns="dashboard" defaultValue="Upgrade to Hobby" />;
+    if (currentTier === 'hobby') return <T k="actions.upgradeToPro" ns="dashboard" defaultValue="Upgrade to Pro" />;
+    return <T k="actions.viewPlans" ns="dashboard" defaultValue="View Plans" />;
   };
 
   const getUpgradeIcon = () => {
@@ -95,8 +96,8 @@ export function UsageLimitBanner({
           <div>
             <h4 className={`font-semibold ${getTextColor()}`}>
               {isTokensExhausted || isImagesExhausted 
-                ? 'Usage Limit Reached' 
-                : 'Running Low on Usage'}
+                ? <T k="usage.limitReached" ns="dashboard" defaultValue="Usage Limit Reached" />
+                : <T k="usage.runningLow" ns="dashboard" defaultValue="Running Low on Usage" />}
             </h4>
             <p className="text-sm text-gray-400 mt-1">
               {isTokensExhausted 

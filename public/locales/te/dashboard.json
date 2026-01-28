@@ -12,6 +12,33 @@
     "newProject": "New Project(కొత్త ప్రాజెక్ట్)", 
     "allProjects": "All Projects(అన్ని ప్రాజెక్టులు)",
     "viewProject": "View Project(ప్రాజెక్ట్ చూడండి)",
-    "editProject": "Edit Project(ప్రాజెక్ట్ సవరించండి)"
+    "editProject": "Edit Project(ప్రాజెక్ట్ సవరించండి)",
+    "upgrade": "Upgrade to Pro(ప్రోకి అప్‌గ్రేడ్ చేయండి)",
+    "upgradeToHobby": "Upgrade to Hobby(హోబీకి అప్‌గ్రేడ్ చేయండి)",
+    "upgradeToPro": "Upgrade to Pro(ప్రోకి అప్‌గ్రేడ్ చేయండి)",
+    "viewPlans": "View Plans(ప్లాన్‌లను చూడండి)"
+  },
+  "usage": {
+    "neuralTokens": "Neural Tokens(న్యూరల్ టోకెన్లు)",
+    "aiVisualizations": "AI Visualizations(AI విజువలైజేషన్లు)",
+    "accountActive": "Account Active(ఖాతా క్రియాశీలంగా ఉంది)",
+    "resetOn": "Resets on(న రీసెట్ అవుతుంది)",
+    "used": "Used(ఉపయోగించబడింది)",
+    "left": "Left(మిగిలి ఉంది)",
+    "limitReached": "Usage Limit Reached(ఉపయోగ పరిమితి ముగిసింది)",
+    "runningLow": "Running Low on Usage(ఉపయోగం తక్కువగా ఉంది)"
+  },
+  "plans": {
+    "pro": "Pro Studio(ప్రో స్టూడియో)",
+    "hobby": "Hobby Mode(హోబీ మోడ్)",
+    "free": "Free Plan(ఉచిత ప్లాన్)"
+  },
+  "projectTypes": {
+    "story": "Story(కథ)",
+    "shortfilm": "Short Film(షార్ట్ ఫిల్మ్)",
+    "screenplay": "Screenplay(స్క్రీన్ ప్లే)",
+    "novel": "Novel(నవల)",
+    "shortstory": "Short Story(లఘు కథ)",
+    "synopsis": "Synopsis(సారాంశం)"
   }
 }

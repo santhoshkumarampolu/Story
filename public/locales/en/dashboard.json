@@ -12,6 +12,33 @@
     "newProject": "New Project", 
     "allProjects": "All Projects",
     "viewProject": "View Project",
-    "editProject": "Edit Project"
+    "editProject": "Edit Project",
+    "upgrade": "Upgrade to Pro",
+    "upgradeToHobby": "Upgrade to Hobby",
+    "upgradeToPro": "Upgrade to Pro",
+    "viewPlans": "View Plans"
+  },
+  "usage": {
+    "neuralTokens": "Neural Tokens",
+    "aiVisualizations": "AI Visualizations",
+    "accountActive": "Account Active",
+    "resetOn": "Resets on",
+    "used": "Used",
+    "left": "Left",
+    "limitReached": "Usage Limit Reached",
+    "runningLow": "Running Low on Usage"
+  },
+  "plans": {
+    "pro": "Pro Studio",
+    "hobby": "Hobby Mode",
+    "free": "Free Plan"
+  },
+  "projectTypes": {
+    "story": "Story",
+    "shortfilm": "Short Film",
+    "screenplay": "Screenplay",
+    "novel": "Novel",
+    "shortstory": "Short Story",
+    "synopsis": "Synopsis"
   }
 }

@@ -12,6 +12,33 @@
     "newProject": "New Project(नया प्रोजेक्ट)", 
     "allProjects": "All Projects(सभी प्रोजेक्ट्स)",
     "viewProject": "View Project(प्रोजेक्ट देखें)",
-    "editProject": "Edit Project(प्रोजेक्ट संपादित करें)"
+    "editProject": "Edit Project(प्रोजेक्ट संपादित करें)",
+    "upgrade": "Upgrade to Pro(प्रो पर अपग्रेड करें)",
+    "upgradeToHobby": "Upgrade to Hobby(हॉबी पर अपग्रेड करें)",
+    "upgradeToPro": "Upgrade to Pro(प्रो पर अपग्रेड करें)",
+    "viewPlans": "View Plans(योजनाएं देखें)"
+  },
+  "usage": {
+    "neuralTokens": "Neural Tokens(न्यूरल टोकन)",
+    "aiVisualizations": "AI Visualizations(एआई विज़ुअलाइज़ेशन)",
+    "accountActive": "Account Active(खाता सक्रिय)",
+    "resetOn": "Resets on(पर रीसेट होता है)",
+    "used": "Used(उपयोग किया गया)",
+    "left": "Left(बाकी)",
+    "limitReached": "Usage Limit Reached(उपयोग सीमा समाप्त)",
+    "runningLow": "Running Low on Usage(उपयोग कम हो रहा है)"
+  },
+  "plans": {
+    "pro": "Pro Studio(प्रो स्टूडियो)",
+    "hobby": "Hobby Mode(हॉबी मोड)",
+    "free": "Free Plan(मुफ्त प्लान)"
+  },
+  "projectTypes": {
+    "story": "Story(कहानी)",
+    "shortfilm": "Short Film(शॉर्ट फिल्म)",
+    "screenplay": "Screenplay(पटकथा)",
+    "novel": "Novel(उपन्यास)",
+    "shortstory": "Short Story(लघु कथा)",
+    "synopsis": "Synopsis(सारांश)"
   }
 }

@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userLanguage, setUserLanguage] = useState('English');
+  const [userLanguage, setUserLanguage] = useState('en');
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function DashboardPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(userLanguage === 'hi' ? 'hi-IN' : userLanguage === 'te' ? 'te-IN' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -131,7 +131,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <TranslationProvider key={userLanguage} targetLanguage={userLanguage} enabled={userLanguage !== 'English'}>
+    <TranslationProvider key={userLanguage} targetLanguage={userLanguage} enabled={true}>
       <DashboardContent 
         projects={projects}
         session={session}
@@ -162,23 +162,30 @@ function DashboardContent({
   setUserLanguage: (language: string) => void;
   subscriptionStatus: SubscriptionStatus | null;
 }) {
-  const { t } = useTranslations();
+  const { loadNamespace } = useTranslations();
+
+  useEffect(() => {
+    // Load required namespaces for the dashboard
+    loadNamespace('dashboard');
+    loadNamespace('projects');
+    loadNamespace('common');
+  }, [loadNamespace]);
 
   return (
     <div className="relative min-h-screen bg-black text-white">
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/10 via-black to-black" />
       <div className="relative">
-        <div className="container max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+        <div className="container max-w-7xl mx-auto px-4 py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
               <T k="dashboard.title" ns="dashboard" defaultValue="Dashboard" />
             </h1>
-            <p className="text-gray-400 mt-1 text-base sm:text-lg">
-              <T k="dashboard.welcome" ns="dashboard" defaultValue="Welcome back" />, {session?.user?.name}
+            <p className="text-gray-400 text-base sm:text-lg opacity-60">
+              <T k="dashboard.welcome" ns="dashboard" defaultValue="Welcome back" />, {session?.user?.name.split(' ')[0]}
             </p>
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end order-first sm:order-last">
             <LanguageSwitcher currentLanguage={userLanguage} onLanguageChange={setUserLanguage} />
           </div>
         </div>
@@ -197,16 +204,15 @@ function DashboardContent({
           </div>
         )}
 
-        {/* Subscription Status Card */}
+        {/* Subscription Status Card - New Slick Inline Design */}
         {subscriptionStatus && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="mb-6"
+            className="mb-10"
           >
             <SubscriptionStatusCard
-              status={subscriptionStatus.subscription.status as 'free' | 'hobby' | 'pro'}
+              status={subscriptionStatus.subscription.status as 'free' | 'hobby' | 'pro' | 'admin'}
               tokensUsed={subscriptionStatus.usage.tokens.used}
               tokensLimit={subscriptionStatus.usage.tokens.limit}
               imagesUsed={subscriptionStatus.usage.images.used}
@@ -273,9 +279,9 @@ function DashboardContent({
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-start justify-between mb-2 sm:mb-4">
                         <div className="flex items-center space-x-2 sm:space-x-3">
-                          {getProjectTypeIcon(project.language)}
+                          {getProjectTypeIcon(project.type || 'story')}
                           <span className="px-2 py-1 text-xs sm:text-sm bg-white/10 text-purple-400 rounded-full">
-                            {project.language}
+                            <T k={`projectTypes.${project.type || 'story'}`} ns="dashboard" defaultValue={project.type || 'story'} />
                           </span>
                         </div>
                         <Icons.chevronRight className="h-4 w-4 text-gray-400" />

@@ -10,35 +10,47 @@ interface LanguageSwitcherProps {
 }
 
 const supportedLanguages = [
-  { code: 'English', label: 'English', nativeLabel: 'English' },
-  { code: 'Hindi', label: 'Hindi', nativeLabel: 'हिंदी' },
-  { code: 'Telugu', label: 'Telugu', nativeLabel: 'తెలుగు' },
-  { code: 'Tamil', label: 'Tamil', nativeLabel: 'தமிழ்' },
-  { code: 'Kannada', label: 'Kannada', nativeLabel: 'ಕನ್ನಡ' },
-  { code: 'Malayalam', label: 'Malayalam', nativeLabel: 'മലയാളം' },
+  { code: 'en', label: 'English', nativeLabel: 'English' },
+  { code: 'hi', label: 'Hindi', nativeLabel: 'हिंदी' },
+  { code: 'te', label: 'Telugu', nativeLabel: 'తెలుగు' },
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' },
+  { code: 'kn', label: 'Kannada', nativeLabel: 'ಕನ್ನಡ' },
+  { code: 'ml', label: 'Malayalam', nativeLabel: 'മലയാളं' },
 ];
 
 export function LanguageSwitcher({ currentLanguage, onLanguageChange }: LanguageSwitcherProps) {
-  // Default to 'English' if currentLanguage is null, undefined, or empty
-  const selectedLanguage = currentLanguage || 'English';
+  // Map legacy names or mixed codes to canonical keys for robust support
+  const normalizeLang = (l: string | null | undefined) => {
+    if (!l) return 'en';
+    const lower = l.toLowerCase();
+    if (lower === 'english' || lower === 'en') return 'en';
+    if (lower === 'hindi' || lower === 'hi') return 'hi';
+    if (lower === 'telugu' || lower === 'te') return 'te';
+    if (lower === 'tamil' || lower === 'ta') return 'ta';
+    if (lower === 'kannada' || lower === 'kn') return 'kn';
+    if (lower === 'malayalam' || lower === 'ml') return 'ml';
+    return l;
+  };
+
+  const selectedLanguage = normalizeLang(currentLanguage);
   
   return (
-    <div className="flex items-center space-x-4">
-      <span className="text-sm text-gray-400">Language:</span>
+    <div className="flex items-center space-x-3">
+      <span className="text-[10px] font-black tracking-[0.2em] uppercase text-muted-foreground/40">Language</span>
       <Select value={selectedLanguage} onValueChange={onLanguageChange}>
-        <SelectTrigger className="w-40 bg-white/10 border-white/10 text-white">
+        <SelectTrigger className="w-32 h-8 bg-white/5 border-white/5 text-white rounded-full text-[11px] font-bold hover:bg-white/10 transition-all focus:ring-0">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-black/95 border-white/10">
+        <SelectContent className="bg-[#0f1115] border-white/10 rounded-xl shadow-2xl">
           {supportedLanguages.map((lang) => (
             <SelectItem 
               key={lang.code} 
               value={lang.code}
-              className="text-white hover:bg-white/10 focus:bg-white/10"
+              className="text-white hover:bg-white/5 focus:bg-white/5 cursor-pointer py-2"
             >
-              <div className="flex items-center space-x-4">
-                <span>{lang.label}</span>
-                <span className="text-xs opacity-70">({lang.nativeLabel})</span>
+              <div className="flex items-center justify-between w-full gap-3">
+                <span className="font-medium">{lang.label}</span>
+                <span className="text-[9px] opacity-30 font-serif lowercase tracking-tighter">{lang.nativeLabel}</span>
               </div>
             </SelectItem>
           ))}
